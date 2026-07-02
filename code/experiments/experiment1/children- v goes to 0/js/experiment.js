@@ -320,6 +320,31 @@ const welcomeScreen = {
   },
 };
 
+// Slide 0b – Introducing Maggie
+const introMaggieVideo = {
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `
+    <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
+      <video id="intro-maggie-video" src="../children-shared%20files/children%20-%20introducing%20maggie.mov" autoplay playsinline controls
+             style="max-width:860px; width:100%; max-height:62vh; border-radius:8px;">
+      </video>
+    </div>`,
+  choices: ['Next'],
+  on_load: function() {
+    const video = document.getElementById('intro-maggie-video');
+    const nextBtn = document.querySelector('.jspsych-btn');
+    nextBtn.disabled = true;
+    nextBtn.style.opacity = '0.4';
+    nextBtn.style.cursor = 'not-allowed';
+    video.addEventListener('ended', () => {
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+      nextBtn.style.cursor = 'pointer';
+    });
+  },
+  _debugLabel: 'Introducing Maggie (video)',
+};
+
 // Slide 1a – Introduce Michael
 const warmupIntroFinn = {
   type: jsPsychHtmlButtonResponse,
@@ -665,6 +690,7 @@ function updateProgressBar(scenarioIdx, total) {
 // Warmup block
 const warmupBlock = [
   welcomeScreen,
+  introMaggieVideo,
   warmupIntroFinn,
   warmupIntroCleo,
   warmupLayoutLocked,
@@ -879,6 +905,7 @@ const endScreen = {
    ---------------------------------------------------------- */
 consentScreen._debugLabel   = 'Consent Form';
 welcomeScreen._debugLabel   = 'Welcome Screen';
+introMaggieVideo._debugLabel = 'Introducing Maggie (video)';
 warmupIntroFinn._debugLabel      = 'Intro: Michael';
 warmupIntroCleo._debugLabel      = 'Intro: Claire';
 warmupLayoutLocked._debugLabel    = 'Warmup: Layout (locked)';
