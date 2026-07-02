@@ -300,14 +300,24 @@ const consentScreen = {
 const welcomeScreen = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
-    <div style="text-align:center; padding:60px 40px; max-width:700px; margin:0 auto; font-family:sans-serif; color:#333;">
-      <p style="font-size:22px; line-height:1.6;">
-        Welcome! In this game, you will watch two characters interact.
-        Your job is to decide how to move their cookies around.
-        Let's practice first!
-      </p>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
+      <video id="welcome-video" src="../children-shared%20files/overall_study_intro.mov" autoplay playsinline controls
+             style="max-width:860px; width:100%; max-height:62vh; border-radius:8px;">
+      </video>
     </div>`,
   choices: ['Next'],
+  on_load: function() {
+    const video = document.getElementById('welcome-video');
+    const nextBtn = document.querySelector('.jspsych-btn');
+    nextBtn.disabled = true;
+    nextBtn.style.opacity = '0.4';
+    nextBtn.style.cursor = 'not-allowed';
+    video.addEventListener('ended', () => {
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+      nextBtn.style.cursor = 'pointer';
+    });
+  },
 };
 
 // Slide 1a – Introduce Michael
