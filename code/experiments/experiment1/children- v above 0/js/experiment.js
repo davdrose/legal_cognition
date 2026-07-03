@@ -580,16 +580,52 @@ const warmupPracticeBoth = {
 };
 
 // Slide 3 – Practice confirmation
-const warmupDone = {
+const warmupFinishVideo = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
-    <div style="text-align:center; padding:80px 40px; max-width:700px; margin:0 auto;">
-      <p class="slide-instruction">Good job!</p>
-      <p style="font-size:20px; margin-top:20px; color:#555; font-family:sans-serif;">
-        You're now ready to begin. Click Next when you're ready to start.
-      </p>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
+      <video id="warmup-finish-video" src="../children-shared%20files/warmup_finish.mov" autoplay playsinline controls
+             style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
+      </video>
     </div>`,
   choices: ['Next'],
+  on_load: function() {
+    const video = document.getElementById('warmup-finish-video');
+    const nextBtn = document.querySelector('.jspsych-btn');
+    nextBtn.disabled = true;
+    nextBtn.style.opacity = '0.4';
+    nextBtn.style.cursor = 'not-allowed';
+    video.addEventListener('ended', () => {
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+      nextBtn.style.cursor = 'pointer';
+    });
+  },
+  _debugLabel: 'Warmup finish (video)',
+};
+
+const testCaseIntroVideo = {
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `
+    <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
+      <video id="test-case-intro-video" src="../children-shared%20files/test_case_intro.mov" autoplay playsinline controls
+             style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
+      </video>
+    </div>`,
+  choices: ['Next'],
+  on_load: function() {
+    const video = document.getElementById('test-case-intro-video');
+    const nextBtn = document.querySelector('.jspsych-btn');
+    nextBtn.disabled = true;
+    nextBtn.style.opacity = '0.4';
+    nextBtn.style.cursor = 'not-allowed';
+    video.addEventListener('ended', () => {
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+      nextBtn.style.cursor = 'pointer';
+    });
+  },
+  _debugLabel: 'Test case intro (video)',
 };
 
 /* ----------------------------------------------------------
@@ -706,7 +742,8 @@ const warmupBlock = [
   warmupPracticeFromV,
   warmupPracticeSummary,
   warmupPracticeBoth,
-  warmupDone,
+  warmupFinishVideo,
+  testCaseIntroVideo,
 ];
 
 // All scenarios combined — fully randomized per participant (stable across jump-reloads)
@@ -918,7 +955,8 @@ warmupPracticeTrash._debugLabel   = 'Warmup: Practice (Michael→Jar)';
 warmupPracticeFromV._debugLabel   = 'Warmup: Practice (Claire→Jar)';
 warmupPracticeSummary._debugLabel = 'Warmup: Summary (locked)';
 warmupPracticeBoth._debugLabel    = 'Warmup: Practice (Both)';
-warmupDone._debugLabel            = 'Warmup: Done';
+warmupFinishVideo._debugLabel     = 'Warmup: Finish (video)';
+testCaseIntroVideo._debugLabel    = 'Test Case Intro (video)';
 demographicsScreen._debugLabel = 'Demographics';
 feedbackScreen._debugLabel     = 'Feedback';
 cookieJarScreen._debugLabel    = 'Cookie Jar Meaning';
