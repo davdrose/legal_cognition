@@ -390,7 +390,7 @@ const warmupWay1Locked = {
   hud_v_cookies: 3,
   trash_on_left: TRASH_ON_LEFT,
   harm_text: '',
-  instruction_text: "<strong>First, you can punish them by giving their cookies to another person.</strong><br><br>You can take Michael's cookies and give them to Claire, or take Claire's cookies and give them to Michael.<br><br>Let's try it out!",
+  instruction_text: "<strong>First, you can punish them by giving their cookies to another person.</strong><br><br>You can take Michael's cookies and give them to Claire, or take Claire's cookies and give them to Michael.<br><br>Let's have Maggie try it out!",
   locked: true,
   is_practice: true,
   scenario_id: 0,
@@ -399,30 +399,84 @@ const warmupWay1Locked = {
   corner_char_img: '../children-shared%20files/maggie.png',
 };
 
-// Slide 2a-demo — Maggie demonstrates moving a cookie from Michael to Claire,
-// acting on the same allocation panel the child uses next.
+// Slide 2a-demo — Maggie demonstrates moving a cookie from Michael to Claire.
 const warmupPracticeDemoMaggie = {
-  type: jsPsychAllocation,
-  p_cookies: 3,
-  v_cookies_current: 3,
-  hud_p_cookies: 3,
-  hud_v_cookies: 3,
-  trash_on_left: TRASH_ON_LEFT,
-  harm_text: '',
-  instruction_text: '',
-  locked: true,
-  is_practice: true,
-  scenario_id: 0,
-  p_name: 'Michael', v_name: 'Claire',
-  p_img: 'michael.png', v_img: 'claire.png',
-  auto_demo: true,
-  demo_cookie_id: 0,
-  demo_char_img: '../children-shared%20files/maggie.png',
-  demo_char_name: 'Maggie',
-  demo_text: "Watch me! I'll move one of Michael's cookies to Claire's plate! 🍪",
-  demo_text_after: "Great! Now you try!",
-  confirm_label: "Got it! Now I'll try!",
-  corner_char_img: '../children-shared%20files/maggie.png',
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `
+    <style>
+      @keyframes mgCookieArc {
+        0%   { left:22%; top:50%; transform:translate(-50%,-50%) scale(1);   opacity:1; }
+        45%  { left:50%; top:22%; transform:translate(-50%,-50%) scale(1.5); opacity:1; }
+        100% { left:78%; top:50%; transform:translate(-50%,-50%) scale(0.9); opacity:0; }
+      }
+      #mg-flying-cookie {
+        position:absolute;
+        font-size:38px;
+        animation: mgCookieArc 1.6s ease-in-out 1.2s forwards;
+        pointer-events:none;
+      }
+      .mg-bubble {
+        background:#fffbe6;
+        border:2px solid #f5c542;
+        border-radius:16px;
+        padding:10px 16px;
+        font-size:17px;
+        max-width:300px;
+        line-height:1.5;
+        position:relative;
+        text-align:left;
+      }
+      .mg-bubble::after {
+        content:'';
+        position:absolute;
+        left:-14px; top:16px;
+        border:7px solid transparent;
+        border-right-color:#f5c542;
+      }
+    </style>
+    <div style="text-align:center; padding:16px 30px; font-family:sans-serif; max-width:680px; margin:0 auto;">
+      <div style="display:flex; align-items:center; justify-content:center; gap:18px; margin-bottom:20px;">
+        <img src="../children-shared%20files/maggie.png" alt="Maggie" style="width:80px; height:auto;">
+        <div class="mg-bubble">Watch me! I'll move one of Michael's cookies to Claire's plate! 🍪</div>
+      </div>
+      <div style="position:relative; display:flex; justify-content:space-around; align-items:center; height:200px;">
+        <div style="text-align:center; z-index:1;">
+          <img src="img/michael.png" style="width:76px; height:auto; display:block; margin:0 auto 6px;">
+          <strong style="font-size:16px;">Michael</strong>
+          <div id="mg-michael-cookies" style="font-size:28px; margin-top:6px; letter-spacing:2px;">🍪🍪🍪</div>
+          <div id="mg-michael-count" style="font-size:15px; color:#555; margin-top:4px; font-weight:500;">Michael has 3 cookies</div>
+        </div>
+        <span id="mg-flying-cookie">🍪</span>
+        <div style="text-align:center; z-index:1;">
+          <img src="img/claire.png" style="width:76px; height:auto; display:block; margin:0 auto 6px;">
+          <strong style="font-size:16px;">Claire</strong>
+          <div id="mg-claire-cookies" style="font-size:28px; margin-top:6px; letter-spacing:2px;">🍪🍪🍪</div>
+          <div id="mg-claire-count" style="font-size:15px; color:#555; margin-top:4px; font-weight:500;">Claire has 3 cookies</div>
+        </div>
+      </div>
+    </div>`,
+  choices: ["Got it! Now I'll try!"],
+  on_load: function() {
+    const btn = document.querySelector('.jspsych-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+      btn.style.cursor = 'not-allowed';
+      setTimeout(() => { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }, 3400);
+    }
+    setTimeout(() => {
+      const mc = document.getElementById('mg-michael-cookies');
+      const mt = document.getElementById('mg-michael-count');
+      if (mc) mc.innerHTML = '🍪🍪';
+      if (mt) mt.textContent = 'Michael has 2 cookies';
+    }, 1300);
+    setTimeout(() => {
+      const cc = document.getElementById('mg-claire-cookies');
+      const ct = document.getElementById('mg-claire-count');
+      if (cc) cc.innerHTML = '🍪🍪🍪🍪';
+      if (ct) ct.textContent = 'Claire has 4 cookies';
+    }, 2700);
+  },
   _debugLabel: 'Warmup: Maggie Demo (Michael→Claire)',
 };
 
@@ -444,6 +498,22 @@ const warmupPracticeV = {
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
   corner_char_img: '../children-shared%20files/maggie.png',
+  on_load: function() {
+    const pLabel = document.getElementById('p-panel-name');
+    const vLabel = document.getElementById('v-panel-name');
+    const pPlate = document.getElementById('p-plate');
+    const vPlate = document.getElementById('v-plate');
+    if (!pPlate || !vPlate || !pLabel || !vLabel) return;
+    const update = () => {
+      const pCount = pPlate.querySelectorAll('.plate-cookie').length;
+      const vCount = vPlate.querySelectorAll('.plate-cookie').length;
+      pLabel.textContent = `Michael has ${pCount} cookie${pCount !== 1 ? 's' : ''}`;
+      vLabel.textContent = `Claire has ${vCount} cookie${vCount !== 1 ? 's' : ''}`;
+    };
+    const obs = new MutationObserver(update);
+    obs.observe(pPlate, { childList: true });
+    obs.observe(vPlate, { childList: true });
+  },
 };
 
 // Slide 2b – Practice: move Claire's cookie to Michael
