@@ -218,6 +218,12 @@ var jsPsychAllocation = (function (jspsych) {
           moveInstr.style.display  = 'block';
           confirmRow.style.display = '';
           display_element.querySelector('#confirm-btn').disabled = true;
+          const voiceOver = document.createElement('audio');
+          voiceOver.src = '../children-shared%20files/Moving cookie instruction.m4a';
+          voiceOver.style.display = 'none';
+          document.body.appendChild(voiceOver);
+          voiceOver.play().catch(() => {});
+          voiceOver.addEventListener('ended', () => voiceOver.remove());
         });
 
         display_element.querySelector('#gate-no').addEventListener('click', () => {

@@ -427,7 +427,6 @@ const warmupWay1Locked = {
   demo_text_after: "Great! Now you try!",
   confirm_label: "Got it! Now I'll try!",
   demo_audio_before: '../children-shared%20files/First, you can punish them by giving their cookies to another person..m4a',
-  demo_audio_carry:  '../children-shared%20files/Moving cookie instruction.m4a',
   demo_audio_after:  '../children-shared%20files/Now its your turn to try it out!.m4a',
 };
 

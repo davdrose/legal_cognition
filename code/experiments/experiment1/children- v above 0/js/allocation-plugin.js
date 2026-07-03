@@ -216,6 +216,12 @@ var jsPsychAllocation = (function (jspsych) {
           gateEl.style.display     = 'none';
           moveInstr.style.display  = 'block';
           confirmRow.style.display = '';
+          const voiceOver = document.createElement('audio');
+          voiceOver.src = '../children-shared%20files/Moving cookie instruction.m4a';
+          voiceOver.style.display = 'none';
+          document.body.appendChild(voiceOver);
+          voiceOver.play().catch(() => {});
+          voiceOver.addEventListener('ended', () => voiceOver.remove());
         });
 
         display_element.querySelector('#gate-no').addEventListener('click', () => {
