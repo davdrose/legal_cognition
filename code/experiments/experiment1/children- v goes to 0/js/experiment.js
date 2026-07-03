@@ -436,6 +436,14 @@ const warmupPracticeV = {
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
   corner_char_img: '../children-shared%20files/maggie.png',
+  on_load: function() {
+    const audio = document.createElement('audio');
+    audio.src = '../children-shared%20files/Now you try! Move one of Michael\'s cookies to Claire\'s plate..m4a';
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+    audio.addEventListener('ended', () => audio.remove());
+  },
 };
 
 // Slide 2b – Practice: move Claire's cookie to Michael
@@ -455,6 +463,14 @@ const warmupPracticeVtoP = {
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
   corner_char_img: '../children-shared%20files/maggie.png',
+  on_load: function() {
+    const audio = document.createElement('audio');
+    audio.src = '../children-shared%20files/Now move one of Claire\'s cookies to Michael\'s plate..m4a';
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+    audio.addEventListener('ended', () => audio.remove());
+  },
 };
 
 // Slide 2c-intro – Way 2 explanation (locked)
@@ -478,6 +494,8 @@ const warmupWay2Locked = {
   demo_char_img: '../children-shared%20files/maggie.png',
   demo_char_name: 'Maggie',
   confirm_label: "Got it! Now I'll try!",
+  demo_audio_before: '../children-shared%20files/Second, you can punish them by putting cookies in the cookie jar..m4a',
+  demo_audio_after:  '../children-shared%20files/Now its your turn to try it out!.m4a',
 };
 
 // Slide 2c – Practice: move Michael's cookie to the Cookie Jar
@@ -498,6 +516,14 @@ const warmupPracticeTrash = {
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
   corner_char_img: '../children-shared%20files/maggie.png',
+  on_load: function() {
+    const audio = document.createElement('audio');
+    audio.src = '../children-shared%20files/Move one of Michael\'s cookies to the Cookie Jar..m4a';
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+    audio.addEventListener('ended', () => audio.remove());
+  },
 };
 
 // Slide 2d – Practice: move Claire's cookie to the Cookie Jar
@@ -520,6 +546,14 @@ const warmupPracticeFromV = {
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
   corner_char_img: '../children-shared%20files/maggie.png',
+  on_load: function() {
+    const audio = document.createElement('audio');
+    audio.src = '../children-shared%20files/Now move one of Claire\'s cookies to the Cookie Jar..m4a';
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+    audio.addEventListener('ended', () => audio.remove());
+  },
 };
 
 // Slide 2e-intro – Summary: both mechanics (locked)
@@ -543,6 +577,8 @@ const warmupPracticeSummary = {
   demo_char_img: '../children-shared%20files/maggie.png',
   demo_char_name: 'Maggie',
   confirm_label: "Got it! Now I'll try!",
+  demo_audio_before: '../children-shared%20files/Ok, so in our game you can decide that someone should lose cookies.m4a',
+  demo_audio_after:  '../children-shared%20files/Now its your turn to try it out!.m4a',
 };
 
 // Slide 2e – Practice: use both mechanics at once
@@ -563,6 +599,14 @@ const warmupPracticeBoth = {
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
   corner_char_img: '../children-shared%20files/maggie.png',
+  on_load: function() {
+    const audio = document.createElement('audio');
+    audio.src = '../children-shared%20files/Take a cookie and give it to Claire, and take.m4a';
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+    audio.addEventListener('ended', () => audio.remove());
+  },
 };
 
 // Slide 3 – Practice confirmation
