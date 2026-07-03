@@ -305,17 +305,11 @@ const welcomeScreen = {
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
-  choices: ['Next'],
+  choices: [],
   on_load: function() {
     const video = document.getElementById('welcome-video');
-    const nextBtn = document.querySelector('.jspsych-btn');
-    nextBtn.disabled = true;
-    nextBtn.style.opacity = '0.4';
-    nextBtn.style.cursor = 'not-allowed';
     video.addEventListener('ended', () => {
-      nextBtn.disabled = false;
-      nextBtn.style.opacity = '1';
-      nextBtn.style.cursor = 'pointer';
+      setTimeout(() => jsPsych.finishTrial(), 1000);
     });
   },
 };
@@ -329,17 +323,11 @@ const introMaggieVideo = {
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
-  choices: ['Next'],
+  choices: [],
   on_load: function() {
     const video = document.getElementById('intro-maggie-video');
-    const nextBtn = document.querySelector('.jspsych-btn');
-    nextBtn.disabled = true;
-    nextBtn.style.opacity = '0.4';
-    nextBtn.style.cursor = 'not-allowed';
     video.addEventListener('ended', () => {
-      nextBtn.disabled = false;
-      nextBtn.style.opacity = '1';
-      nextBtn.style.cursor = 'pointer';
+      setTimeout(() => jsPsych.finishTrial(), 1000);
     });
   },
   _debugLabel: 'Introducing Maggie (video)',
@@ -361,6 +349,17 @@ const warmupLayoutLocked = {
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
   corner_char_img: '../children-shared%20files/maggie.png',
+  on_load: function() {
+    const audio = document.createElement('audio');
+    audio.src = '../children-shared%20files/test_case_intro.mov';
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+    audio.addEventListener('ended', () => {
+      audio.remove();
+      setTimeout(() => jsPsych.finishTrial(), 1000);
+    });
+  },
 };
 
 // Slide 1d – Locked: two ways intro
@@ -555,7 +554,18 @@ const warmupDone = {
         You're now ready to begin. Click Next when you're ready to start.
       </p>
     </div>`,
-  choices: ['Next'],
+  choices: [],
+  on_load: function() {
+    const audio = document.createElement('audio');
+    audio.src = '../children-shared%20files/warmup_finish.mov';
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+    audio.addEventListener('ended', () => {
+      audio.remove();
+      setTimeout(() => jsPsych.finishTrial(), 1000);
+    });
+  },
 };
 
 /* ----------------------------------------------------------
