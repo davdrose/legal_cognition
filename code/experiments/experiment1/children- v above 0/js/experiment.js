@@ -305,10 +305,16 @@ const welcomeScreen = {
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
-  choices: [],
+  choices: ['Next'],
   on_load: function() {
+    const nextBtn = document.querySelector('.jspsych-btn');
+    nextBtn.disabled = true;
+    nextBtn.style.opacity = '0.4';
+    nextBtn.style.cursor = 'not-allowed';
     document.getElementById('welcome-video').addEventListener('ended', () => {
-      setTimeout(() => jsPsych.finishTrial(), 1000);
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+      nextBtn.style.cursor = 'pointer';
     });
   },
 };
