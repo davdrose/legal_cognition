@@ -480,13 +480,18 @@ const warmupWay2Locked = {
   hud_v_cookies: 3,
   trash_on_left: TRASH_ON_LEFT,
   harm_text: '',
-  instruction_text: "<strong>Second, you can punish them by putting cookies in the cookie jar.</strong><br><br>If they go in the cookie jar, nobody gets them.<br>Let's try it out!",
+  instruction_text: "<strong>Second, you can punish them by putting cookies in the cookie jar.</strong><br><br>If they go in the cookie jar, nobody gets them.<br><br>Let's have Maggie try it out!",
   locked: true,
   is_practice: true,
   scenario_id: 0,
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
   corner_char_img: '../children-shared%20files/maggie.png',
+  auto_demo: true,
+  demo_moves: [{ from: 'p', to: 'trash', cookie_id: 0 }],
+  demo_char_img: '../children-shared%20files/maggie.png',
+  demo_char_name: 'Maggie',
+  confirm_label: "Got it! Now I'll try!",
 };
 
 // Slide 2c – Practice: move Michael's cookie to the Cookie Jar
@@ -540,13 +545,18 @@ const warmupPracticeSummary = {
   hud_v_cookies: 3,
   trash_on_left: TRASH_ON_LEFT,
   harm_text: '',
-  instruction_text: "Ok, so in our game you can decide that someone should lose cookies — you can give them to another person or put them in the cookie jar. Let's do both!",
+  instruction_text: "Ok, so in our game you can decide that someone should lose cookies — you can give them to another person or put them in the cookie jar. Let's have Maggie try it out!",
   locked: true,
   is_practice: true,
   scenario_id: 0,
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
   corner_char_img: '../children-shared%20files/maggie.png',
+  auto_demo: true,
+  demo_moves: [{ from: 'p', to: 'v', cookie_id: 0 }, { from: 'p', to: 'trash', cookie_id: 1 }],
+  demo_char_img: '../children-shared%20files/maggie.png',
+  demo_char_name: 'Maggie',
+  confirm_label: "Got it! Now I'll try!",
 };
 
 // Slide 2e – Practice: use both mechanics at once

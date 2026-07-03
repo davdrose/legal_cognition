@@ -461,126 +461,163 @@ var jsPsychAllocation = (function (jspsych) {
 
       /* -------------------------------------------------------
          AUTO DEMO
-         Plays out a pickup → move → drop sequence on this same panel
-         (a narrator character showing how dragging works) by driving
-         the real ghost-cookie + placement code, then hands control
-         back to the participant via the confirm button.
+         Plays out one or more pickup → carry → drop moves using
+         demo_moves: [{from:'p'|'v', to:'v'|'p'|'trash', cookie_id:N}]
+         Falls back to legacy demo_cookie_id (p→v) if demo_moves is empty.
       ------------------------------------------------------- */
       if (trial.auto_demo) {
-        const demoCookieId = trial.demo_cookie_id ?? 0;
-        const cookieEl      = getCookieEl(demoCookieId);
-        const vPlate        = display_element.querySelector('#v-plate');
-        const confirmBtn    = display_element.querySelector('#confirm-btn');
-        const pLabelEl      = display_element.querySelector('#p-panel-name');
-        const vLabelEl      = display_element.querySelector('#v-panel-name');
-        const countLabel = (n, name) => `${name} has ${n} cookie${n !== 1 ? 's' : ''}`;
+        const demoMoves = (trial.demo_moves && trial.demo_moves.length > 0)
+          ? trial.demo_moves
+          : [{ from: 'p', to: 'v', cookie_id: trial.demo_cookie_id ?? 0 }];
 
-        if (cookieEl && vPlate && confirmBtn) {
+        const confirmBtn = display_element.querySelector('#confirm-btn');
+        const pLabelEl   = display_element.querySelector('#p-panel-name');
+        const vLabelEl   = display_element.querySelector('#v-panel-name');
+        const countLabel = (n, name) => `${name} has ${n} cookie${n !== 1 ? 's' : ''}`;
+        let pCount = trial.p_cookies;
+        let vCount = trial.v_cookies_current;
+
+        if (confirmBtn) {
           confirmBtn.disabled = true;
           if (trial.confirm_label) confirmBtn.textContent = trial.confirm_label;
+        }
 
-          // If this trial also shows a static corner character, she is the
-          // one who performs the demo: hide her static pose, animate a
-          // stand-in from her exact spot through the demo, then land it
-          // back in that same spot and swap back to the static element.
-          const cornerEl = trial.corner_char_img
-            ? display_element.querySelector('.corner-char-img')
-            : null;
+        const cornerEl = trial.corner_char_img
+          ? display_element.querySelector('.corner-char-img')
+          : null;
 
-          const cursor = document.createElement('div');
-          cursor.id = 'demo-cursor';
-          cursor.innerHTML = `<img src="${trial.demo_char_img}" alt="${trial.demo_char_name}" style="transform:scaleX(-1); width:8.4vw;">`;
-          display_element.appendChild(cursor);
+        const cursor = document.createElement('div');
+        cursor.id = 'demo-cursor';
+        cursor.innerHTML = `<img src="${trial.demo_char_img}" alt="${trial.demo_char_name}" style="transform:scaleX(-1); width:8.4vw;">`;
+        display_element.appendChild(cursor);
 
-          const cookieRect = cookieEl.getBoundingClientRect();
-          const plateTarget = { x: cookieRect.left + cookieRect.width / 2, y: cookieRect.top + cookieRect.height / 2 };
-          const cookieOffset = { x: 22, y: 16 }; // cookie rides just below Maggie's hand as she carries it
-          const setCursorPos = (p) => { cursor.style.left = p.x + 'px'; cursor.style.top = p.y + 'px'; };
+        const cookieOffset = { x: 22, y: 16 };
+        const setCursorPos = (p) => { cursor.style.left = p.x + 'px'; cursor.style.top = p.y + 'px'; };
 
-          let homeTarget = null;
-          if (cornerEl) {
-            const r = cornerEl.getBoundingClientRect();
-            homeTarget = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-            cornerEl.style.visibility = 'hidden';
-            setCursorPos(homeTarget);
+        let homeTarget = null;
+        if (cornerEl) {
+          const r = cornerEl.getBoundingClientRect();
+          homeTarget = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+          cornerEl.style.visibility = 'hidden';
+          setCursorPos(homeTarget);
+        } else {
+          const firstKey = demoMoves[0].from === 'v' ? `#v-existing-${demoMoves[0].cookie_id}` : `#p-cookie-${demoMoves[0].cookie_id}`;
+          const firstEl  = display_element.querySelector(firstKey);
+          if (firstEl) { const cr = firstEl.getBoundingClientRect(); setCursorPos({ x: cr.left + cr.width / 2, y: cr.top + cr.height / 2 }); }
+        }
+
+        function animate(from, to, duration, onStep, onDone) {
+          const t0 = performance.now();
+          function step(now) {
+            const t = Math.min(1, (now - t0) / duration);
+            const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+            const cur = { x: from.x + (to.x - from.x) * eased, y: from.y + (to.y - from.y) * eased };
+            setCursorPos(cur);
+            if (onStep) onStep(cur, t);
+            if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
+          }
+          requestAnimationFrame(step);
+        }
+
+        function playDemoAudio(src) {
+          if (!src) return null;
+          const a = document.createElement('audio');
+          a.src = src; a.style.display = 'none';
+          document.body.appendChild(a);
+          a.play().catch(() => {});
+          a.addEventListener('ended', () => a.remove());
+          return a;
+        }
+
+        function getTargetPlate(to) {
+          if (to === 'v')     return display_element.querySelector('#v-plate');
+          if (to === 'p')     return display_element.querySelector('#p-plate');
+          if (to === 'trash') return display_element.querySelector('#trash-plate');
+          return null;
+        }
+
+        function updateStateAndPlace(move, cookieEl, targetPl, dropX, dropY) {
+          const pos = clampToPlate(targetPl, dropX, dropY);
+          if (move.from === 'p') {
+            const zone = move.to === 'v' ? 'v' : move.to === 'trash' ? 'trash' : 'pool';
+            placeCookie(cookieEl, targetPl, pos.left, pos.top, zone, move.cookie_id);
+            pCount--;
+            if (pLabelEl) pLabelEl.textContent = countLabel(pCount, trial.p_name);
+            if (move.to === 'v') { vCount++; if (vLabelEl) vLabelEl.textContent = countLabel(vCount, trial.v_name); }
           } else {
-            setCursorPos(plateTarget);
+            // V cookie — place inline and update vCookieDest
+            targetPl.appendChild(cookieEl);
+            cookieEl.style.left = clampToPlate(targetPl, dropX, dropY).left + 'px';
+            cookieEl.style.top  = clampToPlate(targetPl, dropX, dropY).top  + 'px';
+            cookieEl.style.opacity = '1';
+            vCookieDest[move.cookie_id] = move.to === 'p' ? 'p' : move.to === 'trash' ? 'trash' : 'v';
+            vCount--;
+            if (vLabelEl) vLabelEl.textContent = countLabel(vCount, trial.v_name);
+            if (move.to === 'p') { pCount++; if (pLabelEl) pLabelEl.textContent = countLabel(pCount, trial.p_name); }
           }
+        }
 
-          function animate(from, to, duration, onStep, onDone) {
-            const t0 = performance.now();
-            function step(now) {
-              const t = Math.min(1, (now - t0) / duration);
-              const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-              const cur = { x: from.x + (to.x - from.x) * eased, y: from.y + (to.y - from.y) * eased };
-              setCursorPos(cur);
-              if (onStep) onStep(cur, t);
-              if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
+        function runMoves(moveIdx, currentPos) {
+          if (moveIdx >= demoMoves.length) {
+            if (homeTarget) {
+              animate(currentPos, homeTarget, 900, null, () => {
+                cursor.remove();
+                if (cornerEl) cornerEl.style.visibility = '';
+                playDemoAudio(trial.demo_audio_after);
+                if (confirmBtn) confirmBtn.disabled = false;
+              });
+            } else {
+              cursor.remove();
+              playDemoAudio(trial.demo_audio_after);
+              if (confirmBtn) confirmBtn.disabled = false;
             }
-            requestAnimationFrame(step);
+            return;
           }
 
-          function playDemoAudio(src) {
-            if (!src) return null;
-            const a = document.createElement('audio');
-            a.src = src;
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.play().catch(() => {});
-            a.addEventListener('ended', () => a.remove());
-            return a;
-          }
+          const move     = demoMoves[moveIdx];
+          const cookieEl = display_element.querySelector(move.from === 'v' ? `#v-existing-${move.cookie_id}` : `#p-cookie-${move.cookie_id}`);
+          const targetPl = getTargetPlate(move.to);
+          if (!cookieEl || !targetPl) { runMoves(moveIdx + 1, currentPos); return; }
 
-          function pickupAndCarry() {
-            playDemoAudio(trial.demo_audio_carry);
+          const cr = cookieEl.getBoundingClientRect();
+          const cookiePt = { x: cr.left + cr.width / 2, y: cr.top + cr.height / 2 };
+
+          animate(currentPos, cookiePt, 900, null, () => {
             cursor.classList.add('grabbing');
             cookieEl.style.opacity = '0';
-            showGhost(plateTarget.x + cookieOffset.x, plateTarget.y + cookieOffset.y, 52);
-            if (pLabelEl) pLabelEl.textContent = countLabel(trial.p_cookies - 1, trial.p_name);
+            showGhost(cookiePt.x + cookieOffset.x, cookiePt.y + cookieOffset.y, 52);
 
-            const vRect = vPlate.getBoundingClientRect();
-            const dropTarget = { x: vRect.left + vRect.width / 2, y: vRect.top + vRect.height / 2 };
+            const tr = targetPl.getBoundingClientRect();
+            const dropPt = { x: tr.left + tr.width / 2, y: tr.top + tr.height / 2 };
 
-            animate(plateTarget, dropTarget, 2200,
-              (cur, t) => showGhost(cur.x + cookieOffset.x, cur.y + cookieOffset.y),
+            animate(cookiePt, dropPt, 2200,
+              (cur) => showGhost(cur.x + cookieOffset.x, cur.y + cookieOffset.y),
               () => {
                 hideGhost();
                 cursor.classList.remove('grabbing');
-                const pos = clampToPlate(vPlate, dropTarget.x, dropTarget.y);
-                placeCookie(cookieEl, vPlate, pos.left, pos.top, 'v', demoCookieId);
-                if (vLabelEl) vLabelEl.textContent = countLabel(trial.v_cookies_current + 1, trial.v_name);
+                updateStateAndPlace(move, cookieEl, targetPl, dropPt.x, dropPt.y);
+                setTimeout(() => runMoves(moveIdx + 1, dropPt), 350);
+              }
+            );
+          });
+        }
 
-                setTimeout(() => {
-                  if (homeTarget) {
-                    animate(dropTarget, homeTarget, 900, null, () => {
-                      cursor.remove();
-                      if (cornerEl) cornerEl.style.visibility = '';
-                      playDemoAudio(trial.demo_audio_after);
-                      confirmBtn.disabled = false;
-                    });
-                  } else {
-                    cursor.remove();
-                    playDemoAudio(trial.demo_audio_after);
-                    confirmBtn.disabled = false;
-                  }
-                }, 350);
-              });
-          }
+        function startDemoAnimation() {
+          const startPos = homeTarget || (() => {
+            const firstKey = demoMoves[0].from === 'v' ? `#v-existing-${demoMoves[0].cookie_id}` : `#p-cookie-${demoMoves[0].cookie_id}`;
+            const el = display_element.querySelector(firstKey);
+            if (!el) return { x: 0, y: 0 };
+            const cr = el.getBoundingClientRect();
+            return { x: cr.left + cr.width / 2, y: cr.top + cr.height / 2 };
+          })();
+          runMoves(0, startPos);
+        }
 
-          function startDemoAnimation() {
-            if (homeTarget) {
-              animate(homeTarget, plateTarget, 900, null, pickupAndCarry);
-            } else {
-              pickupAndCarry();
-            }
-          }
-
-          if (trial.demo_audio_before) {
-            const beforeAudio = playDemoAudio(trial.demo_audio_before);
-            beforeAudio.addEventListener('ended', () => setTimeout(startDemoAnimation, 500));
-          } else {
-            setTimeout(startDemoAnimation, 1000);
-          }
+        if (trial.demo_audio_before) {
+          const beforeAudio = playDemoAudio(trial.demo_audio_before);
+          beforeAudio.addEventListener('ended', () => setTimeout(startDemoAnimation, 500));
+        } else {
+          setTimeout(startDemoAnimation, 1000);
         }
       }
 
