@@ -708,7 +708,7 @@ body {
 /* Shrink the whole plate area (as one centered unit) on screens showing
    a corner character (e.g. Maggie), so it no longer overlaps her */
 .allocation-screen.has-corner-char .cookie-plate {
-  transform: scale(1.02);
+  transform: scale(0.93);
 }
 .allocation-screen.has-corner-char .allocation-columns {
   gap: 20px;
