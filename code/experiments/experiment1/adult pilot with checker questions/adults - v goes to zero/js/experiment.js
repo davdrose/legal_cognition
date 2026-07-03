@@ -96,7 +96,7 @@ function onePersonHTML(name, imgFile) {
   return `
     <div class="two-person-display">
       <div class="person-col">
-        <img src="img/${imgFile}" class="char-img intro-img" alt="${name}">
+        <img src="../../adults - v goes to zero/img/${imgFile}" class="char-img intro-img" alt="${name}">
         <p class="intro-name">${name}</p>
       </div>
     </div>`;
@@ -112,13 +112,13 @@ function twoPersonHTML({ pCookies, vCookies, pLabel, vLabel, showSlots, showCook
   return `
     <div class="two-person-display">
       <div class="person-col">
-        <img src="img/${pImg}" class="char-img" alt="${pName}">
+        <img src="../../adults - v goes to zero/img/${pImg}" class="char-img" alt="${pName}">
         <p class="person-name">${pName}</p>
         ${showSlots   ? `<div class="cookie-label">${pLabel}</div>${cookieGridHTML(pCookies, 5, 'large', animate)}` : ''}
         ${showCookies ? `<div class="cookie-label">${pLabel}</div>${freeCookiesHTML(pCookies, animate)}` : ''}
       </div>
       <div class="person-col">
-        <img src="img/${vImg}" class="char-img" alt="${vName}">
+        <img src="../../adults - v goes to zero/img/${vImg}" class="char-img" alt="${vName}">
         <p class="person-name">${vName}</p>
         ${showSlots   ? `<div class="cookie-label">${vLabel}</div>${cookieGridHTML(vCookies, 5, 'large', animate)}` : ''}
         ${showCookies ? `<div class="cookie-label">${vLabel}</div>${freeCookiesHTML(vCookies, animate)}` : ''}
@@ -178,7 +178,7 @@ const finnCleoScenarios = [
     v_initial: 2, v_after_harm: 0, harm_amount: 2,
     event_text: 'Finn spills water and doesn\'t clean it up. Cleo slips on the wet floor and 2 of Cleo\'s cookies are destroyed.',
     event_title: 'Finn Spills Water — Cleo Slips',
-    story_slides: ['img/trailppt/finn_cleo/finn_cleo_1.png','img/trailppt/finn_cleo/finn_cleo_2.png','img/trailppt/finn_cleo/finn_cleo_3.png','img/trailppt/finn_cleo/finn_cleo_4.png','img/trailppt/finn_cleo/finn_cleo_5.png','img/trailppt/finn_cleo/finn_cleo_6.png','img/trailppt/finn_cleo/finn_cleo_7.png','img/trailppt/finn_cleo/finn_cleo_8.png','img/trailppt/finn_cleo/finn_cleo_9.png','img/trailppt/finn_cleo/finn_cleo_10.png','img/trailppt/finn_cleo/finn_cleo_11.png']
+    story_slides: ['../../adults - v goes to zero/img/trailppt/finn_cleo/finn_cleo_1.png','../../adults - v goes to zero/img/trailppt/finn_cleo/finn_cleo_2.png','../../adults - v goes to zero/img/trailppt/finn_cleo/finn_cleo_3.png','../../adults - v goes to zero/img/trailppt/finn_cleo/finn_cleo_4.png','../../adults - v goes to zero/img/trailppt/finn_cleo/finn_cleo_5.png','../../adults - v goes to zero/img/trailppt/finn_cleo/finn_cleo_6.png','../../adults - v goes to zero/img/trailppt/finn_cleo/finn_cleo_7.png','../../adults - v goes to zero/img/trailppt/finn_cleo/finn_cleo_8.png','../../adults - v goes to zero/img/trailppt/finn_cleo/finn_cleo_9.png','../../adults - v goes to zero/img/trailppt/finn_cleo/finn_cleo_10.png','../../adults - v goes to zero/img/trailppt/finn_cleo/finn_cleo_11.png']
   }
 ];
 
@@ -192,7 +192,7 @@ const secondBlockScenarios = [
     v_initial: 2, v_after_harm: 0, harm_amount: 2,
     event_text: 'Milo is angry at Sasha. He walks over and deliberately knocks off 2 of Sasha\'s cookies.',
     event_title: 'Milo Knocks Sasha\'s Cookies',
-    story_slides: ['img/trailppt/milo_sasha/milo_sasha_1.png','img/trailppt/milo_sasha/milo_sasha_2.png','img/trailppt/milo_sasha/milo_sasha_3.png','img/trailppt/milo_sasha/milo_sasha_4.png','img/trailppt/milo_sasha/milo_sasha_5.png','img/trailppt/milo_sasha/milo_sasha_6.png','img/trailppt/milo_sasha/milo_sasha_7.png','img/trailppt/milo_sasha/milo_sasha_8.png']
+    story_slides: ['../../adults - v goes to zero/img/trailppt/milo_sasha/milo_sasha_1.png','../../adults - v goes to zero/img/trailppt/milo_sasha/milo_sasha_2.png','../../adults - v goes to zero/img/trailppt/milo_sasha/milo_sasha_3.png','../../adults - v goes to zero/img/trailppt/milo_sasha/milo_sasha_4.png','../../adults - v goes to zero/img/trailppt/milo_sasha/milo_sasha_5.png','../../adults - v goes to zero/img/trailppt/milo_sasha/milo_sasha_6.png','../../adults - v goes to zero/img/trailppt/milo_sasha/milo_sasha_7.png','../../adults - v goes to zero/img/trailppt/milo_sasha/milo_sasha_8.png']
   },
   {
     id: 6,
@@ -202,7 +202,7 @@ const secondBlockScenarios = [
     v_initial: 2, v_after_harm: 0, harm_amount: 2,
     event_text: 'Zoe wants Rex to have fewer cookies. She deliberately throws away 2 of Rex\'s cookies.',
     event_title: 'Zoe Throws Rex\'s Cookies Away',
-    story_slides: ['img/trailppt/rex_zoe/rex_zoe_1.png','img/trailppt/rex_zoe/rex_zoe_2.png','img/trailppt/rex_zoe/rex_zoe_3.png','img/trailppt/rex_zoe/rex_zoe_4.png','img/trailppt/rex_zoe/rex_zoe_5.png','img/trailppt/rex_zoe/rex_zoe_6.png','img/trailppt/rex_zoe/rex_zoe_7.png']
+    story_slides: ['../../adults - v goes to zero/img/trailppt/rex_zoe/rex_zoe_1.png','../../adults - v goes to zero/img/trailppt/rex_zoe/rex_zoe_2.png','../../adults - v goes to zero/img/trailppt/rex_zoe/rex_zoe_3.png','../../adults - v goes to zero/img/trailppt/rex_zoe/rex_zoe_4.png','../../adults - v goes to zero/img/trailppt/rex_zoe/rex_zoe_5.png','../../adults - v goes to zero/img/trailppt/rex_zoe/rex_zoe_6.png','../../adults - v goes to zero/img/trailppt/rex_zoe/rex_zoe_7.png']
   },
   {
     id: 7,
@@ -212,7 +212,7 @@ const secondBlockScenarios = [
     v_initial: 2, v_after_harm: 0, harm_amount: 2,
     event_text: 'Kai walks without looking where he is going and bumps into Ruby. 2 of Ruby\'s cookies fall off.',
     event_title: 'Kai Bumps Into Ruby',
-    story_slides: ['img/trailppt/kai_ruby/kai_ruby_1.png','img/trailppt/kai_ruby/kai_ruby_2.png','img/trailppt/kai_ruby/kai_ruby_3.png','img/trailppt/kai_ruby/kai_ruby_4.png','img/trailppt/kai_ruby/kai_ruby_5.png','img/trailppt/kai_ruby/kai_ruby_6.png','img/trailppt/kai_ruby/kai_ruby_7.png','img/trailppt/kai_ruby/kai_ruby_8.png','img/trailppt/kai_ruby/kai_ruby_9.png']
+    story_slides: ['../../adults - v goes to zero/img/trailppt/kai_ruby/kai_ruby_1.png','../../adults - v goes to zero/img/trailppt/kai_ruby/kai_ruby_2.png','../../adults - v goes to zero/img/trailppt/kai_ruby/kai_ruby_3.png','../../adults - v goes to zero/img/trailppt/kai_ruby/kai_ruby_4.png','../../adults - v goes to zero/img/trailppt/kai_ruby/kai_ruby_5.png','../../adults - v goes to zero/img/trailppt/kai_ruby/kai_ruby_6.png','../../adults - v goes to zero/img/trailppt/kai_ruby/kai_ruby_7.png','../../adults - v goes to zero/img/trailppt/kai_ruby/kai_ruby_8.png','../../adults - v goes to zero/img/trailppt/kai_ruby/kai_ruby_9.png']
   },
   {
     id: 8,
@@ -222,7 +222,7 @@ const secondBlockScenarios = [
     v_initial: 2, v_after_harm: 0, harm_amount: 2,
     event_text: 'Sam is walking his dog on a leash when the dog breaks free and eats 2 of Ella\'s cookies.',
     event_title: 'Sam\'s Dog Eats Ella\'s Cookies',
-    story_slides: ['img/trailppt/sam_ella/sam_ella_1.png','img/trailppt/sam_ella/sam_ella_2.png','img/trailppt/sam_ella/sam_ella_3.png','img/trailppt/sam_ella/sam_ella_4.png','img/trailppt/sam_ella/sam_ella_5.png','img/trailppt/sam_ella/sam_ella_6.png','img/trailppt/sam_ella/sam_ella_7.png','img/trailppt/sam_ella/sam_ella_8.png','img/trailppt/sam_ella/sam_ella_9.png']
+    story_slides: ['../../adults - v goes to zero/img/trailppt/sam_ella/sam_ella_1.png','../../adults - v goes to zero/img/trailppt/sam_ella/sam_ella_2.png','../../adults - v goes to zero/img/trailppt/sam_ella/sam_ella_3.png','../../adults - v goes to zero/img/trailppt/sam_ella/sam_ella_4.png','../../adults - v goes to zero/img/trailppt/sam_ella/sam_ella_5.png','../../adults - v goes to zero/img/trailppt/sam_ella/sam_ella_6.png','../../adults - v goes to zero/img/trailppt/sam_ella/sam_ella_7.png','../../adults - v goes to zero/img/trailppt/sam_ella/sam_ella_8.png','../../adults - v goes to zero/img/trailppt/sam_ella/sam_ella_9.png']
   },
   {
     id: 9,
@@ -232,7 +232,7 @@ const secondBlockScenarios = [
     v_initial: 2, v_after_harm: 0, harm_amount: 2,
     event_text: 'Andy and Catherine bumped into each other accidentally. Catherine\'s wolf ate 2 of Andy\'s cookies.',
     event_title: 'Catherine\'s Wolf Eats Andy\'s Cookies',
-    story_slides: ['img/trailppt/andy_catherine/andy_catherine_1.png','img/trailppt/andy_catherine/andy_catherine_2.png','img/trailppt/andy_catherine/andy_catherine_3.png','img/trailppt/andy_catherine/andy_catherine_4.png','img/trailppt/andy_catherine/andy_catherine_5.png','img/trailppt/andy_catherine/andy_catherine_6.png','img/trailppt/andy_catherine/andy_catherine_7.png','img/trailppt/andy_catherine/andy_catherine_8.png']
+    story_slides: ['../../adults - v goes to zero/img/trailppt/andy_catherine/andy_catherine_1.png','../../adults - v goes to zero/img/trailppt/andy_catherine/andy_catherine_2.png','../../adults - v goes to zero/img/trailppt/andy_catherine/andy_catherine_3.png','../../adults - v goes to zero/img/trailppt/andy_catherine/andy_catherine_4.png','../../adults - v goes to zero/img/trailppt/andy_catherine/andy_catherine_5.png','../../adults - v goes to zero/img/trailppt/andy_catherine/andy_catherine_6.png','../../adults - v goes to zero/img/trailppt/andy_catherine/andy_catherine_7.png','../../adults - v goes to zero/img/trailppt/andy_catherine/andy_catherine_8.png']
   },
   {
     id: 10,
@@ -242,7 +242,7 @@ const secondBlockScenarios = [
     v_initial: 2, v_after_harm: 0, harm_amount: 2,
     event_text: 'Katie and Tony are having a picnic when a gust of wind blows 2 of Katie\'s cookies away.',
     event_title: 'Wind Blows Away Katie\'s Cookies',
-    story_slides: ['img/trailppt/harry_katie/harry_katie_1.png','img/trailppt/harry_katie/harry_katie_2.png','img/trailppt/harry_katie/harry_katie_3.png','img/trailppt/harry_katie/harry_katie_4.png','img/trailppt/harry_katie/harry_katie_5.png','img/trailppt/harry_katie/harry_katie_6.png','img/trailppt/harry_katie/harry_katie_7.png','img/trailppt/harry_katie/harry_katie_8.png']
+    story_slides: ['../../adults - v goes to zero/img/trailppt/harry_katie/harry_katie_1.png','../../adults - v goes to zero/img/trailppt/harry_katie/harry_katie_2.png','../../adults - v goes to zero/img/trailppt/harry_katie/harry_katie_3.png','../../adults - v goes to zero/img/trailppt/harry_katie/harry_katie_4.png','../../adults - v goes to zero/img/trailppt/harry_katie/harry_katie_5.png','../../adults - v goes to zero/img/trailppt/harry_katie/harry_katie_6.png','../../adults - v goes to zero/img/trailppt/harry_katie/harry_katie_7.png','../../adults - v goes to zero/img/trailppt/harry_katie/harry_katie_8.png']
   },
   {
     id: 11,
@@ -252,7 +252,7 @@ const secondBlockScenarios = [
     v_initial: 2, v_after_harm: 0, harm_amount: 2,
     event_text: 'While Eric is tying his shoelaces, a squirrel eats 2 of Eric\'s cookies.',
     event_title: 'Squirrel Eats Eric\'s Cookies',
-    story_slides: ['img/trailppt/nora_eric/nora_eric_1.png','img/trailppt/nora_eric/nora_eric_2.png','img/trailppt/nora_eric/nora_eric_3.png','img/trailppt/nora_eric/nora_eric_4.png','img/trailppt/nora_eric/nora_eric_5.png','img/trailppt/nora_eric/nora_eric_6.png','img/trailppt/nora_eric/nora_eric_7.png']
+    story_slides: ['../../adults - v goes to zero/img/trailppt/nora_eric/nora_eric_1.png','../../adults - v goes to zero/img/trailppt/nora_eric/nora_eric_2.png','../../adults - v goes to zero/img/trailppt/nora_eric/nora_eric_3.png','../../adults - v goes to zero/img/trailppt/nora_eric/nora_eric_4.png','../../adults - v goes to zero/img/trailppt/nora_eric/nora_eric_5.png','../../adults - v goes to zero/img/trailppt/nora_eric/nora_eric_6.png','../../adults - v goes to zero/img/trailppt/nora_eric/nora_eric_7.png']
   }
 ];
 
@@ -308,7 +308,7 @@ const warmupIntroFinn = {
   stimulus: `
     <div style="text-align:center; padding:30px 20px;">
       <p class="slide-instruction">This is Michael</p>
-      <img src="img/michael.png" class="char-img intro-img" alt="Michael" style="margin:20px auto; display:block;">
+      <img src="../../adults - v goes to zero/img/michael.png" class="char-img intro-img" alt="Michael" style="margin:20px auto; display:block;">
       <p class="slide-instruction" style="margin-top:16px;">Michael has 3 cookies</p>
       <div style="display:flex; justify-content:center; margin-top:10px;">
         ${freeCookiesHTML(3, false)}
@@ -323,7 +323,7 @@ const warmupIntroCleo = {
   stimulus: `
     <div style="text-align:center; padding:30px 20px;">
       <p class="slide-instruction">This is Claire</p>
-      <img src="img/claire.png" class="char-img intro-img" alt="Claire" style="margin:20px auto; display:block;">
+      <img src="../../adults - v goes to zero/img/claire.png" class="char-img intro-img" alt="Claire" style="margin:20px auto; display:block;">
       <p class="slide-instruction" style="margin-top:16px;">Claire has 3 cookies</p>
       <div style="display:flex; justify-content:center; margin-top:10px;">
         ${freeCookiesHTML(3, false)}

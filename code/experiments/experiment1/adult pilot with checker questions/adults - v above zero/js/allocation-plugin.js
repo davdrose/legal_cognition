@@ -120,7 +120,7 @@ var jsPsychAllocation = (function (jspsych) {
         const vLabel = `${trial.v_name} has ${trial.v_cookies_current} cookie${trial.v_cookies_current !== 1 ? 's' : ''}`;
         return `
           <div class="alloc-panel" id="v-panel">
-            <img src="img/${trial.v_img}" class="alloc-char-img" alt="${trial.v_name}">
+            <img src="../../adults - v above zero/img/${trial.v_img}" class="alloc-char-img" alt="${trial.v_name}">
             <p class="alloc-char-name">${trial.v_name}</p>
             <div class="panel-name">${vLabel}</div>
             ${plateHTML}
@@ -130,7 +130,7 @@ var jsPsychAllocation = (function (jspsych) {
       function trashPanelHTML() {
         return `
           <div class="alloc-panel" id="trash-panel">
-            <img src="img/cookie_jar.png" class="alloc-char-img" alt="The Cookie Jar">
+            <img src="../../adults - v above zero/img/cookie_jar.png" class="alloc-char-img" alt="The Cookie Jar">
             <p class="alloc-char-name">The Cookie Jar</p>
             <div class="panel-name" style="visibility:hidden">Cookie Jar</div>
             <div class="cookie-plate" id="trash-plate"></div>
@@ -162,7 +162,7 @@ var jsPsychAllocation = (function (jspsych) {
           <div class="allocation-columns">
             ${leftPanel}
             <div class="p-pool-col">
-              <img src="img/${trial.p_img}" class="alloc-char-img" alt="${trial.p_name}">
+              <img src="../../adults - v above zero/img/${trial.p_img}" class="alloc-char-img" alt="${trial.p_name}">
               <p class="alloc-char-name">${trial.p_name}</p>
               <div class="panel-name">${trial.p_name} has ${trial.p_cookies} cookie${trial.p_cookies !== 1 ? 's' : ''}</div>
               ${pPlateHTML()}
