@@ -176,33 +176,16 @@ body {
 #drag-ghost {
   position: fixed;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 10002; /* always render in front of #demo-cursor (Maggie) */
   display: none;
-  font-size: 44px;
+  font-size: 52px;
   line-height: 1;
   opacity: 0.88;
   transform: scale(1.12);
   user-select: none;
 }
 
-/* Auto-demo overlay (narrator character + cursor demonstrating a drag) */
-.demo-maggie-banner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin: 0 auto 14px auto;
-  max-width: 560px;
-}
-.demo-bubble {
-  background: #fffbe6;
-  border: 2px solid #f5c542;
-  border-radius: 16px;
-  padding: 10px 16px;
-  font-size: 16px;
-  line-height: 1.4;
-  text-align: left;
-}
+/* Auto-demo overlay (cursor demonstrating a drag) */
 #demo-cursor {
   position: fixed;
   z-index: 10000;
@@ -213,11 +196,11 @@ body {
 }
 #demo-cursor img {
   display: block;
-  width: 48px;
+  width: 70px;
   height: auto;
 }
 #demo-cursor.grabbing {
-  transform: translate(-50%, -50%) scale(1.15);
+  transform: translate(-50%, -50%); /* no size change — stays the same size as her static corner pose */
 }
 
 /* Reference "domain" matching the on-screen box the intro video actually
@@ -247,7 +230,7 @@ body {
   position: absolute;
   left: 1.73%;
   bottom: 2.31%;
-  width: 9.85%;
+  width: 12.5%;
   height: auto;
   pointer-events: none;
   transform: scaleX(-1); /* face right, into the screen */
@@ -693,7 +676,7 @@ body {
 }
 
 .free-cookie-emoji {
-  font-size: 38px;
+  font-size: 32px;
   line-height: 1;
   user-select: none;
   display: inline-block;
@@ -725,20 +708,32 @@ body {
 
 /* Shrink the whole plate area (as one centered unit) on screens showing
    a corner character (e.g. Maggie), so it no longer overlaps her */
+.allocation-screen.has-corner-char .cookie-plate {
+  transform: scale(1.02);
+}
 .allocation-screen.has-corner-char .allocation-columns {
-  transform: scale(0.75);
-  transform-origin: center center;
-  margin-top: -30px;
+  gap: 40px;
+  padding-left: 228px;
+}
+.allocation-screen.has-corner-char .alloc-panel,
+.allocation-screen.has-corner-char .p-pool-col {
+  width: 320px;
 }
 .allocation-screen.has-corner-char .alloc-char-img {
-  width: 112px;
-  height: 108px;
+  width: 66px;
+  height: 90px;
 }
 .allocation-screen.has-corner-char .alloc-char-name {
-  font-size: 24px;
+  font-size: 30px;
 }
 .allocation-screen.has-corner-char .panel-name {
-  font-size: 21px;
+  font-size: 16px;
+}
+.allocation-screen.has-corner-char .allocation-instruction {
+  font-size: 26px;
+  line-height: 1.2;
+  max-width: 850px;
+  margin-bottom: 2px;
 }
 
 /* Highlight when a cookie is being dragged over this plate */
@@ -761,8 +756,8 @@ body {
    transform: translate(-50%,-50%) centers the element at that point. */
 .plate-cookie {
   position: absolute;
-  width: 48px;
-  height: 48px;
+  width: 58px;
+  height: 58px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -770,10 +765,11 @@ body {
   border-radius: 50%;
   transition: filter 0.1s, transform 0.1s;
   user-select: none;
+  z-index: 10001; /* always render in front of #demo-cursor (Maggie) */
 }
 
 .plate-cookie .cookie-emoji {
-  font-size: 36px;
+  font-size: 44px;
   pointer-events: none;
   line-height: 1;
 }
@@ -792,7 +788,7 @@ body {
 #trash-pile {
   position: relative;
   width: 200px;
-  min-height: 100px;
+  min-height: 90px;
   flex: 1;        /* expands to fill remaining space in the trash panel */
 }
 
@@ -927,7 +923,7 @@ body {
 
 #rdp-title {
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 2px;
   color: #7b4f00;
 }
 
@@ -935,7 +931,7 @@ body {
   width: 100%;
   padding: 5px 6px;
   font-size: 13px;
-  margin-bottom: 10px;
+  margin-bottom: 2px;
   border-radius: 5px;
   border: 1px solid #ccc;
 }
