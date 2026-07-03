@@ -361,6 +361,17 @@ const warmupLayoutLocked = {
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
   corner_char_img: '../children-shared%20files/maggie.png',
+  on_load: function() {
+    const audio = document.createElement('audio');
+    audio.src = '../children-shared%20files/If you think anyone should be punished, you can decide how they lose their cookies..m4a';
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+    audio.addEventListener('ended', () => {
+      audio.remove();
+      setTimeout(() => jsPsych.finishTrial(), 1000);
+    });
+  },
 };
 
 // Slide 1d – Locked: two ways intro
@@ -379,6 +390,17 @@ const warmupLayoutTwoWays = {
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
   corner_char_img: '../children-shared%20files/maggie.png',
+  on_load: function() {
+    const audio = document.createElement('audio');
+    audio.src = '../children-shared%20files/They can lose cookies in two ways..m4a';
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+    audio.addEventListener('ended', () => {
+      audio.remove();
+      setTimeout(() => jsPsych.finishTrial(), 1000);
+    });
+  },
 };
 
 // Slide 2a-intro – Way 1 explanation (locked)
@@ -404,6 +426,9 @@ const warmupWay1Locked = {
   demo_text: "Watch me! I'll move one of Michael's cookies to Claire's plate! 🍪",
   demo_text_after: "Great! Now you try!",
   confirm_label: "Got it! Now I'll try!",
+  demo_audio_before: '../children-shared%20files/First, you can punish them by giving their cookies to another person..m4a',
+  demo_audio_carry:  '../children-shared%20files/Moving cookie instruction.m4a',
+  demo_audio_after:  '../children-shared%20files/Now its your turn to try it out!.m4a',
 };
 
 const warmupPracticeDemoMaggie = null; // merged into warmupWay1Locked
@@ -620,6 +645,14 @@ function buildTestTrial(scenario, scenarioIdx, total) {
     harm_type: scenario.harm_type,
     event_title: scenario.event_title || '',
     show_gate_question: true,
+    on_load: function() {
+      const audio = document.createElement('audio');
+      audio.src = '../children-shared%20files/Allocation screen question.m4a';
+      audio.style.display = 'none';
+      document.body.appendChild(audio);
+      audio.play().catch(() => {});
+      audio.addEventListener('ended', () => audio.remove());
+    },
   };
 
   return [storySlide, slideG];

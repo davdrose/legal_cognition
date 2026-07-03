@@ -47,6 +47,12 @@ var jsPsychAllocation = (function (jspsych) {
       demo_text:          { type: jspsych.ParameterType.HTML_STRING, default: '' },
       demo_text_after:    { type: jspsych.ParameterType.HTML_STRING, default: '' },
       confirm_label:      { type: jspsych.ParameterType.STRING,      default: '' },
+      /** Audio to play before the demo starts (narrates instruction text); demo waits until it ends */
+      demo_audio_before:  { type: jspsych.ParameterType.STRING,      default: '' },
+      /** Audio to play when the demo animation begins (Maggie starts moving) */
+      demo_audio_carry:   { type: jspsych.ParameterType.STRING,      default: '' },
+      /** Audio to play when the demo animation completes (confirm button enabled) */
+      demo_audio_after:   { type: jspsych.ParameterType.STRING,      default: '' },
       /** Optional character image pinned to the bottom-left corner of the screen (e.g. Maggie peeking in) */
       corner_char_img:    { type: jspsych.ParameterType.STRING,      default: '' },
     }
@@ -492,7 +498,19 @@ var jsPsychAllocation = (function (jspsych) {
             requestAnimationFrame(step);
           }
 
+          function playDemoAudio(src) {
+            if (!src) return null;
+            const a = document.createElement('audio');
+            a.src = src;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.play().catch(() => {});
+            a.addEventListener('ended', () => a.remove());
+            return a;
+          }
+
           function pickupAndCarry() {
+            playDemoAudio(trial.demo_audio_carry);
             cursor.classList.add('grabbing');
             cookieEl.style.opacity = '0';
             showGhost(plateTarget.x + cookieOffset.x, plateTarget.y + cookieOffset.y, 52);
@@ -515,23 +533,32 @@ var jsPsychAllocation = (function (jspsych) {
                     animate(dropTarget, homeTarget, 900, null, () => {
                       cursor.remove();
                       if (cornerEl) cornerEl.style.visibility = '';
+                      playDemoAudio(trial.demo_audio_after);
                       confirmBtn.disabled = false;
                     });
                   } else {
                     cursor.remove();
+                    playDemoAudio(trial.demo_audio_after);
                     confirmBtn.disabled = false;
                   }
                 }, 350);
               });
           }
 
-          setTimeout(() => {
+          function startDemoAnimation() {
             if (homeTarget) {
               animate(homeTarget, plateTarget, 900, null, pickupAndCarry);
             } else {
               pickupAndCarry();
             }
-          }, 1000);
+          }
+
+          if (trial.demo_audio_before) {
+            const beforeAudio = playDemoAudio(trial.demo_audio_before);
+            beforeAudio.addEventListener('ended', () => setTimeout(startDemoAnimation, 500));
+          } else {
+            setTimeout(startDemoAnimation, 1000);
+          }
         }
       }
 
