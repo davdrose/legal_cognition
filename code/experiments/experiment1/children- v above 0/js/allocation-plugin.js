@@ -40,7 +40,8 @@ var jsPsychAllocation = (function (jspsych) {
       show_gate_question: { type: jspsych.ParameterType.BOOL,        default: false },
       /** Auto-play a demo drag animation on load (a narrator character demonstrating the mechanic) */
       auto_demo:          { type: jspsych.ParameterType.BOOL,        default: false },
-      demo_cookie_id:     { type: jspsych.ParameterType.INT,         default: 0 },
+      /** Sequence of moves to demo, e.g. [{from:'p', to:'v', cookie_id:0}, {from:'p', to:'trash', cookie_id:1}] */
+      demo_moves:         { type: jspsych.ParameterType.COMPLEX,      default: [] },
       demo_char_img:      { type: jspsych.ParameterType.STRING,      default: '../children-shared%20files/maggie.png' },
       demo_char_name:     { type: jspsych.ParameterType.STRING,      default: 'Maggie' },
       demo_text:          { type: jspsych.ParameterType.HTML_STRING, default: '' },
@@ -448,12 +449,6 @@ var jsPsychAllocation = (function (jspsych) {
           confirmBtn.disabled = true;
           if (trial.confirm_label) confirmBtn.textContent = trial.confirm_label;
 
-          const screenEl = display_element.querySelector('.allocation-screen');
-          const banner = document.createElement('div');
-          banner.className = 'demo-maggie-banner';
-          banner.innerHTML = `<div class="demo-bubble">${trial.demo_text}</div>`;
-          screenEl.prepend(banner);
-
           // If this trial also shows a static corner character, she is the
           // one who performs the demo: hide her static pose, animate a
           // stand-in from her exact spot through the demo, then land it
@@ -464,7 +459,7 @@ var jsPsychAllocation = (function (jspsych) {
 
           const cursor = document.createElement('div');
           cursor.id = 'demo-cursor';
-          cursor.innerHTML = `<img src="${trial.demo_char_img}" alt="${trial.demo_char_name}" style="transform:scaleX(-1);">`;
+          cursor.innerHTML = `<img src="${trial.demo_char_img}" alt="${trial.demo_char_name}" style="transform:scaleX(-1); width:70px;">`;
           display_element.appendChild(cursor);
 
           const cookieRect = cookieEl.getBoundingClientRect();
@@ -514,20 +509,15 @@ var jsPsychAllocation = (function (jspsych) {
                 if (vLabelEl) vLabelEl.textContent = countLabel(trial.v_cookies_current + 1, trial.v_name);
 
                 setTimeout(() => {
-                  const bubble = banner.querySelector('.demo-bubble');
-                  if (bubble && trial.demo_text_after) bubble.textContent = trial.demo_text_after;
-
                   if (homeTarget) {
                     animate(dropTarget, homeTarget, 900, null, () => {
                       cursor.remove();
                       if (cornerEl) cornerEl.style.visibility = '';
                       confirmBtn.disabled = false;
-                      setTimeout(() => banner.remove(), 1400);
                     });
                   } else {
                     cursor.remove();
                     confirmBtn.disabled = false;
-                    setTimeout(() => banner.remove(), 1800);
                   }
                 }, 350);
               });
@@ -539,7 +529,7 @@ var jsPsychAllocation = (function (jspsych) {
             } else {
               pickupAndCarry();
             }
-          }, 900);
+          }, 1000);
         }
       }
 

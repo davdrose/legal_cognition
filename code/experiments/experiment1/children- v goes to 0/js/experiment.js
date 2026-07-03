@@ -390,31 +390,13 @@ const warmupWay1Locked = {
   hud_v_cookies: 3,
   trash_on_left: TRASH_ON_LEFT,
   harm_text: '',
-  instruction_text: "<strong>First, you can punish them by giving their cookies to another person.</strong><br><br>You can take Michael's cookies and give them to Claire, or take Claire's cookies and give them to Michael.<br><br>Let's try it out!",
+  instruction_text: "<strong>First, you can punish them by giving their cookies to another person.</strong><br><br>You can take Michael's cookies and give them to Claire, or take Claire's cookies and give them to Michael.<br><br>Let's have Maggie try it out!",
   locked: true,
   is_practice: true,
   scenario_id: 0,
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
   corner_char_img: '../children-shared%20files/maggie.png',
-};
-
-// Slide 2a-demo — Maggie demonstrates moving a cookie from Michael to Claire,
-// acting on the same allocation panel the child uses next.
-const warmupPracticeDemoMaggie = {
-  type: jsPsychAllocation,
-  p_cookies: 3,
-  v_cookies_current: 3,
-  hud_p_cookies: 3,
-  hud_v_cookies: 3,
-  trash_on_left: TRASH_ON_LEFT,
-  harm_text: '',
-  instruction_text: '',
-  locked: true,
-  is_practice: true,
-  scenario_id: 0,
-  p_name: 'Michael', v_name: 'Claire',
-  p_img: 'michael.png', v_img: 'claire.png',
   auto_demo: true,
   demo_cookie_id: 0,
   demo_char_img: '../children-shared%20files/maggie.png',
@@ -422,9 +404,9 @@ const warmupPracticeDemoMaggie = {
   demo_text: "Watch me! I'll move one of Michael's cookies to Claire's plate! 🍪",
   demo_text_after: "Great! Now you try!",
   confirm_label: "Got it! Now I'll try!",
-  corner_char_img: '../children-shared%20files/maggie.png',
-  _debugLabel: 'Warmup: Maggie Demo (Michael→Claire)',
 };
+
+const warmupPracticeDemoMaggie = null; // merged into warmupWay1Locked
 
 // Slide 2a – Practice: move Michael's cookie to Claire
 const warmupPracticeV = {
@@ -675,7 +657,6 @@ const warmupBlock = [
   warmupLayoutLocked,
   warmupLayoutTwoWays,
   warmupWay1Locked,
-  warmupPracticeDemoMaggie,
   warmupPracticeV,
   warmupPracticeVtoP,
   warmupWay2Locked,
@@ -887,8 +868,7 @@ welcomeScreen._debugLabel   = 'Welcome Screen';
 introMaggieVideo._debugLabel = 'Introducing Maggie (video)';
 warmupLayoutLocked._debugLabel    = 'Warmup: Layout (locked)';
 warmupLayoutTwoWays._debugLabel   = 'Warmup: Two Ways (locked)';
-warmupWay1Locked._debugLabel      = 'Warmup: Way 1 (locked)';
-warmupPracticeDemoMaggie._debugLabel = 'Warmup: Maggie Demo (Michael→Claire)';
+warmupWay1Locked._debugLabel      = 'Warmup: Way 1 + Maggie Demo';
 warmupPracticeV._debugLabel       = 'Warmup: Practice (Michael→Claire)';
 warmupPracticeVtoP._debugLabel    = 'Warmup: Practice (Claire→Michael)';
 warmupWay2Locked._debugLabel      = 'Warmup: Way 2 (locked)';
