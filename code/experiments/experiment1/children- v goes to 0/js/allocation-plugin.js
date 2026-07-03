@@ -518,12 +518,7 @@ var jsPsychAllocation = (function (jspsych) {
             const dropTarget = { x: vRect.left + vRect.width / 2, y: vRect.top + vRect.height / 2 };
 
             animate(plateTarget, dropTarget, 2200,
-              (cur, t) => {
-                const arc = Math.sin(t * Math.PI);
-                showGhost(cur.x + cookieOffset.x, cur.y + cookieOffset.y, 52 + 36 * arc);
-                const img = cursor.querySelector('img');
-                if (img) img.style.width = (70 + 30 * arc) + 'px';
-              },
+              (cur, t) => showGhost(cur.x + cookieOffset.x, cur.y + cookieOffset.y),
               () => {
                 hideGhost();
                 cursor.classList.remove('grabbing');
