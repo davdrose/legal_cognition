@@ -651,7 +651,9 @@ function buildTestTrial(scenario, scenarioIdx, total) {
     show_gate_question: true,
   };
 
-  return [storySlide, slideG, buildCheckerTrial(scenario)];
+  // Skip the checker question for Milo & Sasha (id 5) and Zoe & Rex (id 6).
+  const skipChecker = scenario.id === 5 || scenario.id === 6;
+  return skipChecker ? [storySlide, slideG] : [storySlide, slideG, buildCheckerTrial(scenario)];
 }
 
 /* ----------------------------------------------------------
