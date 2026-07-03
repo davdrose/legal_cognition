@@ -13,6 +13,7 @@ var jsPsychAllocation = (function (jspsych) {
   const info = {
     name: 'allocation',
     version: '1.0.0',
+    data: {},
     parameters: {
       p_cookies:          { type: jspsych.ParameterType.INT,         default: 5 },
       v_cookies_current:  { type: jspsych.ParameterType.INT,         default: 2 },
@@ -187,7 +188,7 @@ var jsPsychAllocation = (function (jspsych) {
             ${rightPanel}
           </div>
           <div id="alloc-hint" class="alloc-hint-hidden"></div>
-          <div class="allocation-btn-row"${trial.show_gate_question ? ' style="display:none"' : ''}>
+          <div class="allocation-btn-row"${(trial.locked || trial.show_gate_question) ? ' style="display:none"' : ''}>
             <button id="confirm-btn" ${trial.locked ? '' : 'disabled'}>${confirmLabel}</button>
           </div>
         </div>
