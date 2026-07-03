@@ -712,8 +712,7 @@ body {
   transform: scale(0.93);
 }
 .allocation-screen.has-corner-char .allocation-columns {
-  gap: 40px;
-  padding-left: 228px;
+  gap: 20px;
 }
 .allocation-screen.has-corner-char .alloc-panel,
 .allocation-screen.has-corner-char .p-pool-col {
