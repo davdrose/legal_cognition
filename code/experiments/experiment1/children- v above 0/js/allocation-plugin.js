@@ -293,10 +293,11 @@ var jsPsychAllocation = (function (jspsych) {
       let dragging = null;
       const ghostEl = display_element.querySelector('#drag-ghost');
 
-      function showGhost(x, y) {
+      function showGhost(x, y, scale) {
         ghostEl.style.display = 'block';
         ghostEl.style.left    = (x - 22) + 'px';
         ghostEl.style.top     = (y - 22) + 'px';
+        if (scale !== undefined) ghostEl.style.transform = `scale(${scale})`;
       }
       function hideGhost() { ghostEl.style.display = 'none'; }
 
@@ -484,7 +485,7 @@ var jsPsychAllocation = (function (jspsych) {
               const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
               const cur = { x: from.x + (to.x - from.x) * eased, y: from.y + (to.y - from.y) * eased };
               setCursorPos(cur);
-              if (onStep) onStep(cur);
+              if (onStep) onStep(cur, t);
               if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
             }
             requestAnimationFrame(step);
@@ -493,14 +494,14 @@ var jsPsychAllocation = (function (jspsych) {
           function pickupAndCarry() {
             cursor.classList.add('grabbing');
             cookieEl.style.opacity = '0';
-            showGhost(plateTarget.x + cookieOffset.x, plateTarget.y + cookieOffset.y);
+            showGhost(plateTarget.x + cookieOffset.x, plateTarget.y + cookieOffset.y, 1.0);
             if (pLabelEl) pLabelEl.textContent = countLabel(trial.p_cookies - 1, trial.p_name);
 
             const vRect = vPlate.getBoundingClientRect();
             const dropTarget = { x: vRect.left + vRect.width / 2, y: vRect.top + vRect.height / 2 };
 
             animate(plateTarget, dropTarget, 2200,
-              (cur) => showGhost(cur.x + cookieOffset.x, cur.y + cookieOffset.y),
+              (cur, t) => showGhost(cur.x + cookieOffset.x, cur.y + cookieOffset.y, 1 + 0.5 * Math.sin(t * Math.PI)),
               () => {
                 hideGhost();
                 cursor.classList.remove('grabbing');
