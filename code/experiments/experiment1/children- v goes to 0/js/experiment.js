@@ -305,17 +305,10 @@ const welcomeScreen = {
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
-  choices: ['Next'],
+  choices: [],
   on_load: function() {
-    const video = document.getElementById('welcome-video');
-    const nextBtn = document.querySelector('.jspsych-btn');
-    nextBtn.disabled = true;
-    nextBtn.style.opacity = '0.4';
-    nextBtn.style.cursor = 'not-allowed';
-    video.addEventListener('ended', () => {
-      nextBtn.disabled = false;
-      nextBtn.style.opacity = '1';
-      nextBtn.style.cursor = 'pointer';
+    document.getElementById('welcome-video').addEventListener('ended', () => {
+      setTimeout(() => jsPsych.finishTrial(), 1000);
     });
   },
 };
@@ -329,17 +322,10 @@ const introMaggieVideo = {
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
-  choices: ['Next'],
+  choices: [],
   on_load: function() {
-    const video = document.getElementById('intro-maggie-video');
-    const nextBtn = document.querySelector('.jspsych-btn');
-    nextBtn.disabled = true;
-    nextBtn.style.opacity = '0.4';
-    nextBtn.style.cursor = 'not-allowed';
-    video.addEventListener('ended', () => {
-      nextBtn.disabled = false;
-      nextBtn.style.opacity = '1';
-      nextBtn.style.cursor = 'pointer';
+    document.getElementById('intro-maggie-video').addEventListener('ended', () => {
+      setTimeout(() => jsPsych.finishTrial(), 1000);
     });
   },
   _debugLabel: 'Introducing Maggie (video)',
@@ -588,17 +574,10 @@ const warmupFinishVideo = {
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
-  choices: ['Next'],
+  choices: [],
   on_load: function() {
-    const video = document.getElementById('warmup-finish-video');
-    const nextBtn = document.querySelector('.jspsych-btn');
-    nextBtn.disabled = true;
-    nextBtn.style.opacity = '0.4';
-    nextBtn.style.cursor = 'not-allowed';
-    video.addEventListener('ended', () => {
-      nextBtn.disabled = false;
-      nextBtn.style.opacity = '1';
-      nextBtn.style.cursor = 'pointer';
+    document.getElementById('warmup-finish-video').addEventListener('ended', () => {
+      setTimeout(() => jsPsych.finishTrial(), 1000);
     });
   },
   _debugLabel: 'Warmup finish (video)',
@@ -612,17 +591,10 @@ const testCaseIntroVideo = {
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
-  choices: ['Next'],
+  choices: [],
   on_load: function() {
-    const video = document.getElementById('test-case-intro-video');
-    const nextBtn = document.querySelector('.jspsych-btn');
-    nextBtn.disabled = true;
-    nextBtn.style.opacity = '0.4';
-    nextBtn.style.cursor = 'not-allowed';
-    video.addEventListener('ended', () => {
-      nextBtn.disabled = false;
-      nextBtn.style.opacity = '1';
-      nextBtn.style.cursor = 'pointer';
+    document.getElementById('test-case-intro-video').addEventListener('ended', () => {
+      setTimeout(() => jsPsych.finishTrial(), 1000);
     });
   },
   _debugLabel: 'Test case intro (video)',
@@ -649,21 +621,14 @@ function buildTestTrial(scenario, scenarioIdx, total) {
     stimulus: `
       <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
         <video id="story-video" src="${_storyVideo}" autoplay playsinline controls
-               style="max-width:860px; width:100%; max-height:62vh; border-radius:8px;">
+               style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
         </video>
       </div>`,
-    choices: ['Continue'],
+    choices: [],
     on_start: function() { updateProgressBar(scenarioIdx, total); },
     on_load: function() {
-      const video = document.getElementById('story-video');
-      const continueBtn = document.querySelector('.jspsych-btn');
-      continueBtn.disabled = true;
-      continueBtn.style.opacity = '0.4';
-      continueBtn.style.cursor = 'not-allowed';
-      video.addEventListener('ended', () => {
-        continueBtn.disabled = false;
-        continueBtn.style.opacity = '1';
-        continueBtn.style.cursor = 'pointer';
+      document.getElementById('story-video').addEventListener('ended', () => {
+        setTimeout(() => jsPsych.finishTrial(), 1000);
       });
     },
   };
