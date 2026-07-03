@@ -324,7 +324,7 @@ const introMaggieVideo = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="intro-maggie-video" src="../children-shared%20files/children%20-%20introducing%20maggie.mov" autoplay playsinline controls
+      <video id="intro-maggie-video" src="../children-shared%20files/children%20-%20welcome%20page.mov" autoplay playsinline controls
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
