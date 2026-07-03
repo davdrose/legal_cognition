@@ -195,7 +195,7 @@ body {
 }
 #demo-cursor img {
   display: block;
-  width: 70px;
+  width: 10.4vw;
   height: auto;
 }
 #demo-cursor.grabbing {
@@ -229,7 +229,7 @@ body {
   position: absolute;
   left: 1.73%;
   bottom: 2.31%;
-  width: 12.5%;
+  width: 10.4%;
   height: auto;
   pointer-events: none;
   transform: scaleX(-1); /* face right, into the screen */

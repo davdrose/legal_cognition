@@ -477,7 +477,7 @@ var jsPsychAllocation = (function (jspsych) {
 
           const cursor = document.createElement('div');
           cursor.id = 'demo-cursor';
-          cursor.innerHTML = `<img src="${trial.demo_char_img}" alt="${trial.demo_char_name}" style="transform:scaleX(-1); width:70px;">`;
+          cursor.innerHTML = `<img src="${trial.demo_char_img}" alt="${trial.demo_char_name}" style="transform:scaleX(-1); width:10.4vw;">`;
           display_element.appendChild(cursor);
 
           const cookieRect = cookieEl.getBoundingClientRect();
