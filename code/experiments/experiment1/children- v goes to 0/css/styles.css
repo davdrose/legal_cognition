@@ -229,7 +229,7 @@ body {
   position: absolute;
   left: 1.73%;
   bottom: 2.31%;
-  width: 10.4%;
+  width: 10.4vw;
   height: auto;
   pointer-events: none;
   transform: scaleX(-1); /* face right, into the screen */
