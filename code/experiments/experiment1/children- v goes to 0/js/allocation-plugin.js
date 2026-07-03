@@ -289,11 +289,12 @@ var jsPsychAllocation = (function (jspsych) {
       let dragging = null;
       const ghostEl = display_element.querySelector('#drag-ghost');
 
-      function showGhost(x, y, scale) {
-        ghostEl.style.display = 'block';
-        ghostEl.style.left    = (x - 22) + 'px';
-        ghostEl.style.top     = (y - 22) + 'px';
-        if (scale !== undefined) ghostEl.style.transform = `scale(${scale})`;
+      function showGhost(x, y, sz) {
+        const s = (sz !== undefined) ? sz : 52;
+        ghostEl.style.display  = 'block';
+        ghostEl.style.fontSize = s + 'px';
+        ghostEl.style.left     = (x - s * 0.42) + 'px';
+        ghostEl.style.top      = (y - s * 0.42) + 'px';
       }
       function hideGhost() { ghostEl.style.display = 'none'; }
 
@@ -510,14 +511,19 @@ var jsPsychAllocation = (function (jspsych) {
           function pickupAndCarry() {
             cursor.classList.add('grabbing');
             cookieEl.style.opacity = '0';
-            showGhost(plateTarget.x + cookieOffset.x, plateTarget.y + cookieOffset.y, 1.0);
+            showGhost(plateTarget.x + cookieOffset.x, plateTarget.y + cookieOffset.y, 52);
             if (pLabelEl) pLabelEl.textContent = countLabel(trial.p_cookies - 1, trial.p_name);
 
             const vRect = vPlate.getBoundingClientRect();
             const dropTarget = { x: vRect.left + vRect.width / 2, y: vRect.top + vRect.height / 2 };
 
             animate(plateTarget, dropTarget, 2200,
-              (cur, t) => showGhost(cur.x + cookieOffset.x, cur.y + cookieOffset.y, 1 + 0.5 * Math.sin(t * Math.PI)),
+              (cur, t) => {
+                const arc = Math.sin(t * Math.PI);
+                showGhost(cur.x + cookieOffset.x, cur.y + cookieOffset.y, 52 + 36 * arc);
+                const img = cursor.querySelector('img');
+                if (img) img.style.width = (70 + 30 * arc) + 'px';
+              },
               () => {
                 hideGhost();
                 cursor.classList.remove('grabbing');

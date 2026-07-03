@@ -176,12 +176,11 @@ body {
 #drag-ghost {
   position: fixed;
   pointer-events: none;
-  z-index: 10002; /* always render in front of #demo-cursor (Maggie) */
+  z-index: 10002;
   display: none;
   font-size: 52px;
   line-height: 1;
   opacity: 0.88;
-  transform: scale(1.12);
   user-select: none;
 }
 
