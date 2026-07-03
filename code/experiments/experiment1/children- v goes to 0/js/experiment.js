@@ -302,7 +302,7 @@ const welcomeScreen = {
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
       <video id="welcome-video" src="../children-shared%20files/overall_study_intro.mov" autoplay playsinline controls
-             style="max-width:860px; width:100%; max-height:62vh; border-radius:8px;">
+             style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
   choices: ['Next'],
@@ -326,7 +326,7 @@ const introMaggieVideo = {
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
       <video id="intro-maggie-video" src="../children-shared%20files/children%20-%20introducing%20maggie.mov" autoplay playsinline controls
-             style="max-width:860px; width:100%; max-height:62vh; border-radius:8px;">
+             style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
   choices: ['Next'],
@@ -345,36 +345,6 @@ const introMaggieVideo = {
   _debugLabel: 'Introducing Maggie (video)',
 };
 
-// Slide 1a – Introduce Michael
-const warmupIntroFinn = {
-  type: jsPsychHtmlButtonResponse,
-  stimulus: `
-    <div style="text-align:center; padding:30px 20px;">
-      <p class="slide-instruction">This is Michael</p>
-      <img src="img/michael.png" class="char-img intro-img" alt="Michael" style="margin:20px auto; display:block;">
-      <p class="slide-instruction" style="margin-top:16px;">Michael has 3 cookies</p>
-      <div style="display:flex; justify-content:center; margin-top:10px;">
-        ${freeCookiesHTML(3, false)}
-      </div>
-    </div>`,
-  choices: ['Next'],
-};
-
-// Slide 1b – Introduce Claire
-const warmupIntroCleo = {
-  type: jsPsychHtmlButtonResponse,
-  stimulus: `
-    <div style="text-align:center; padding:30px 20px;">
-      <p class="slide-instruction">This is Claire</p>
-      <img src="img/claire.png" class="char-img intro-img" alt="Claire" style="margin:20px auto; display:block;">
-      <p class="slide-instruction" style="margin-top:16px;">Claire has 3 cookies</p>
-      <div style="display:flex; justify-content:center; margin-top:10px;">
-        ${freeCookiesHTML(3, false)}
-      </div>
-    </div>`,
-  choices: ['Next'],
-};
-
 // Slide 1c – Locked layout: show the game board and introduce the two ways
 const warmupLayoutLocked = {
   type: jsPsychAllocation,
@@ -390,6 +360,7 @@ const warmupLayoutLocked = {
   scenario_id: 0,
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
+  corner_char_img: '../children-shared%20files/maggie.png',
 };
 
 // Slide 1d – Locked: two ways intro
@@ -407,6 +378,7 @@ const warmupLayoutTwoWays = {
   scenario_id: 0,
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
+  corner_char_img: '../children-shared%20files/maggie.png',
 };
 
 // Slide 2a-intro – Way 1 explanation (locked)
@@ -424,6 +396,7 @@ const warmupWay1Locked = {
   scenario_id: 0,
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
+  corner_char_img: '../children-shared%20files/maggie.png',
 };
 
 // Slide 2a-demo — Maggie demonstrates moving a cookie from Michael to Claire,
@@ -449,6 +422,7 @@ const warmupPracticeDemoMaggie = {
   demo_text: "Watch me! I'll move one of Michael's cookies to Claire's plate! 🍪",
   demo_text_after: "Great! Now you try!",
   confirm_label: "Got it! Now I'll try!",
+  corner_char_img: '../children-shared%20files/maggie.png',
   _debugLabel: 'Warmup: Maggie Demo (Michael→Claire)',
 };
 
@@ -469,6 +443,7 @@ const warmupPracticeV = {
   scenario_id: 0,
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
+  corner_char_img: '../children-shared%20files/maggie.png',
 };
 
 // Slide 2b – Practice: move Claire's cookie to Michael
@@ -487,6 +462,7 @@ const warmupPracticeVtoP = {
   scenario_id: 0,
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
+  corner_char_img: '../children-shared%20files/maggie.png',
 };
 
 // Slide 2c-intro – Way 2 explanation (locked)
@@ -504,6 +480,7 @@ const warmupWay2Locked = {
   scenario_id: 0,
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
+  corner_char_img: '../children-shared%20files/maggie.png',
 };
 
 // Slide 2c – Practice: move Michael's cookie to the Cookie Jar
@@ -523,6 +500,7 @@ const warmupPracticeTrash = {
   scenario_id: 0,
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
+  corner_char_img: '../children-shared%20files/maggie.png',
 };
 
 // Slide 2d – Practice: move Claire's cookie to the Cookie Jar
@@ -544,6 +522,7 @@ const warmupPracticeFromV = {
   scenario_id: 0,
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
+  corner_char_img: '../children-shared%20files/maggie.png',
 };
 
 // Slide 2e-intro – Summary: both mechanics (locked)
@@ -561,6 +540,7 @@ const warmupPracticeSummary = {
   scenario_id: 0,
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
+  corner_char_img: '../children-shared%20files/maggie.png',
 };
 
 // Slide 2e – Practice: use both mechanics at once
@@ -580,6 +560,7 @@ const warmupPracticeBoth = {
   scenario_id: 0,
   p_name: 'Michael', v_name: 'Claire',
   p_img: 'michael.png', v_img: 'claire.png',
+  corner_char_img: '../children-shared%20files/maggie.png',
 };
 
 // Slide 3 – Practice confirmation
@@ -691,8 +672,6 @@ function updateProgressBar(scenarioIdx, total) {
 const warmupBlock = [
   welcomeScreen,
   introMaggieVideo,
-  warmupIntroFinn,
-  warmupIntroCleo,
   warmupLayoutLocked,
   warmupLayoutTwoWays,
   warmupWay1Locked,
@@ -906,8 +885,6 @@ const endScreen = {
 consentScreen._debugLabel   = 'Consent Form';
 welcomeScreen._debugLabel   = 'Welcome Screen';
 introMaggieVideo._debugLabel = 'Introducing Maggie (video)';
-warmupIntroFinn._debugLabel      = 'Intro: Michael';
-warmupIntroCleo._debugLabel      = 'Intro: Claire';
 warmupLayoutLocked._debugLabel    = 'Warmup: Layout (locked)';
 warmupLayoutTwoWays._debugLabel   = 'Warmup: Two Ways (locked)';
 warmupWay1Locked._debugLabel      = 'Warmup: Way 1 (locked)';

@@ -46,6 +46,8 @@ var jsPsychAllocation = (function (jspsych) {
       demo_text:          { type: jspsych.ParameterType.HTML_STRING, default: '' },
       demo_text_after:    { type: jspsych.ParameterType.HTML_STRING, default: '' },
       confirm_label:      { type: jspsych.ParameterType.STRING,      default: '' },
+      /** Optional character image pinned to the bottom-left corner of the screen (e.g. Maggie peeking in) */
+      corner_char_img:    { type: jspsych.ParameterType.STRING,      default: '' },
     }
   };
 
@@ -153,7 +155,7 @@ var jsPsychAllocation = (function (jspsych) {
       const confirmLabel = trial.locked ? 'Next' : (trial.is_practice ? 'Done' : 'Confirm');
 
       const html = `
-        <div class="allocation-screen">
+        <div class="allocation-screen${trial.corner_char_img ? ' has-corner-char' : ''}">
           ${trial.header_img      ? `<img src="${trial.header_img}" class="allocation-header-img" alt="">` : ''}
           ${trial.harm_text       ? `<div class="allocation-harm-text">${trial.harm_text}</div>`        : ''}
           ${trial.instruction_text ? `<div class="allocation-instruction">${trial.instruction_text}</div>` : ''}
@@ -182,6 +184,11 @@ var jsPsychAllocation = (function (jspsych) {
             <button id="confirm-btn" ${trial.locked ? '' : 'disabled'}>${confirmLabel}</button>
           </div>
         </div>
+        ${trial.corner_char_img ? `
+          <div class="video-frame-domain">
+            <img src="${trial.corner_char_img}" class="corner-char-img" alt="">
+          </div>
+        ` : ''}
         <div id="drag-ghost">🍪</div>
       `;
 
@@ -444,59 +451,94 @@ var jsPsychAllocation = (function (jspsych) {
           const screenEl = display_element.querySelector('.allocation-screen');
           const banner = document.createElement('div');
           banner.className = 'demo-maggie-banner';
-          banner.innerHTML = `
-            <img src="${trial.demo_char_img}" alt="${trial.demo_char_name}" class="demo-maggie-img">
-            <div class="demo-bubble">${trial.demo_text}</div>
-          `;
+          banner.innerHTML = `<div class="demo-bubble">${trial.demo_text}</div>`;
           screenEl.prepend(banner);
+
+          // If this trial also shows a static corner character, she is the
+          // one who performs the demo: hide her static pose, animate a
+          // stand-in from her exact spot through the demo, then land it
+          // back in that same spot and swap back to the static element.
+          const cornerEl = trial.corner_char_img
+            ? display_element.querySelector('.corner-char-img')
+            : null;
 
           const cursor = document.createElement('div');
           cursor.id = 'demo-cursor';
-          cursor.innerHTML = `<img src="${trial.demo_char_img}" alt="${trial.demo_char_name}">`;
+          cursor.innerHTML = `<img src="${trial.demo_char_img}" alt="${trial.demo_char_name}" style="transform:scaleX(-1);">`;
           display_element.appendChild(cursor);
 
           const cookieRect = cookieEl.getBoundingClientRect();
-          const start = { x: cookieRect.left + cookieRect.width / 2, y: cookieRect.top + cookieRect.height / 2 };
+          const plateTarget = { x: cookieRect.left + cookieRect.width / 2, y: cookieRect.top + cookieRect.height / 2 };
           const cookieOffset = { x: 22, y: 16 }; // cookie rides just below Maggie's hand as she carries it
           const setCursorPos = (p) => { cursor.style.left = p.x + 'px'; cursor.style.top = p.y + 'px'; };
-          setCursorPos(start);
 
-          setTimeout(() => {
-            cursor.classList.add('grabbing');
-            cookieEl.style.opacity = '0';
-            showGhost(start.x + cookieOffset.x, start.y + cookieOffset.y);
-            if (pLabelEl) pLabelEl.textContent = countLabel(trial.p_cookies - 1, trial.p_name);
+          let homeTarget = null;
+          if (cornerEl) {
+            const r = cornerEl.getBoundingClientRect();
+            homeTarget = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+            cornerEl.style.visibility = 'hidden';
+            setCursorPos(homeTarget);
+          } else {
+            setCursorPos(plateTarget);
+          }
 
-            const vRect = vPlate.getBoundingClientRect();
-            const end = { x: vRect.left + vRect.width / 2, y: vRect.top + vRect.height / 2 };
-            const duration = 2200; // 0.5x speed of the original 1100ms flight
+          function animate(from, to, duration, onStep, onDone) {
             const t0 = performance.now();
-
             function step(now) {
               const t = Math.min(1, (now - t0) / duration);
               const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-              const cur = { x: start.x + (end.x - start.x) * eased, y: start.y + (end.y - start.y) * eased };
+              const cur = { x: from.x + (to.x - from.x) * eased, y: from.y + (to.y - from.y) * eased };
               setCursorPos(cur);
-              showGhost(cur.x + cookieOffset.x, cur.y + cookieOffset.y);
-              if (t < 1) {
-                requestAnimationFrame(step);
-                return;
-              }
-              hideGhost();
-              cursor.classList.remove('grabbing');
-              const pos = clampToPlate(vPlate, end.x, end.y);
-              placePCookie(cookieEl, vPlate, pos.left, pos.top, 'v', demoCookieId);
-              if (vLabelEl) vLabelEl.textContent = countLabel(trial.v_cookies_current + 1, trial.v_name);
-
-              setTimeout(() => {
-                cursor.remove();
-                const bubble = banner.querySelector('.demo-bubble');
-                if (bubble && trial.demo_text_after) bubble.textContent = trial.demo_text_after;
-                confirmBtn.disabled = false;
-                setTimeout(() => banner.remove(), 1800);
-              }, 350);
+              if (onStep) onStep(cur);
+              if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
             }
             requestAnimationFrame(step);
+          }
+
+          function pickupAndCarry() {
+            cursor.classList.add('grabbing');
+            cookieEl.style.opacity = '0';
+            showGhost(plateTarget.x + cookieOffset.x, plateTarget.y + cookieOffset.y);
+            if (pLabelEl) pLabelEl.textContent = countLabel(trial.p_cookies - 1, trial.p_name);
+
+            const vRect = vPlate.getBoundingClientRect();
+            const dropTarget = { x: vRect.left + vRect.width / 2, y: vRect.top + vRect.height / 2 };
+
+            animate(plateTarget, dropTarget, 2200,
+              (cur) => showGhost(cur.x + cookieOffset.x, cur.y + cookieOffset.y),
+              () => {
+                hideGhost();
+                cursor.classList.remove('grabbing');
+                const pos = clampToPlate(vPlate, dropTarget.x, dropTarget.y);
+                placePCookie(cookieEl, vPlate, pos.left, pos.top, 'v', demoCookieId);
+                if (vLabelEl) vLabelEl.textContent = countLabel(trial.v_cookies_current + 1, trial.v_name);
+
+                setTimeout(() => {
+                  const bubble = banner.querySelector('.demo-bubble');
+                  if (bubble && trial.demo_text_after) bubble.textContent = trial.demo_text_after;
+
+                  if (homeTarget) {
+                    animate(dropTarget, homeTarget, 900, null, () => {
+                      cursor.remove();
+                      if (cornerEl) cornerEl.style.visibility = '';
+                      confirmBtn.disabled = false;
+                      setTimeout(() => banner.remove(), 1400);
+                    });
+                  } else {
+                    cursor.remove();
+                    confirmBtn.disabled = false;
+                    setTimeout(() => banner.remove(), 1800);
+                  }
+                }, 350);
+              });
+          }
+
+          setTimeout(() => {
+            if (homeTarget) {
+              animate(homeTarget, plateTarget, 900, null, pickupAndCarry);
+            } else {
+              pickupAndCarry();
+            }
           }, 900);
         }
       }

@@ -194,11 +194,6 @@ body {
   margin: 0 auto 14px auto;
   max-width: 560px;
 }
-.demo-maggie-img {
-  width: 64px;
-  height: auto;
-  flex-shrink: 0;
-}
 .demo-bubble {
   background: #fffbe6;
   border: 2px solid #f5c542;
@@ -223,6 +218,39 @@ body {
 }
 #demo-cursor.grabbing {
   transform: translate(-50%, -50%) scale(1.15);
+}
+
+/* Reference "domain" matching the on-screen box the intro video actually
+   renders into (max-width:860px, width:100%, max-height:62vh, 16:9 —
+   same rules as #welcome-video / #intro-maggie-video — centered in the
+   viewport, which is where that box empirically ends up). Used so
+   characters (e.g. Maggie) can be positioned on later warmup screens at
+   the same relative spot they occupied within the video frame, rather
+   than relative to the full browser viewport. */
+.video-frame-domain {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  max-width: 1150px;
+  max-height: 82vh;
+  aspect-ratio: 16 / 9;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Character peeking in from the bottom-left corner (e.g. Maggie),
+   positioned as a % of .video-frame-domain to match her position
+   within the "introducing maggie" video frame */
+.corner-char-img {
+  position: absolute;
+  left: 1.73%;
+  bottom: 2.31%;
+  width: 9.85%;
+  height: auto;
+  pointer-events: none;
+  transform: scaleX(-1); /* face right, into the screen */
 }
 
 /* Practice hint / warning */
@@ -693,6 +721,24 @@ body {
   position: relative;
   flex-shrink: 0;
   transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/* Shrink the whole plate area (as one centered unit) on screens showing
+   a corner character (e.g. Maggie), so it no longer overlaps her */
+.allocation-screen.has-corner-char .allocation-columns {
+  transform: scale(0.75);
+  transform-origin: center center;
+  margin-top: -30px;
+}
+.allocation-screen.has-corner-char .alloc-char-img {
+  width: 112px;
+  height: 108px;
+}
+.allocation-screen.has-corner-char .alloc-char-name {
+  font-size: 24px;
+}
+.allocation-screen.has-corner-char .panel-name {
+  font-size: 21px;
 }
 
 /* Highlight when a cookie is being dragged over this plate */
