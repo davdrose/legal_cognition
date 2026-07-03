@@ -65,6 +65,7 @@ var jsPsychAllocation = (function (jspsych) {
     }
 
     trial(display_element, trial) {
+      const self = this;
       const startTime = performance.now();
       let gate_rt      = null;
       let allocStartTime = null;
@@ -552,11 +553,13 @@ var jsPsychAllocation = (function (jspsych) {
                 if (cornerEl) cornerEl.style.visibility = '';
                 playDemoAudio(trial.demo_audio_after);
                 if (confirmBtn) confirmBtn.disabled = false;
+                if (trial.locked) setTimeout(() => finishAllocation.call(self, false), 1000);
               });
             } else {
               cursor.remove();
               playDemoAudio(trial.demo_audio_after);
               if (confirmBtn) confirmBtn.disabled = false;
+              if (trial.locked) setTimeout(() => finishAllocation.call(self, false), 1000);
             }
             return;
           }

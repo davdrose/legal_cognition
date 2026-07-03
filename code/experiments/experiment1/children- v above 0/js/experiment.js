@@ -419,7 +419,6 @@ const warmupWay1Locked = {
   demo_text_after: "Great! Now you try!",
   confirm_label: "Got it! Now I'll try!",
   demo_audio_before: '../children-shared%20files/First, you can punish them by giving their cookies to another person..m4a',
-  demo_audio_after:  '../children-shared%20files/Now its your turn to try it out!.m4a',
 };
 
 const warmupPracticeDemoMaggie = null; // merged into warmupWay1Locked
@@ -501,7 +500,6 @@ const warmupWay2Locked = {
   demo_char_name: 'Maggie',
   confirm_label: "Got it! Now I'll try!",
   demo_audio_before: '../children-shared%20files/Second, you can punish them by putting cookies in the cookie jar..m4a',
-  demo_audio_after:  '../children-shared%20files/Now its your turn to try it out!.m4a',
 };
 
 // Slide 2c – Practice: move Michael's cookie to the Cookie Jar
@@ -584,7 +582,6 @@ const warmupPracticeSummary = {
   demo_char_name: 'Maggie',
   confirm_label: "Got it! Now I'll try!",
   demo_audio_before: '../children-shared%20files/Ok, so in our game you can decide that someone should lose cookies.m4a',
-  demo_audio_after:  '../children-shared%20files/Now its your turn to try it out!.m4a',
 };
 
 // Slide 2e – Practice: use both mechanics at once
