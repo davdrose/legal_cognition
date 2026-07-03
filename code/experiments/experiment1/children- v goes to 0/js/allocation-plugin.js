@@ -268,6 +268,19 @@ var jsPsychAllocation = (function (jspsych) {
       function getCookieEl(id)  { return display_element.querySelector(`#p-cookie-${id}`); }
       function getVCookieEl(id) { return display_element.querySelector(`#v-existing-${id}`); }
 
+      function updatePanelLabels() {
+        const pLabelEl = display_element.querySelector('#p-panel-name');
+        const vLabelEl = display_element.querySelector('#v-panel-name');
+        if (pLabelEl) {
+          const n = countInZone('pool');
+          pLabelEl.textContent = `${trial.p_name} has ${n} cookie${n !== 1 ? 's' : ''}`;
+        }
+        if (vLabelEl) {
+          const n = vCookieDest.filter(d => d === 'v').length + countInZone('v');
+          vLabelEl.textContent = `${trial.v_name} has ${n} cookie${n !== 1 ? 's' : ''}`;
+        }
+      }
+
       function placeCookie(cookieEl, containerEl, left, top, zone, cookieId) {
         containerEl.appendChild(cookieEl);
         cookieEl.style.left  = left + 'px';
@@ -275,6 +288,7 @@ var jsPsychAllocation = (function (jspsych) {
         cookieEl.style.opacity = '1';
         cookieDest[cookieId] = zone;
         updateConfirmBtn();
+        updatePanelLabels();
       }
 
       function returnToPool(cookieId) {
@@ -293,6 +307,7 @@ var jsPsychAllocation = (function (jspsych) {
         cookieEl.style.opacity = '1';
         vCookieDest[vCookieId] = 'v';
         updateConfirmBtn();
+        updatePanelLabels();
       }
 
       /* -------------------------------------------------------
@@ -380,6 +395,7 @@ var jsPsychAllocation = (function (jspsych) {
             cookieEl.style.opacity = '1';
             vCookieDest[cookieId]  = 'trash';
             updateConfirmBtn();
+            updatePanelLabels();
           } else if (trial.allow_v_to_p && target?.closest('.p-pool-col')) {
             const pos = clampToPlate(pPlate, e.clientX, e.clientY);
             pPlate.appendChild(cookieEl);
@@ -388,6 +404,7 @@ var jsPsychAllocation = (function (jspsych) {
             cookieEl.style.opacity = '1';
             vCookieDest[cookieId]  = 'p';
             updateConfirmBtn();
+            updatePanelLabels();
           } else {
             returnVToPlate(cookieId);
           }
@@ -471,11 +488,6 @@ var jsPsychAllocation = (function (jspsych) {
           : [{ from: 'p', to: 'v', cookie_id: trial.demo_cookie_id ?? 0 }];
 
         const confirmBtn = display_element.querySelector('#confirm-btn');
-        const pLabelEl   = display_element.querySelector('#p-panel-name');
-        const vLabelEl   = display_element.querySelector('#v-panel-name');
-        const countLabel = (n, name) => `${name} has ${n} cookie${n !== 1 ? 's' : ''}`;
-        let pCount = trial.p_cookies;
-        let vCount = trial.v_cookies_current;
 
         if (confirmBtn) {
           confirmBtn.disabled = true;
@@ -541,19 +553,15 @@ var jsPsychAllocation = (function (jspsych) {
           if (move.from === 'p') {
             const zone = move.to === 'v' ? 'v' : move.to === 'trash' ? 'trash' : 'pool';
             placeCookie(cookieEl, targetPl, pos.left, pos.top, zone, move.cookie_id);
-            pCount--;
-            if (pLabelEl) pLabelEl.textContent = countLabel(pCount, trial.p_name);
-            if (move.to === 'v') { vCount++; if (vLabelEl) vLabelEl.textContent = countLabel(vCount, trial.v_name); }
+            // placeCookie calls updatePanelLabels() automatically
           } else {
             // V cookie — place inline and update vCookieDest
             targetPl.appendChild(cookieEl);
-            cookieEl.style.left = clampToPlate(targetPl, dropX, dropY).left + 'px';
-            cookieEl.style.top  = clampToPlate(targetPl, dropX, dropY).top  + 'px';
+            cookieEl.style.left    = pos.left + 'px';
+            cookieEl.style.top     = pos.top  + 'px';
             cookieEl.style.opacity = '1';
             vCookieDest[move.cookie_id] = move.to === 'p' ? 'p' : move.to === 'trash' ? 'trash' : 'v';
-            vCount--;
-            if (vLabelEl) vLabelEl.textContent = countLabel(vCount, trial.v_name);
-            if (move.to === 'p') { pCount++; if (pLabelEl) pLabelEl.textContent = countLabel(pCount, trial.p_name); }
+            updatePanelLabels();
           }
         }
 

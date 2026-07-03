@@ -269,6 +269,19 @@ var jsPsychAllocation = (function (jspsych) {
       function getPCookieEl(id) { return display_element.querySelector(`#p-cookie-${id}`); }
       function getVCookieEl(id) { return display_element.querySelector(`#v-existing-${id}`); }
 
+      function updatePanelLabels() {
+        const pLabelEl = display_element.querySelector('#p-panel-name');
+        const vLabelEl = display_element.querySelector('#v-panel-name');
+        if (pLabelEl) {
+          const n = countInZone('pool');
+          pLabelEl.textContent = `${trial.p_name} has ${n} cookie${n !== 1 ? 's' : ''}`;
+        }
+        if (vLabelEl) {
+          const n = countVInZone('v') + countInZone('v');
+          vLabelEl.textContent = `${trial.v_name} has ${n} cookie${n !== 1 ? 's' : ''}`;
+        }
+      }
+
       function placePCookie(cookieEl, containerEl, left, top, zone, id) {
         containerEl.appendChild(cookieEl);
         cookieEl.style.left    = left + 'px';
@@ -276,6 +289,7 @@ var jsPsychAllocation = (function (jspsych) {
         cookieEl.style.opacity = '1';
         cookieDest[id] = zone;
         updateConfirmBtn();
+        updatePanelLabels();
       }
 
       function placeVCookie(cookieEl, containerEl, left, top, zone, id) {
@@ -285,6 +299,7 @@ var jsPsychAllocation = (function (jspsych) {
         cookieEl.style.opacity = '1';
         vCookieDest[id] = zone;
         updateConfirmBtn();
+        updatePanelLabels();
       }
 
       function returnToPool(id) {
@@ -455,11 +470,6 @@ var jsPsychAllocation = (function (jspsych) {
           : [{ from: 'p', to: 'v', cookie_id: trial.demo_cookie_id ?? 0 }];
 
         const confirmBtn = display_element.querySelector('#confirm-btn');
-        const pLabelEl   = display_element.querySelector('#p-panel-name');
-        const vLabelEl   = display_element.querySelector('#v-panel-name');
-        const countLabel = (n, name) => `${name} has ${n} cookie${n !== 1 ? 's' : ''}`;
-        let pCount = trial.p_cookies;
-        let vCount = trial.v_cookies_current;
 
         if (confirmBtn) {
           confirmBtn.disabled = true;
@@ -525,15 +535,11 @@ var jsPsychAllocation = (function (jspsych) {
           if (move.from === 'p') {
             const zone = move.to === 'v' ? 'v' : move.to === 'trash' ? 'trash' : 'pool';
             placePCookie(cookieEl, targetPl, pos.left, pos.top, zone, move.cookie_id);
-            pCount--;
-            if (pLabelEl) pLabelEl.textContent = countLabel(pCount, trial.p_name);
-            if (move.to === 'v') { vCount++; if (vLabelEl) vLabelEl.textContent = countLabel(vCount, trial.v_name); }
+            // placePCookie calls updatePanelLabels() automatically
           } else {
             const zone = move.to === 'p' ? 'p' : move.to === 'trash' ? 'trash' : 'v';
             placeVCookie(cookieEl, targetPl, pos.left, pos.top, zone, move.cookie_id);
-            vCount--;
-            if (vLabelEl) vLabelEl.textContent = countLabel(vCount, trial.v_name);
-            if (move.to === 'p') { pCount++; if (pLabelEl) pLabelEl.textContent = countLabel(pCount, trial.p_name); }
+            // placeVCookie calls updatePanelLabels() automatically
           }
         }
 
