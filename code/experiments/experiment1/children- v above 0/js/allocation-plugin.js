@@ -41,7 +41,7 @@ var jsPsychAllocation = (function (jspsych) {
       /** Auto-play a demo drag animation on load (a narrator character demonstrating the mechanic) */
       auto_demo:          { type: jspsych.ParameterType.BOOL,        default: false },
       demo_cookie_id:     { type: jspsych.ParameterType.INT,         default: 0 },
-      demo_char_img:      { type: jspsych.ParameterType.STRING,      default: 'maggie.png' },
+      demo_char_img:      { type: jspsych.ParameterType.STRING,      default: '../children-shared%20files/maggie.png' },
       demo_char_name:     { type: jspsych.ParameterType.STRING,      default: 'Maggie' },
       demo_text:          { type: jspsych.ParameterType.HTML_STRING, default: '' },
       demo_text_after:    { type: jspsych.ParameterType.HTML_STRING, default: '' },
@@ -445,25 +445,26 @@ var jsPsychAllocation = (function (jspsych) {
           const banner = document.createElement('div');
           banner.className = 'demo-maggie-banner';
           banner.innerHTML = `
-            <img src="img/${trial.demo_char_img}" alt="${trial.demo_char_name}" class="demo-maggie-img">
+            <img src="${trial.demo_char_img}" alt="${trial.demo_char_name}" class="demo-maggie-img">
             <div class="demo-bubble">${trial.demo_text}</div>
           `;
           screenEl.prepend(banner);
 
           const cursor = document.createElement('div');
           cursor.id = 'demo-cursor';
-          cursor.textContent = '👆';
+          cursor.innerHTML = `<img src="${trial.demo_char_img}" alt="${trial.demo_char_name}">`;
           display_element.appendChild(cursor);
 
           const cookieRect = cookieEl.getBoundingClientRect();
           const start = { x: cookieRect.left + cookieRect.width / 2, y: cookieRect.top + cookieRect.height / 2 };
+          const cookieOffset = { x: 22, y: 16 }; // cookie rides just below Maggie's hand as she carries it
           const setCursorPos = (p) => { cursor.style.left = p.x + 'px'; cursor.style.top = p.y + 'px'; };
           setCursorPos(start);
 
           setTimeout(() => {
             cursor.classList.add('grabbing');
             cookieEl.style.opacity = '0';
-            showGhost(start.x, start.y);
+            showGhost(start.x + cookieOffset.x, start.y + cookieOffset.y);
             if (pLabelEl) pLabelEl.textContent = countLabel(trial.p_cookies - 1, trial.p_name);
 
             const vRect = vPlate.getBoundingClientRect();
@@ -476,7 +477,7 @@ var jsPsychAllocation = (function (jspsych) {
               const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
               const cur = { x: start.x + (end.x - start.x) * eased, y: start.y + (end.y - start.y) * eased };
               setCursorPos(cur);
-              showGhost(cur.x, cur.y);
+              showGhost(cur.x + cookieOffset.x, cur.y + cookieOffset.y);
               if (t < 1) {
                 requestAnimationFrame(step);
                 return;

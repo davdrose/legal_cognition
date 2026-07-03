@@ -211,15 +211,18 @@ body {
 #demo-cursor {
   position: fixed;
   z-index: 10000;
-  font-size: 34px;
-  line-height: 1;
   pointer-events: none;
-  transform: translate(-6px, -4px);
-  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25));
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
   transition: transform 0.15s ease;
 }
+#demo-cursor img {
+  display: block;
+  width: 48px;
+  height: auto;
+}
 #demo-cursor.grabbing {
-  transform: translate(-6px, -4px) scale(1.15);
+  transform: translate(-50%, -50%) scale(1.15);
 }
 
 /* Practice hint / warning */

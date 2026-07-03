@@ -444,7 +444,7 @@ const warmupPracticeDemoMaggie = {
   p_img: 'michael.png', v_img: 'claire.png',
   auto_demo: true,
   demo_cookie_id: 0,
-  demo_char_img: 'maggie.png',
+  demo_char_img: '../children-shared%20files/maggie.png',
   demo_char_name: 'Maggie',
   demo_text: "Watch me! I'll move one of Michael's cookies to Claire's plate! 🍪",
   demo_text_after: "Great! Now you try!",
