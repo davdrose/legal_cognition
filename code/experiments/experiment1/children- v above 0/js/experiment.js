@@ -243,7 +243,7 @@ const secondBlockScenarios = [
   {
     id: 10,
     p_name: 'Tony', v_name: 'Katie', p_img: 'tony.png', v_img: 'katie.png',
-    harm_type: 'strict_liability',
+    harm_type: 'control',
     p_cookies: 5, p_after: 5,
     v_initial: 5, v_after_harm: 3, harm_amount: 2,
     event_text: 'Katie and Tony are having a picnic when a gust of wind blows 2 of Katie\'s cookies away.',
@@ -254,7 +254,7 @@ const secondBlockScenarios = [
   {
     id: 11,
     p_name: 'Nora', v_name: 'Eric', p_img: 'nora.png', v_img: 'eric.png',
-    harm_type: 'strict_liability',
+    harm_type: 'control',
     p_cookies: 7, p_after: 7,
     v_initial: 7, v_after_harm: 5, harm_amount: 2,
     event_text: 'While Eric is tying his shoelaces, a squirrel eats 2 of Eric\'s cookies.',
@@ -301,7 +301,7 @@ const welcomeScreen = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="welcome-video" src="../children-shared%20files/overall_study_intro.mov" autoplay playsinline controls
+      <video id="welcome-video" src="../children-shared%20files/overall_study_intro.mov" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
@@ -324,7 +324,7 @@ const introMaggieVideo = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="intro-maggie-video" src="../children-shared%20files/children%20-%20welcome%20page.mov" autoplay playsinline controls
+      <video id="intro-maggie-video" src="../children-shared%20files/children%20-%20welcome%20page.mov" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
@@ -617,7 +617,7 @@ const warmupFinishVideo = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="warmup-finish-video" src="../children-shared%20files/warmup_finish.mov" autoplay playsinline controls
+      <video id="warmup-finish-video" src="../children-shared%20files/warmup_finish.mov" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
@@ -634,7 +634,7 @@ const testCaseIntroVideo = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="test-case-intro-video" src="../children-shared%20files/test_case_intro.mov" autoplay playsinline controls
+      <video id="test-case-intro-video" src="../children-shared%20files/test_case_intro.mov" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
@@ -673,7 +673,7 @@ function buildTestTrial(scenario, scenarioIdx, total) {
     type: jsPsychHtmlButtonResponse,
     stimulus: `
       <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-        <video id="story-video" src="${_storyVideo}" autoplay playsinline controls
+        <video id="story-video" src="${_storyVideo}" autoplay playsinline
                style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
         </video>
       </div>`,

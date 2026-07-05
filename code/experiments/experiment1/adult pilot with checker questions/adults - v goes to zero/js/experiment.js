@@ -237,7 +237,7 @@ const secondBlockScenarios = [
   {
     id: 10,
     p_name: 'Tony', v_name: 'Katie', p_img: 'tony.png', v_img: 'katie.png',
-    harm_type: 'strict_liability',
+    harm_type: 'control',
     p_cookies: 5, p_after: 5,
     v_initial: 2, v_after_harm: 0, harm_amount: 2,
     event_text: 'Katie and Tony are having a picnic when a gust of wind blows 2 of Katie\'s cookies away.',
@@ -247,7 +247,7 @@ const secondBlockScenarios = [
   {
     id: 11,
     p_name: 'Nora', v_name: 'Eric', p_img: 'nora.png', v_img: 'eric.png',
-    harm_type: 'strict_liability',
+    harm_type: 'control',
     p_cookies: 7, p_after: 7,
     v_initial: 2, v_after_harm: 0, harm_amount: 2,
     event_text: 'While Eric is tying his shoelaces, a squirrel eats 2 of Eric\'s cookies.',
