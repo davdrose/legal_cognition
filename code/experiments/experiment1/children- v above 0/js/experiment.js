@@ -460,7 +460,7 @@ const warmupPracticeVtoP = {
   hud_v_cookies: 3,
   trash_on_left: TRASH_ON_LEFT,
   harm_text: '',
-  instruction_text: "Now move one of Claire's cookies to Michael's plate.",
+  instruction_text: "Now you try! Move one of Claire's cookies to Michael's plate.",
   require_v_to_p: true,
   allow_v_to_p: true,
   is_practice: true,
@@ -470,7 +470,7 @@ const warmupPracticeVtoP = {
   corner_char_img: '../children-shared%20files/maggie.png',
   on_load: function() {
     const audio = document.createElement('audio');
-    audio.src = '../children-shared%20files/Now move one of Claire\'s cookies to Michael\'s plate..m4a';
+    audio.src = '../children-shared%20files/Now you try! Move one of Claire\'s cookies to Michael\'s plate..m4a';
     audio.style.display = 'none';
     document.body.appendChild(audio);
     audio.play().catch(() => {});
@@ -511,7 +511,7 @@ const warmupPracticeTrash = {
   hud_v_cookies: 3,
   trash_on_left: TRASH_ON_LEFT,
   harm_text: '',
-  instruction_text: "Move one of Michael's cookies to the Cookie Jar.",
+  instruction_text: "Now you try! Move one of Michael's cookies to the Cookie Jar.",
   require_v: false,
   require_trash: true,
   require_both: false,
@@ -522,7 +522,7 @@ const warmupPracticeTrash = {
   corner_char_img: '../children-shared%20files/maggie.png',
   on_load: function() {
     const audio = document.createElement('audio');
-    audio.src = '../children-shared%20files/Move one of Michael\'s cookies to the Cookie Jar..m4a';
+    audio.src = '../children-shared%20files/Now you try! Move one of Michael\'s cookies to the Cookie Jar..m4a';
     audio.style.display = 'none';
     document.body.appendChild(audio);
     audio.play().catch(() => {});
@@ -539,7 +539,7 @@ const warmupPracticeFromV = {
   hud_v_cookies: 3,
   trash_on_left: TRASH_ON_LEFT,
   harm_text: '',
-  instruction_text: "Now move one of Claire's cookies to the Cookie Jar.",
+  instruction_text: "Now you try! Move one of Claire's cookies to the Cookie Jar.",
   require_v: false,
   require_trash: false,
   require_both: false,
@@ -552,7 +552,7 @@ const warmupPracticeFromV = {
   corner_char_img: '../children-shared%20files/maggie.png',
   on_load: function() {
     const audio = document.createElement('audio');
-    audio.src = '../children-shared%20files/Now move one of Claire\'s cookies to the Cookie Jar..m4a';
+    audio.src = '../children-shared%20files/Now you try! Move one of Claire\'s cookies to the Cookie Jar..m4a';
     audio.style.display = 'none';
     document.body.appendChild(audio);
     audio.play().catch(() => {});
@@ -593,7 +593,7 @@ const warmupPracticeBoth = {
   hud_v_cookies: 3,
   trash_on_left: TRASH_ON_LEFT,
   harm_text: '',
-  instruction_text: "Take a cookie and give it to Claire, and take one and put it in the cookie jar.",
+  instruction_text: "Now you try! Take a cookie and give it to Claire, and take one and put it in the cookie jar.",
   require_v: false,
   require_trash: false,
   require_both: true,
@@ -604,7 +604,7 @@ const warmupPracticeBoth = {
   corner_char_img: '../children-shared%20files/maggie.png',
   on_load: function() {
     const audio = document.createElement('audio');
-    audio.src = '../children-shared%20files/Take a cookie and give it to Claire, and take.m4a';
+    audio.src = '../children-shared%20files/Now you try! Take a cookie and give it to Claire, and take one and put it in the cookie jar..m4a';
     audio.style.display = 'none';
     document.body.appendChild(audio);
     audio.play().catch(() => {});

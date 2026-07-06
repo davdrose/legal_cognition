@@ -438,10 +438,10 @@ var jsPsychAllocation = (function (jspsych) {
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup',   onMouseUp);
 
-        if (moveInstructionAudio) {
-          moveInstructionAudio.pause();
-          moveInstructionAudio.remove();
-        }
+        // Stop any narration audio still playing (gate question, move
+        // instructions, demo audio, etc.) so it doesn't carry over and
+        // overlap with the next screen's audio.
+        document.querySelectorAll('audio').forEach(a => { a.pause(); a.remove(); });
 
         const fromPToV = doNothing ? 0 : countInZone('v');
         const fromPToC = doNothing ? 0 : countInZone('trash');
