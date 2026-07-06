@@ -443,7 +443,7 @@ const warmupPracticeV = {
   corner_char_img: '../children-shared%20files/maggie.png',
   on_load: function() {
     const audio = document.createElement('audio');
-    audio.src = '../children-shared%20files/Now you try! Move one of Michael\'s cookies to Claire\'s plate..m4a';
+    audio.src = '../children-shared%20files/Now you try! Move one of Michael’s cookies to Claire’s plate.m4a';
     audio.style.display = 'none';
     document.body.appendChild(audio);
     audio.play().catch(() => {});
