@@ -715,6 +715,9 @@ function buildTestTrial(scenario, scenarioIdx, total) {
       document.body.appendChild(audio);
       audio.play().catch(() => {});
       audio.addEventListener('ended', () => audio.remove());
+      const stopAudio = () => { audio.pause(); audio.remove(); };
+      document.getElementById('gate-yes')?.addEventListener('click', stopAudio);
+      document.getElementById('gate-no')?.addEventListener('click', stopAudio);
     },
   };
 
@@ -957,7 +960,7 @@ const timeline = [
    Hidden by default for public / participant deployment.
    To reveal it (researcher use only), set SHOW_DEBUG_PANEL = true.
    ============================================================ */
-const SHOW_DEBUG_PANEL = false;  // ← change to true to show the Jump-to-Screen panel
+const SHOW_DEBUG_PANEL = true;  // ← change to true to show the Jump-to-Screen panel
 
 (function () {
   // Public deployment: panel stays hidden — just run the experiment normally.

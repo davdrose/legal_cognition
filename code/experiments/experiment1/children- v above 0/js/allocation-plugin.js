@@ -69,6 +69,7 @@ var jsPsychAllocation = (function (jspsych) {
       const startTime = performance.now();
       let gate_rt      = null;
       let allocStartTime = null;
+      let moveInstructionAudio = null;
 
       /* -------------------------------------------------------
          STATE
@@ -218,12 +219,12 @@ var jsPsychAllocation = (function (jspsych) {
           gateEl.style.display     = 'none';
           moveInstr.style.display  = 'block';
           confirmRow.style.display = '';
-          const voiceOver = document.createElement('audio');
-          voiceOver.src = '../children-shared%20files/Moving cookie instruction.m4a';
-          voiceOver.style.display = 'none';
-          document.body.appendChild(voiceOver);
-          voiceOver.play().catch(() => {});
-          voiceOver.addEventListener('ended', () => voiceOver.remove());
+          moveInstructionAudio = document.createElement('audio');
+          moveInstructionAudio.src = '../children-shared%20files/Moving cookie instruction.m4a';
+          moveInstructionAudio.style.display = 'none';
+          document.body.appendChild(moveInstructionAudio);
+          moveInstructionAudio.play().catch(() => {});
+          moveInstructionAudio.addEventListener('ended', () => moveInstructionAudio.remove());
         });
 
         display_element.querySelector('#gate-no').addEventListener('click', () => {
@@ -423,6 +424,11 @@ var jsPsychAllocation = (function (jspsych) {
       function finishAllocation(doNothing) {
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup',   onMouseUp);
+
+        if (moveInstructionAudio) {
+          moveInstructionAudio.pause();
+          moveInstructionAudio.remove();
+        }
 
         const finalGateRt = trial.show_gate_question
           ? gate_rt
