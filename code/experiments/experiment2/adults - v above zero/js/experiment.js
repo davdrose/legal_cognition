@@ -546,15 +546,16 @@ const warmupDone = {
    FAULT RATING TRIAL BUILDER
    Shown after the story, before the punishment/allocation screen.
    ---------------------------------------------------------- */
-function buildFaultRatingTrial(scenario, scenarioIdx, total) {
+function buildFaultRatingTrial(scenario, scenarioIdx, total, headerImg) {
   const pName = scenario.p_name || 'Finn';
   const vName = scenario.v_name || 'Cleo';
   return {
     _debugLabel: `${pName} & ${vName} — Fault Rating`,
     type: jsPsychHtmlSliderResponse,
     stimulus: `
-      <div style="max-width:384px; margin:0 auto; text-align:center;">
-        <p class="slide-instruction fault-rating-question">Now that you saw what happened, how much do you think ${pName} and ${vName} are each at fault?</p>
+      <div style="max-width:900px; margin:0 auto; text-align:center;">
+        <img src="${headerImg}" style="max-width:860px; width:100%; max-height:55vh; object-fit:contain; border-radius:8px; margin-bottom:12px;">
+        <p style="font-size:18px; font-weight:600; margin:0 0 6px 0;">Now that you saw what happened, how much do you think ${pName} and ${vName} are each at fault?</p>
       </div>`,
     labels: ['0', '50', '100'],
     min: 0,
@@ -643,11 +644,12 @@ function buildTestTrial(scenario, scenarioIdx, total) {
     },
   };
 
-  // Fault rating slide — shown before the allocation/punishment screen
-  const faultRatingSlide = buildFaultRatingTrial(scenario, scenarioIdx, total);
-
   // Allocation screen with gate question integrated
   const headerImg = scenario.story_slides[scenario.story_slides.length - 1];
+
+  // Fault rating slide — shown after the allocation/punishment screen
+  const faultRatingSlide = buildFaultRatingTrial(scenario, scenarioIdx, total, headerImg);
+
   const slideG = {
     _debugLabel: `${trialLabel} — Allocation`,
     type: jsPsychAllocation,
@@ -670,7 +672,7 @@ function buildTestTrial(scenario, scenarioIdx, total) {
     show_gate_question: true,
   };
 
-  return [storySlide, faultRatingSlide, slideG];
+  return [storySlide, slideG, faultRatingSlide];
 }
 
 /* ----------------------------------------------------------

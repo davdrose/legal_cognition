@@ -873,14 +873,14 @@ body {
    FAULT RATING SLIDER
    ============================================================ */
 .jspsych-html-slider-response-container {
-  max-width: 384px !important;
+  max-width: 576px !important;
   width: 90% !important;
 }
 
 .fault-rating-anchors {
   display: flex;
   justify-content: space-between;
-  max-width: 384px;
+  max-width: 576px;
   margin: 4px auto 0 auto;
   font-size: 12px;
   color: #555;
@@ -889,9 +889,4 @@ body {
 
 .fault-rating-anchors span {
   flex: 1 1 0;
-}
-
-.fault-rating-question {
-  font-size: 14px !important;
-  max-width: 384px !important;
 }
