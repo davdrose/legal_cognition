@@ -35,6 +35,9 @@ const jsPsych = initJsPsych({
       if (row.is_fault_rating) {
         merged.fault_rating    = row.fault_rating;
         merged.fault_rating_rt = row.rt;
+      } else if (row.is_checker_question) {
+        merged.checker_response = row.checker_response;
+        merged.checker_rt       = row.rt;
       } else {
         Object.assign(merged, row);
       }
@@ -544,7 +547,7 @@ const warmupDone = {
 
 /* ----------------------------------------------------------
    FAULT RATING TRIAL BUILDER
-   Shown after the story, before the punishment/allocation screen.
+   Shown after the punishment/allocation screen.
    ---------------------------------------------------------- */
 function buildFaultRatingTrial(scenario, scenarioIdx, total, headerImg) {
   const pName = scenario.p_name || 'Finn';
@@ -575,6 +578,42 @@ function buildFaultRatingTrial(scenario, scenarioIdx, total, headerImg) {
     data: { scenario_id: scenario.id, is_practice: false, is_fault_rating: true, p_name: pName, v_name: vName },
     on_finish: function (data) {
       data.fault_rating = data.response;
+    },
+  };
+}
+
+/* ----------------------------------------------------------
+   CHECKER QUESTION
+   Manipulation check to rule out that participants read strict-
+   liability scenarios as also involving carelessness on P's part.
+   Shown after the participant has finished moving cookies around.
+   ---------------------------------------------------------- */
+function buildCheckerTrial(scenario) {
+  const pName = scenario.p_name || 'Finn';
+  const carefulOption  = `${pName} was careful, but unlucky`;
+  const carelessOption = `${pName} was not careful`;
+  // Counterbalance option order per scenario; stable across debug jump-reloads.
+  const carefulFirst = sessionGet('exp2_checker_order_' + scenario.id, () => Math.random() < 0.5);
+  const choices    = carefulFirst ? [carefulOption, carelessOption] : [carelessOption, carefulOption];
+  const choiceKeys = carefulFirst ? ['careful_but_unlucky', 'not_careful'] : ['not_careful', 'careful_but_unlucky'];
+
+  return {
+    _debugLabel: `${pName} & ${scenario.v_name || 'Cleo'} — Checker Question`,
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `
+      <div style="text-align:center; padding:60px 40px; max-width:700px; margin:0 auto; font-family:sans-serif; color:#333;">
+        <p style="font-size:20px; line-height:1.6;">Which is a better way to describe ${pName}?</p>
+      </div>`,
+    choices: choices,
+    data: {
+      is_checker_question: true,
+      is_practice: false,
+      scenario_id: scenario.id,
+      harm_type: scenario.harm_type,
+      p_name: pName,
+    },
+    on_finish: function(data) {
+      data.checker_response = choiceKeys[data.response] ?? null;
     },
   };
 }
@@ -672,7 +711,12 @@ function buildTestTrial(scenario, scenarioIdx, total) {
     show_gate_question: true,
   };
 
-  return [storySlide, slideG, faultRatingSlide];
+  // Skip the checker question for Milo & Sasha (id 5) and Zoe & Rex (id 6) —
+  // the "careful vs. not careful" framing doesn't apply to intentional harm.
+  const skipChecker = scenario.id === 5 || scenario.id === 6;
+  const trials = [storySlide, slideG, faultRatingSlide];
+  if (!skipChecker) trials.push(buildCheckerTrial(scenario));
+  return trials;
 }
 
 /* ----------------------------------------------------------
