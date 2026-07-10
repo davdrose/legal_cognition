@@ -265,12 +265,12 @@ const secondBlockScenarios = [
   },
   {
     id: 11,
-    p_name: 'Nora', v_name: 'Eric', p_img: 'nora.png', v_img: 'eric.png',
+    p_name: 'Eric', v_name: 'Nora', p_img: 'eric.png', v_img: 'nora.png',
     harm_type: 'control',
     p_cookies: 7, p_after: 7,
     v_initial: 7, v_after_harm: 5, harm_amount: 2,
-    event_text: 'While Eric is tying his shoelaces, a squirrel eats 2 of Eric\'s cookies.',
-    event_title: 'Squirrel Eats Eric\'s Cookies',
+    event_text: 'While Nora is playing outside, a squirrel eats 2 of Nora\'s cookies.',
+    event_title: 'Squirrel Eats Nora\'s Cookies',
     story_slides: ['img/trailppt/nora_eric/nora_eric_1.png','img/trailppt/nora_eric/nora_eric_2.png','img/trailppt/nora_eric/nora_eric_3.png','img/trailppt/nora_eric/nora_eric_4.png','img/trailppt/nora_eric/nora_eric_5.png','img/trailppt/nora_eric/nora_eric_6.png','img/trailppt/nora_eric/nora_eric_7.png','img/trailppt/nora_eric/nora_eric_8.png','img/trailppt/nora_eric/nora_eric_9.png']
   }
 ];
