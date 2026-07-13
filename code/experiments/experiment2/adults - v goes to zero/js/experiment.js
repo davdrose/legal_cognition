@@ -557,10 +557,10 @@ function buildFaultRatingTrial(scenario, scenarioIdx, total, headerImg) {
     type: jsPsychHtmlSliderResponse,
     stimulus: `
       <div style="max-width:900px; margin:0 auto; text-align:center;">
-        <img src="${headerImg}" style="max-width:860px; width:100%; max-height:55vh; object-fit:contain; border-radius:8px; margin-bottom:12px;">
+        <img src="${headerImg}" style="max-width:860px; width:100%; max-height:min(28vh, 220px); object-fit:contain; border-radius:8px; margin-bottom:8px;">
         <p style="font-size:18px; font-weight:600; margin:0 0 6px 0;">Now that you saw what happened, how much do you think ${pName} and ${vName} are each at fault?</p>
       </div>`,
-    labels: ['0', '50', '100'],
+    labels: ['', '', ''],
     min: 0,
     max: 100,
     step: 1,
@@ -569,9 +569,9 @@ function buildFaultRatingTrial(scenario, scenarioIdx, total, headerImg) {
     button_label: 'Continue',
     prompt: `
       <div class="fault-rating-anchors">
-        <span style="text-align:left;">${vName}<br>fully at fault</span>
-        <span style="text-align:center;">${pName} and ${vName}<br>equally at fault</span>
-        <span style="text-align:right;">${pName}<br>fully at fault</span>
+        <span style="text-align:left;">Definitely ${vName}'s<br>fault</span>
+        <span style="text-align:center;">Neither ${pName} nor<br>${vName}'s fault</span>
+        <span style="text-align:right;">Definitely ${pName}'s<br>fault</span>
       </div>`,
     scenario_id: scenario.id,
     is_practice: false,

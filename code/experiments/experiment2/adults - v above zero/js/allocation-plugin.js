@@ -241,6 +241,16 @@ var jsPsychAllocation = (function (jspsych) {
       function getPCookieEl(id) { return display_element.querySelector(`#p-cookie-${id}`); }
       function getVCookieEl(id) { return display_element.querySelector(`#v-existing-${id}`); }
 
+      /** Keep the "X has N cookies" text under each panel in sync with the plates. */
+      function refreshPanelLabels() {
+        const pCount = countInZone('pool')  + countVInZone('p');
+        const vCount = countInZone('v')     + countVInZone('v');
+        const pLabelEl = display_element.querySelector('.p-pool-col .panel-name');
+        const vLabelEl = display_element.querySelector('#v-panel .panel-name');
+        if (pLabelEl) pLabelEl.textContent = `${trial.p_name} has ${pCount} cookie${pCount !== 1 ? 's' : ''}`;
+        if (vLabelEl) vLabelEl.textContent = `${trial.v_name} has ${vCount} cookie${vCount !== 1 ? 's' : ''}`;
+      }
+
       function placePCookie(cookieEl, containerEl, left, top, zone, id) {
         containerEl.appendChild(cookieEl);
         cookieEl.style.left    = left + 'px';
@@ -248,6 +258,7 @@ var jsPsychAllocation = (function (jspsych) {
         cookieEl.style.opacity = '1';
         cookieDest[id] = zone;
         updateConfirmBtn();
+        refreshPanelLabels();
       }
 
       function placeVCookie(cookieEl, containerEl, left, top, zone, id) {
@@ -257,6 +268,7 @@ var jsPsychAllocation = (function (jspsych) {
         cookieEl.style.opacity = '1';
         vCookieDest[id] = zone;
         updateConfirmBtn();
+        refreshPanelLabels();
       }
 
       function returnToPool(id) {

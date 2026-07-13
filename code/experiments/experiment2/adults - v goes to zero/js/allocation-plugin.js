@@ -241,6 +241,16 @@ var jsPsychAllocation = (function (jspsych) {
       function getCookieEl(id)  { return display_element.querySelector(`#p-cookie-${id}`); }
       function getVCookieEl(id) { return display_element.querySelector(`#v-existing-${id}`); }
 
+      /** Keep the "X has N cookies" text under each panel in sync with the plates. */
+      function refreshPanelLabels() {
+        const pCount = countInZone('pool') + vCookieDest.filter(d => d === 'p').length;
+        const vCount = countInZone('v')    + vCookieDest.filter(d => d === 'v').length;
+        const pLabelEl = display_element.querySelector('.p-pool-col .panel-name');
+        const vLabelEl = display_element.querySelector('#v-panel .panel-name');
+        if (pLabelEl) pLabelEl.textContent = `${trial.p_name} has ${pCount} cookie${pCount !== 1 ? 's' : ''}`;
+        if (vLabelEl) vLabelEl.textContent = `${trial.v_name} has ${vCount} cookie${vCount !== 1 ? 's' : ''}`;
+      }
+
       function placeCookie(cookieEl, containerEl, left, top, zone, cookieId) {
         containerEl.appendChild(cookieEl);
         cookieEl.style.left  = left + 'px';
@@ -248,6 +258,7 @@ var jsPsychAllocation = (function (jspsych) {
         cookieEl.style.opacity = '1';
         cookieDest[cookieId] = zone;
         updateConfirmBtn();
+        refreshPanelLabels();
       }
 
       function returnToPool(cookieId) {
@@ -266,6 +277,7 @@ var jsPsychAllocation = (function (jspsych) {
         cookieEl.style.opacity = '1';
         vCookieDest[vCookieId] = 'v';
         updateConfirmBtn();
+        refreshPanelLabels();
       }
 
       /* -------------------------------------------------------
@@ -351,6 +363,7 @@ var jsPsychAllocation = (function (jspsych) {
             cookieEl.style.opacity = '1';
             vCookieDest[cookieId]  = 'trash';
             updateConfirmBtn();
+            refreshPanelLabels();
           } else if (trial.allow_v_to_p && target?.closest('.p-pool-col')) {
             const pos = clampToPlate(pPlate, e.clientX, e.clientY);
             pPlate.appendChild(cookieEl);
@@ -359,6 +372,7 @@ var jsPsychAllocation = (function (jspsych) {
             cookieEl.style.opacity = '1';
             vCookieDest[cookieId]  = 'p';
             updateConfirmBtn();
+            refreshPanelLabels();
           } else {
             returnVToPlate(cookieId);
           }
