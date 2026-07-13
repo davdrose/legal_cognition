@@ -643,6 +643,125 @@ const warmupPracticeBoth = {
   },
 };
 
+// Slide 2f – Maggie demonstrates how the fault-rating slider works, once,
+// before it first appears in a real trial (which now comes after allocation).
+const warmupSliderDemo = {
+  type: jsPsychHtmlButtonResponse,
+  choices: [],
+  stimulus: `
+    <div class="video-frame-domain">
+      <img id="maggie-corner-static" src="${SHARED_BASE}maggie.png" class="corner-char-img" alt="">
+    </div>
+    <div id="maggie-slider-cursor" style="position:fixed; pointer-events:none; z-index:1; visibility:hidden;">
+      <img src="${SHARED_BASE}maggie.png" alt="Maggie" style="width:8.4vw; transform:scaleX(-1);">
+    </div>
+    <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
+      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.2;">If you think Claire and Michael did equally wrong, don't move anything.<br><br>If you think Claire or Michael did something more wrong, move the slider toward them.<br><br>Now watch Maggie try it!</p>
+      <div class="fault-slider-anchors" style="max-width:806px;">
+        <div class="fault-slider-anchor">
+          <img src="${CHAR_IMG_BASE}claire.png" class="fault-slider-anchor-img" alt="Claire" style="width:129px; height:129px;">
+          <div class="fault-slider-anchor-label" style="font-size:20px;">Claire</div>
+          <div class="fault-slider-arrow" style="font-size:36px;">↓</div>
+        </div>
+        <div class="fault-slider-anchor fault-slider-anchor-middle">
+          <div class="fault-slider-anchor-label" style="margin-top:133px; font-size:20px;">Both</div>
+          <div class="fault-slider-arrow" style="font-size:36px;">↓</div>
+        </div>
+        <div class="fault-slider-anchor">
+          <img src="${CHAR_IMG_BASE}michael.png" class="fault-slider-anchor-img" alt="Michael" style="width:129px; height:129px;">
+          <div class="fault-slider-anchor-label" style="font-size:20px;">Michael</div>
+          <div class="fault-slider-arrow" style="font-size:36px;">↓</div>
+        </div>
+      </div>
+      <input type="range" id="maggie-slider-demo" class="jspsych-slider" min="0" max="100" step="1" value="50" style="width:90%; max-width:806px; margin:0 auto; display:block; pointer-events:none; position:relative; z-index:2;">
+      <div class="fault-slider-text-anchors" style="max-width:806px; font-size:17px;">
+        <span style="text-align:left;">Claire did<br>more wrong</span>
+        <span style="text-align:center;">Both did<br>equally wrong</span>
+        <span style="text-align:right;">Michael did<br>more wrong</span>
+      </div>
+      <div style="margin-top:14px;">
+        <button id="slider-demo-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Got it!</button>
+      </div>
+    </div>`,
+  on_load: function() {
+    const slider     = document.getElementById('maggie-slider-demo');
+    const cursor      = document.getElementById('maggie-slider-cursor');
+    const cornerStatic = document.getElementById('maggie-corner-static');
+    const btn         = document.getElementById('slider-demo-continue');
+
+    // Same corner element (.corner-char-img inside .video-frame-domain) the
+    // cookie-drag demos use elsewhere in warmup, so Maggie starts from the
+    // exact same spot on screen.
+    const cr = cornerStatic.getBoundingClientRect();
+    const cornerPos = { x: cr.left + cr.width / 2, y: cr.top + cr.height / 2 };
+
+    function pointForValue(val) {
+      const rect = slider.getBoundingClientRect();
+      const pct  = val / 100;
+      return { x: rect.left + pct * rect.width, y: rect.top + rect.height / 2 };
+    }
+    function setCursorPos(pt) {
+      cursor.style.left = (pt.x - window.innerWidth * 0.042) + 'px';
+      cursor.style.top  = (pt.y - 70) + 'px';
+    }
+    setCursorPos(cornerPos);
+
+    function animateCursorTo(from, to, duration, onDone) {
+      const t0 = performance.now();
+      function step(now) {
+        const t = Math.min(1, (now - t0) / duration);
+        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        setCursorPos({ x: from.x + (to.x - from.x) * eased, y: from.y + (to.y - from.y) * eased });
+        if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
+      }
+      requestAnimationFrame(step);
+    }
+
+    function animateSliderValue(from, to, duration, onDone) {
+      const t0 = performance.now();
+      function step(now) {
+        const t = Math.min(1, (now - t0) / duration);
+        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        const val = from + (to - from) * eased;
+        slider.value = val;
+        setCursorPos(pointForValue(val));
+        if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
+      }
+      requestAnimationFrame(step);
+    }
+
+    setTimeout(() => {
+      // Pick herself up off the corner spot and walk in to the slider's
+      // starting point first.
+      cornerStatic.style.visibility = 'hidden';
+      cursor.style.visibility = 'visible';
+      animateCursorTo(cornerPos, pointForValue(50), 900, () => {
+        setTimeout(() => {
+          animateSliderValue(50, 85, 1400, () => {
+            setTimeout(() => {
+              animateSliderValue(85, 50, 1400, () => {
+                setTimeout(() => {
+                  // Walk back out to the corner and sit back down when done.
+                  animateCursorTo(pointForValue(50), cornerPos, 900, () => {
+                    cursor.style.visibility = 'hidden';
+                    cornerStatic.style.visibility = 'visible';
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                  });
+                }, 400);
+              });
+            }, 700);
+          });
+        }, 400);
+      });
+    }, 500);
+
+    btn.addEventListener('click', () => jsPsych.finishTrial());
+  },
+  _debugLabel: 'Warmup: Maggie Slider Demo',
+};
+
 // Slide 3 – Practice confirmation
 const warmupFinishVideo = {
   type: jsPsychHtmlButtonResponse,
@@ -705,8 +824,9 @@ function buildFaultQuestionTrial(scenario) {
     _debugLabel: `${pName} & ${vName} — Fault Question`,
     type: jsPsychHtmlSliderResponse,
     stimulus: `
-      <div style="text-align:center; padding:10px 20px 0 20px; max-width:1000px; margin:0 auto;">
-        <p style="font-size:20px; font-weight:600; margin:0 0 12px 0;">Now that you saw what happened, who do you think is more at fault?</p>
+      <div style="text-align:center; padding:8px 20px 0 20px; max-width:1200px; margin:0 auto;">
+        <img src="${togetherImg}" style="max-width:984px; width:100%; max-height:min(24vh, 180px); object-fit:contain; border-radius:8px; margin-bottom:7px;">
+        <p style="font-size:24px; font-weight:600; margin:0 0 12px 0;">Now that you saw what happened, who do you think did something more wrong?</p>
         <div class="fault-slider-anchors">
           <div class="fault-slider-anchor">
             <img src="${CHAR_IMG_BASE}${vImg}" class="fault-slider-anchor-img" alt="${vName}">
@@ -714,8 +834,7 @@ function buildFaultQuestionTrial(scenario) {
             <div class="fault-slider-arrow">↓</div>
           </div>
           <div class="fault-slider-anchor fault-slider-anchor-middle">
-            <img src="${togetherImg}" class="fault-slider-anchor-img fault-slider-anchor-img-together" alt="${pName} and ${vName}">
-            <div class="fault-slider-anchor-label">Both</div>
+            <div class="fault-slider-anchor-label" style="margin-top:114px;">Both</div>
             <div class="fault-slider-arrow">↓</div>
           </div>
           <div class="fault-slider-anchor">
@@ -734,9 +853,9 @@ function buildFaultQuestionTrial(scenario) {
     button_label: 'Continue',
     prompt: `
       <div class="fault-slider-text-anchors">
-        <span style="text-align:left;">${vName} is<br>more at fault</span>
-        <span style="text-align:center;">Both are<br>equally at fault</span>
-        <span style="text-align:right;">${pName} is<br>more at fault</span>
+        <span style="text-align:left;">${vName} did<br>more wrong</span>
+        <span style="text-align:center;">Both did<br>equally wrong</span>
+        <span style="text-align:right;">${pName} did<br>more wrong</span>
       </div>`,
     scenario_id: scenario.id,
     is_practice: false,
@@ -818,7 +937,7 @@ function buildTestTrial(scenario, scenarioIdx, total) {
     },
   };
 
-  return [storySlide, faultQuestionSlide, slideG];
+  return [storySlide, slideG, faultQuestionSlide];
 }
 
 /* ----------------------------------------------------------
@@ -860,6 +979,7 @@ const warmupBlock = [
   warmupPracticeFromV,
   warmupPracticeSummary,
   warmupPracticeBoth,
+  warmupSliderDemo,
   warmupFinishVideo,
   testCaseIntroVideo,
 ];

@@ -960,7 +960,7 @@ body {
 }
 
 .jspsych-html-slider-response-container {
-  max-width: 576px !important;
+  max-width: 691px !important;
   width: 90% !important;
   margin: 0 auto 0.5em auto !important;
 }
@@ -969,7 +969,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  max-width: 576px;
+  max-width: 691px;
   margin: 0 auto 4px auto;
 }
 
@@ -982,8 +982,8 @@ body {
 }
 
 .fault-slider-anchor-img {
-  width: 92px;
-  height: 92px;
+  width: 110px;
+  height: 110px;
   object-fit: contain;
   border-radius: 8px;
 }
@@ -994,13 +994,13 @@ body {
 }
 
 .fault-slider-anchor-label {
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 600;
   color: #333;
 }
 
 .fault-slider-arrow {
-  font-size: 26px;
+  font-size: 31px;
   line-height: 1;
   color: #f0b429;
   font-weight: bold;
@@ -1009,9 +1009,9 @@ body {
 .fault-slider-text-anchors {
   display: flex;
   justify-content: space-between;
-  max-width: 576px;
+  max-width: 691px;
   margin: 4px auto 0 auto;
-  font-size: 12px;
+  font-size: 14px;
   color: #555;
   line-height: 1.3;
 }
