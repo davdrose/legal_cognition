@@ -560,7 +560,7 @@ function buildFaultRatingTrial(scenario, scenarioIdx, total, headerImg) {
         <img src="${headerImg}" style="max-width:860px; width:100%; max-height:min(28vh, 220px); object-fit:contain; border-radius:8px; margin-bottom:8px;">
         <p style="font-size:18px; font-weight:600; margin:0 0 6px 0;">Now that you saw what happened, how much do you think ${pName} and ${vName} are each at fault?</p>
       </div>`,
-    labels: ['', '', ''],
+    labels: ['0', '50', '100'],
     min: 0,
     max: 100,
     step: 1,
