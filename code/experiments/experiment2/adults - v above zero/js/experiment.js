@@ -552,13 +552,19 @@ const warmupDone = {
 function buildFaultRatingTrial(scenario, scenarioIdx, total, headerImg) {
   const pName = scenario.p_name || 'Finn';
   const vName = scenario.v_name || 'Cleo';
+  const pImg  = scenario.p_img  || 'finn_neutral.png';
+  const vImg  = scenario.v_img  || 'cleo_neutral.png';
   return {
     _debugLabel: `${pName} & ${vName} — Fault Rating`,
     type: jsPsychHtmlSliderResponse,
     stimulus: `
-      <div style="max-width:900px; margin:0 auto; text-align:center;">
-        <img src="${headerImg}" style="max-width:860px; width:100%; max-height:min(28vh, 220px); object-fit:contain; border-radius:8px; margin-bottom:8px;">
-        <p style="font-size:18px; font-weight:600; margin:0 0 6px 0;">Now that you saw what happened, how much do you think ${pName} and ${vName} are each at fault?</p>
+      <div style="max-width:1008px; margin:0 auto; text-align:center;">
+        <img src="${headerImg}" style="max-width:963px; width:100%; max-height:min(27vh, 213px); object-fit:contain; border-radius:8px; margin-bottom:7px;">
+        <p style="font-size:20px; font-weight:600; margin:0 0 9px 0;">Now that you saw what happened, who do you think is more at fault?</p>
+        <div class="fault-rating-portrait-row">
+          <img src="img/${vImg}" class="fault-rating-portrait" alt="${vName}">
+          <img src="img/${pImg}" class="fault-rating-portrait" alt="${pName}">
+        </div>
       </div>`,
     labels: ['0', '50', '100'],
     min: 0,
@@ -588,6 +594,17 @@ function buildFaultRatingTrial(scenario, scenarioIdx, total, headerImg) {
    liability scenarios as also involving carelessness on P's part.
    Shown after the participant has finished moving cookies around.
    ---------------------------------------------------------- */
+// Story slide (0-based index) that best shows P performing, or present for,
+// the describable action — used as a visual reminder on the checker question.
+const CHECKER_ACTION_SLIDE_INDEX = {
+  2: 5,   // Finn doesn't clean it up and walks away.
+  7: 6,   // Kai bumps into Ruby.
+  8: 5,   // Sam is walking his alligator (on a leash, before it breaks free).
+  9: 5,   // Andy and Catherine walk down the same street (wolf on leash).
+  10: 5,  // Katie stands up and leaves her cookies; Tony seated, uninvolved.
+  11: 4,  // Eric is tying his shoelaces.
+};
+
 function buildCheckerTrial(scenario) {
   const pName = scenario.p_name || 'Finn';
   const carefulOption  = `${pName} was careful, but unlucky`;
@@ -596,12 +613,15 @@ function buildCheckerTrial(scenario) {
   const carefulFirst = sessionGet('exp2_checker_order_' + scenario.id, () => Math.random() < 0.5);
   const choices    = carefulFirst ? [carefulOption, carelessOption] : [carelessOption, carefulOption];
   const choiceKeys = carefulFirst ? ['careful_but_unlucky', 'not_careful'] : ['not_careful', 'careful_but_unlucky'];
+  const actionSlideIdx = CHECKER_ACTION_SLIDE_INDEX[scenario.id];
+  const actionImg = actionSlideIdx !== undefined ? scenario.story_slides[actionSlideIdx] : null;
 
   return {
     _debugLabel: `${pName} & ${scenario.v_name || 'Cleo'} — Checker Question`,
     type: jsPsychHtmlButtonResponse,
     stimulus: `
-      <div style="text-align:center; padding:60px 40px; max-width:700px; margin:0 auto; font-family:sans-serif; color:#333;">
+      <div style="text-align:center; padding:24px 40px 0 40px; max-width:860px; margin:0 auto; font-family:sans-serif; color:#333;">
+        ${actionImg ? `<img src="${actionImg}" style="max-width:820px; width:100%; max-height:min(30vh, 240px); object-fit:contain; border-radius:8px; margin-bottom:14px;">` : ''}
         <p style="font-size:20px; line-height:1.6;">Which is a better way to describe ${pName}?</p>
       </div>`,
     choices: choices,

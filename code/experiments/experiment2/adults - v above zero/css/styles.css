@@ -872,21 +872,45 @@ body {
 /* ============================================================
    FAULT RATING SLIDER
    ============================================================ */
+/* jsPsych hardcodes inline margins (100px wrapper + 3em container-bottom)
+   that leave a large gap between the slider and the prompt text below it —
+   override both to bring the anchor text right up under the track. */
+#jspsych-html-slider-response-wrapper {
+  margin: 16px 0 !important;
+}
+
 .jspsych-html-slider-response-container {
-  max-width: 576px !important;
+  max-width: 645px !important;
   width: 90% !important;
+  margin: 0 auto 1.6em auto !important;
 }
 
 .fault-rating-anchors {
   display: flex;
   justify-content: space-between;
-  max-width: 576px;
+  max-width: 645px;
   margin: 4px auto 0 auto;
-  font-size: 12px;
+  font-size: 13px;
   color: #555;
   line-height: 1.3;
 }
 
 .fault-rating-anchors span {
   flex: 1 1 0;
+}
+
+/* Plain character portraits (already transparent-background art) sitting
+   exactly at the two ends of the slider, so P and V are visually anchored
+   to the scale itself rather than only named in text below it. */
+.fault-rating-portrait-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  max-width: 645px;
+  margin: 0 auto 4px auto;
+}
+
+.fault-rating-portrait {
+  height: 112px;
+  object-fit: contain;
 }
