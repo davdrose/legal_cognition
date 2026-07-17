@@ -33,8 +33,12 @@ const jsPsych = initJsPsych({
       if (!bySid.has(row.scenario_id)) bySid.set(row.scenario_id, {});
       const merged = bySid.get(row.scenario_id);
       if (row.is_fault_rating) {
-        merged.fault_rating    = row.fault_rating;
+        merged.fault_rating_v  = row.fault_rating_v;
+        merged.fault_rating_p  = row.fault_rating_p;
         merged.fault_rating_rt = row.rt;
+      } else if (row.is_checker_question) {
+        merged.checker_response = row.checker_response;
+        merged.checker_rt       = row.rt;
       } else {
         Object.assign(merged, row);
       }
@@ -643,124 +647,286 @@ const warmupPracticeBoth = {
   },
 };
 
-// Slide 2f – Maggie demonstrates how the fault-rating slider works, once,
-// before it first appears in a real trial (which now comes after allocation).
-const warmupSliderDemo = {
-  type: jsPsychHtmlButtonResponse,
-  choices: [],
-  stimulus: `
-    <div class="video-frame-domain">
-      <img id="maggie-corner-static" src="${SHARED_BASE}maggie.png" class="corner-char-img" alt="">
-    </div>
-    <div id="maggie-slider-cursor" style="position:fixed; pointer-events:none; z-index:1; visibility:hidden;">
-      <img src="${SHARED_BASE}maggie.png" alt="Maggie" style="width:8.4vw; transform:scaleX(-1);">
-    </div>
-    <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.2;">If you think Claire and Michael did equally wrong, don't move anything.<br><br>If you think Claire or Michael did something more wrong, move the slider toward them.<br><br>Now watch Maggie try it!</p>
-      <div class="fault-slider-anchors" style="max-width:806px;">
-        <div class="fault-slider-anchor">
-          <img src="${CHAR_IMG_BASE}claire.png" class="fault-slider-anchor-img" alt="Claire" style="width:129px; height:129px;">
-          <div class="fault-slider-anchor-label" style="font-size:20px;">Claire</div>
-          <div class="fault-slider-arrow" style="font-size:36px;">↓</div>
+/* ----------------------------------------------------------
+   TWO-SCALE FAULT WIDGET HELPERS
+   Volume-bar style: narrow + see-through at 0, wide + full red
+   at 100. Used by the warmup demo/practice pairs below.
+   ---------------------------------------------------------- */
+function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst) {
+  const cls = draggable ? ' draggable' : '';
+  const vPortrait = vImg ? `<img src="${vImg}" class="two-scale-portrait" alt="${vName}">` : '';
+  const pPortrait = pImg ? `<img src="${pImg}" class="two-scale-portrait" alt="${pName}">` : '';
+  // Display order only — the track ids stay keyed to the true V/P role
+  // below regardless of which side of the screen they're drawn on, so
+  // fault_rating_v/fault_rating_p never depend on left/right placement.
+  const vCol = `
+      <div class="two-scale-col">
+        ${vPortrait}
+        <div class="two-scale-name">${vName}</div>
+        <div class="two-scale-track${cls}" id="${id}-v-track">
+          <div class="two-scale-track-bg"></div>
+          <div class="two-scale-fill-wrap" id="${id}-v-wrap">
+            <div class="two-scale-fill" id="${id}-v-fill"></div>
+          </div>
+          <div class="two-scale-track-mid"></div>
         </div>
-        <div class="fault-slider-anchor fault-slider-anchor-middle">
-          <div class="fault-slider-anchor-label" style="margin-top:133px; font-size:20px;">Both</div>
-          <div class="fault-slider-arrow" style="font-size:36px;">↓</div>
+      </div>`;
+  const pCol = `
+      <div class="two-scale-col">
+        ${pPortrait}
+        <div class="two-scale-name">${pName}</div>
+        <div class="two-scale-track${cls}" id="${id}-p-track">
+          <div class="two-scale-track-bg"></div>
+          <div class="two-scale-fill-wrap" id="${id}-p-wrap">
+            <div class="two-scale-fill" id="${id}-p-fill"></div>
+          </div>
+          <div class="two-scale-track-mid"></div>
         </div>
-        <div class="fault-slider-anchor">
-          <img src="${CHAR_IMG_BASE}michael.png" class="fault-slider-anchor-img" alt="Michael" style="width:129px; height:129px;">
-          <div class="fault-slider-anchor-label" style="font-size:20px;">Michael</div>
-          <div class="fault-slider-arrow" style="font-size:36px;">↓</div>
+      </div>`;
+  return `
+    <div class="two-scale-row">${pFirst ? pCol + vCol : vCol + pCol}
+    </div>`;
+}
+
+function setScaleValue(id, who, val) {
+  const wrap = document.getElementById(`${id}-${who}-wrap`);
+  const fill = document.getElementById(`${id}-${who}-fill`);
+  if (!wrap || !fill) return;
+  wrap.style.width = val + '%';
+  fill.style.background = `rgba(217, 33, 33, ${Math.max(0, Math.min(1, val / 100))})`;
+}
+
+/** Maggie walks in from her usual corner and demonstrates one target
+ *  combination of the two bars, then the child clicks "Got it!". */
+function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, introHTML) {
+  return {
+    _debugLabel: `Warmup: Bar Demo — ${label}`,
+    type: jsPsychHtmlButtonResponse,
+    choices: [],
+    stimulus: `
+      <div class="video-frame-domain">
+        <img id="${id}-corner" src="${SHARED_BASE}maggie.png" class="corner-char-img" alt="">
+      </div>
+      <div id="${id}-cursor" style="position:fixed; pointer-events:none; z-index:1; visibility:hidden;">
+        <img src="${SHARED_BASE}maggie.png" alt="Maggie" style="width:8.4vw; transform:scaleX(-1);">
+      </div>
+      <div style="text-align:center; padding:2px 20px 0 20px; max-width:1200px; margin:0 auto;">
+        ${introHTML ? `<p style="font-size:21px; color:#555; text-align:center; max-width:850px; margin:0 auto 5px auto; line-height:1.25;">${introHTML}</p>` : ''}
+        <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.2;">${ruleText}</p>
+        ${twoScaleHTML(id, 'Claire', 'Michael', false, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png')}
+        <div style="margin-top:4px;">
+          <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Got it!</button>
         </div>
-      </div>
-      <input type="range" id="maggie-slider-demo" class="jspsych-slider" min="0" max="100" step="1" value="50" style="width:90%; max-width:806px; margin:0 auto; display:block; pointer-events:none; position:relative; z-index:2;">
-      <div class="fault-slider-text-anchors" style="max-width:806px; font-size:17px;">
-        <span style="text-align:left;">Claire did<br>more wrong</span>
-        <span style="text-align:center;">Both did<br>equally wrong</span>
-        <span style="text-align:right;">Michael did<br>more wrong</span>
-      </div>
-      <div style="margin-top:14px;">
-        <button id="slider-demo-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Got it!</button>
-      </div>
-    </div>`,
-  on_load: function() {
-    const slider     = document.getElementById('maggie-slider-demo');
-    const cursor      = document.getElementById('maggie-slider-cursor');
-    const cornerStatic = document.getElementById('maggie-corner-static');
-    const btn         = document.getElementById('slider-demo-continue');
+      </div>`,
+    on_load: function() {
+      const cursor       = document.getElementById(`${id}-cursor`);
+      const cornerStatic = document.getElementById(`${id}-corner`);
+      const btn          = document.getElementById(`${id}-continue`);
+      const vTrack       = document.getElementById(`${id}-v-track`);
+      const pTrack       = document.getElementById(`${id}-p-track`);
 
-    // Same corner element (.corner-char-img inside .video-frame-domain) the
-    // cookie-drag demos use elsewhere in warmup, so Maggie starts from the
-    // exact same spot on screen.
-    const cr = cornerStatic.getBoundingClientRect();
-    const cornerPos = { x: cr.left + cr.width / 2, y: cr.top + cr.height / 2 };
+      const cr = cornerStatic.getBoundingClientRect();
+      const cornerPos = { x: cr.left + cr.width / 2, y: cr.top + cr.height / 2 };
 
-    function pointForValue(val) {
-      const rect = slider.getBoundingClientRect();
-      const pct  = val / 100;
-      return { x: rect.left + pct * rect.width, y: rect.top + rect.height / 2 };
-    }
-    function setCursorPos(pt) {
-      cursor.style.left = (pt.x - window.innerWidth * 0.042) + 'px';
-      cursor.style.top  = (pt.y - 70) + 'px';
-    }
-    setCursorPos(cornerPos);
-
-    function animateCursorTo(from, to, duration, onDone) {
-      const t0 = performance.now();
-      function step(now) {
-        const t = Math.min(1, (now - t0) / duration);
-        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-        setCursorPos({ x: from.x + (to.x - from.x) * eased, y: from.y + (to.y - from.y) * eased });
-        if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
+      function trackPosAtVal(trackEl, val) {
+        const r = trackEl.getBoundingClientRect();
+        return { x: r.left + r.width * (val / 100), y: r.top + r.height / 2 };
       }
-      requestAnimationFrame(step);
-    }
-
-    function animateSliderValue(from, to, duration, onDone) {
-      const t0 = performance.now();
-      function step(now) {
-        const t = Math.min(1, (now - t0) / duration);
-        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-        const val = from + (to - from) * eased;
-        slider.value = val;
-        setCursorPos(pointForValue(val));
-        if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
+      function setCursorPos(pt) {
+        cursor.style.left = (pt.x - window.innerWidth * 0.042) + 'px';
+        cursor.style.top  = (pt.y - 70) + 'px';
       }
-      requestAnimationFrame(step);
-    }
+      setCursorPos(cornerPos);
 
-    setTimeout(() => {
-      // Pick herself up off the corner spot and walk in to the slider's
-      // starting point first.
-      cornerStatic.style.visibility = 'hidden';
-      cursor.style.visibility = 'visible';
-      animateCursorTo(cornerPos, pointForValue(50), 900, () => {
-        setTimeout(() => {
-          animateSliderValue(50, 85, 1400, () => {
-            setTimeout(() => {
-              animateSliderValue(85, 50, 1400, () => {
-                setTimeout(() => {
-                  // Walk back out to the corner and sit back down when done.
-                  animateCursorTo(pointForValue(50), cornerPos, 900, () => {
-                    cursor.style.visibility = 'hidden';
-                    cornerStatic.style.visibility = 'visible';
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                    btn.style.cursor = 'pointer';
-                  });
-                }, 400);
-              });
-            }, 700);
-          });
-        }, 400);
+      function animateCursorTo(from, to, duration, onDone) {
+        const t0 = performance.now();
+        function step(now) {
+          const t = Math.min(1, (now - t0) / duration);
+          const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+          setCursorPos({ x: from.x + (to.x - from.x) * eased, y: from.y + (to.y - from.y) * eased });
+          if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
+        }
+        requestAnimationFrame(step);
+      }
+
+      /** Animates the bar value while dragging Maggie's cursor along the
+       *  track so she visibly tracks the current fill boundary, like a
+       *  slider thumb, rather than sitting still at the track's center. */
+      function animateBarValue(who, from, to, duration, trackEl, onDone) {
+        const t0 = performance.now();
+        function step(now) {
+          const t = Math.min(1, (now - t0) / duration);
+          const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+          const val = from + (to - from) * eased;
+          setScaleValue(id, who, val);
+          setCursorPos(trackPosAtVal(trackEl, val));
+          if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
+        }
+        requestAnimationFrame(step);
+      }
+
+      setTimeout(() => {
+        cornerStatic.style.visibility = 'hidden';
+        cursor.style.visibility = 'visible';
+        animateCursorTo(cornerPos, trackPosAtVal(vTrack, 0), 900, () => {
+          setTimeout(() => {
+            animateBarValue('v', 0, targetV, 1100, vTrack, () => {
+              setTimeout(() => {
+                animateCursorTo(trackPosAtVal(vTrack, targetV), trackPosAtVal(pTrack, 0), 700, () => {
+                  setTimeout(() => {
+                    animateBarValue('p', 0, targetP, 1100, pTrack, () => {
+                      setTimeout(() => {
+                        animateCursorTo(trackPosAtVal(pTrack, targetP), cornerPos, 900, () => {
+                          cursor.style.visibility = 'hidden';
+                          cornerStatic.style.visibility = 'visible';
+                          btn.disabled = false;
+                          btn.style.opacity = '1';
+                          btn.style.cursor = 'pointer';
+                        });
+                      }, 400);
+                    });
+                  }, 300);
+                });
+              }, 400);
+            });
+          }, 400);
+        });
+      }, 500);
+
+      btn.addEventListener('click', () => jsPsych.finishTrial());
+    },
+  };
+}
+
+/** Child tries the same combination themselves; Continue stays disabled
+ *  until both bars have been touched and validate(vVal, pVal) passes. */
+function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg) {
+  return {
+    _debugLabel: `Warmup: Bar Practice — ${label}`,
+    type: jsPsychHtmlButtonResponse,
+    choices: [],
+    stimulus: `
+      <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
+        <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.2;">${practiceText}</p>
+        ${twoScaleHTML(id, 'Claire', 'Michael', true, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png')}
+        <div id="${id}-hint" class="alloc-hint-hidden"></div>
+        <div style="margin-top:14px;">
+          <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Continue</button>
+        </div>
+      </div>`,
+    on_load: function() {
+      let vVal = 0, pVal = 0, touchedV = false, touchedP = false, dragging = null;
+      const vTrack = document.getElementById(`${id}-v-track`);
+      const pTrack = document.getElementById(`${id}-p-track`);
+      const btn    = document.getElementById(`${id}-continue`);
+      const hintEl = document.getElementById(`${id}-hint`);
+
+      function checkValid() {
+        const ok = validate(vVal, pVal, touchedV, touchedP);
+        btn.disabled = !ok;
+        btn.style.opacity = ok ? '1' : '0.4';
+        btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+        hintEl.textContent = ok ? '' : hintMsg;
+        hintEl.className   = ok ? 'alloc-hint-hidden' : 'alloc-hint-visible';
+      }
+
+      function updateFromClientX(who, clientX) {
+        const track = who === 'v' ? vTrack : pTrack;
+        const r = track.getBoundingClientRect();
+        const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+        const val = Math.round(pct * 100);
+        setScaleValue(id, who, val);
+        if (who === 'v') { vVal = val; touchedV = true; } else { pVal = val; touchedP = true; }
+        checkValid();
+      }
+
+      function onMouseDownFactory(who) {
+        return function(e) {
+          dragging = who;
+          updateFromClientX(who, e.clientX);
+          e.preventDefault();
+        };
+      }
+      function onMouseMove(e) {
+        if (!dragging) return;
+        updateFromClientX(dragging, e.clientX);
+      }
+      function onMouseUp() { dragging = null; }
+
+      vTrack.addEventListener('mousedown', onMouseDownFactory('v'));
+      pTrack.addEventListener('mousedown', onMouseDownFactory('p'));
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+
+      checkValid();
+
+      btn.addEventListener('click', () => {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        jsPsych.finishTrial();
       });
-    }, 500);
+    },
+  };
+}
 
-    btn.addEventListener('click', () => jsPsych.finishTrial());
-  },
-  _debugLabel: 'Warmup: Maggie Slider Demo',
-};
+// Slide 2f – Maggie demonstrates four scenarios (V more at fault, P more at
+// fault, both equally at fault, neither at fault), each followed by the
+// child trying the same combination themselves, before the two-bar fault
+// question first appears in a real trial (which now comes after allocation).
+// The two-bar concept intro (one sentence per line) is shown on this first
+// demo screen rather than as its own slide.
+const scaleIntroHTML =
+  'There are two bars — one for Claire and one for Michael.<br>' +
+  'Each bar shows how much you think that person is at fault.<br>' +
+  'It starts small and see-through when someone is not at fault at all, and gets bigger and redder the more at fault they are.';
+const scaleDemo1 = buildScaleDemoTrial(
+  'sd1', 'V more at fault',
+  "If you think Claire is at fault, but Michael isn't, Claire's bar should be big and red, and Michael's bar should stay small. Let's watch Maggie try it.",
+  85, 10,
+  scaleIntroHTML
+);
+const scalePractice1 = buildScalePracticeTrial(
+  'sp1', 'V more at fault',
+  "Now you try! Make Claire's bar bigger than Michael's.",
+  (v, p, tv, tp) => tv && tp && v > p + 15,
+  "⚠️ Move Claire's bar higher than Michael's."
+);
+
+const scaleDemo2 = buildScaleDemoTrial(
+  'sd2', 'P more at fault',
+  "If you think Michael is at fault, but Claire isn't, Michael's bar should be big and red, and Claire's bar should stay small. Let's watch Maggie try it.",
+  10, 85
+);
+const scalePractice2 = buildScalePracticeTrial(
+  'sp2', 'P more at fault',
+  "Now you try! Make Michael's bar bigger than Claire's.",
+  (v, p, tv, tp) => tv && tp && p > v + 15,
+  "⚠️ Move Michael's bar higher than Claire's."
+);
+
+const scaleDemo3 = buildScaleDemoTrial(
+  'sd3', 'Both equally at fault',
+  "If you think Claire and Michael are both at fault, both of their bars should be the same size. Let's watch Maggie try it.",
+  55, 55
+);
+const scalePractice3 = buildScalePracticeTrial(
+  'sp3', 'Both equally at fault',
+  "Now you try! Make Claire's and Michael's bars the same size.",
+  (v, p, tv, tp) => tv && tp && Math.abs(v - p) <= 10 && v >= 25 && p >= 25,
+  "⚠️ Make Claire's and Michael's bars about the same size."
+);
+
+const scaleDemo4 = buildScaleDemoTrial(
+  'sd4', 'Neither at fault',
+  "If you think neither Claire nor Michael is at fault, both bars should stay small and see-through. Don't move the bar.",
+  0, 0
+);
+const scalePractice4 = buildScalePracticeTrial(
+  'sp4', 'Neither at fault',
+  "Now you try! Keep both bars small.",
+  (v, p, tv, tp) => tv && tp && v <= 20 && p <= 20,
+  '⚠️ Keep both bars small.'
+);
 
 // Slide 3 – Practice confirmation
 const warmupFinishVideo = {
@@ -819,49 +985,110 @@ function buildFaultQuestionTrial(scenario) {
   const pImg  = scenario.p_img  || 'finn_neutral.png';
   const vImg  = scenario.v_img  || 'cleo_neutral.png';
   const togetherImg = scenario.story_slides[scenario.story_slides.length - 1];
+  const id = `fq${scenario.id}`;
 
   return {
     _debugLabel: `${pName} & ${vName} — Fault Question`,
-    type: jsPsychHtmlSliderResponse,
+    type: jsPsychHtmlButtonResponse,
+    choices: [],
     stimulus: `
       <div style="text-align:center; padding:8px 20px 0 20px; max-width:1200px; margin:0 auto;">
         <img src="${togetherImg}" style="max-width:984px; width:100%; max-height:min(24vh, 180px); object-fit:contain; border-radius:8px; margin-bottom:7px;">
-        <p style="font-size:24px; font-weight:600; margin:0 0 12px 0;">Now that you saw what happened, who do you think did something more wrong?</p>
-        <div class="fault-slider-anchors">
-          <div class="fault-slider-anchor">
-            <img src="${CHAR_IMG_BASE}${vImg}" class="fault-slider-anchor-img" alt="${vName}">
-            <div class="fault-slider-anchor-label">${vName}</div>
-            <div class="fault-slider-arrow">↓</div>
-          </div>
-          <div class="fault-slider-anchor fault-slider-anchor-middle">
-            <div class="fault-slider-anchor-label" style="margin-top:114px;">Both</div>
-            <div class="fault-slider-arrow">↓</div>
-          </div>
-          <div class="fault-slider-anchor">
-            <img src="${CHAR_IMG_BASE}${pImg}" class="fault-slider-anchor-img" alt="${pName}">
-            <div class="fault-slider-anchor-label">${pName}</div>
-            <div class="fault-slider-arrow">↓</div>
-          </div>
+        <p style="font-size:24px; font-weight:600; margin:0 0 12px 0;">Now that you saw what happened, how much do you think each person is at fault?</p>
+        ${twoScaleHTML(id, vName, pName, true, CHAR_IMG_BASE + vImg, CHAR_IMG_BASE + pImg, true)}
+        <div style="margin-top:14px;">
+          <button id="${id}-continue" class="jspsych-btn">Continue</button>
         </div>
-      </div>`,
-    labels: ['', '', ''],
-    min: 0,
-    max: 100,
-    step: 1,
-    slider_start: 50,
-    require_movement: true,
-    button_label: 'Continue',
-    prompt: `
-      <div class="fault-slider-text-anchors">
-        <span style="text-align:left;">${vName} did<br>more wrong</span>
-        <span style="text-align:center;">Both did<br>equally wrong</span>
-        <span style="text-align:right;">${pName} did<br>more wrong</span>
       </div>`,
     scenario_id: scenario.id,
     is_practice: false,
     data: { scenario_id: scenario.id, is_practice: false, is_fault_rating: true, p_name: pName, v_name: vName },
-    on_finish: function (data) {
-      data.fault_rating = data.response;
+    on_load: function() {
+      const startTime = performance.now();
+      let vVal = 0, pVal = 0, dragging = null;
+      const vTrack = document.getElementById(`${id}-v-track`);
+      const pTrack = document.getElementById(`${id}-p-track`);
+      const btn    = document.getElementById(`${id}-continue`);
+
+      function updateFromClientX(who, clientX) {
+        const track = who === 'v' ? vTrack : pTrack;
+        const r = track.getBoundingClientRect();
+        const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+        const val = Math.round(pct * 100);
+        setScaleValue(id, who, val);
+        if (who === 'v') { vVal = val; } else { pVal = val; }
+      }
+
+      function onMouseDownFactory(who) {
+        return function(e) {
+          dragging = who;
+          updateFromClientX(who, e.clientX);
+          e.preventDefault();
+        };
+      }
+      function onMouseMove(e) {
+        if (!dragging) return;
+        updateFromClientX(dragging, e.clientX);
+      }
+      function onMouseUp() { dragging = null; }
+
+      vTrack.addEventListener('mousedown', onMouseDownFactory('v'));
+      pTrack.addEventListener('mousedown', onMouseDownFactory('p'));
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+
+      btn.addEventListener('click', () => {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        jsPsych.finishTrial({
+          fault_rating_v: vVal,
+          fault_rating_p: pVal,
+          rt: Math.round(performance.now() - startTime),
+        });
+      });
+    },
+  };
+}
+
+/* ----------------------------------------------------------
+   CHECKER QUESTION
+   Manipulation check to rule out that participants read strict-
+   liability scenarios as also involving carelessness on P's part.
+   Shown after the fault question. Always shows the ending picture
+   (the scenario's last story slide) as the visual reminder.
+   ---------------------------------------------------------- */
+function buildCheckerTrial(scenario) {
+  const pName = scenario.p_name || 'Finn';
+  const vName = scenario.v_name || 'Cleo';
+  const endingImg = scenario.story_slides[scenario.story_slides.length - 1];
+  // Yes (green check) is always on the left, No (red cross) always on the
+  // right — these are fixed iconic symbols, not phrasing to counterbalance.
+  const choices    = ['Yes', 'No'];
+  const choiceKeys = ['careful', 'not_careful'];
+  const buttonHtml = [
+    '<button class="jspsych-btn checker-btn checker-btn-yes"><span class="checker-icon">✓</span><span class="checker-label">%choice%</span></button>',
+    '<button class="jspsych-btn checker-btn checker-btn-no"><span class="checker-icon">✗</span><span class="checker-label">%choice%</span></button>',
+  ];
+
+  return {
+    _debugLabel: `${pName} & ${vName} — Checker Question`,
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `
+      <div style="text-align:center; padding:10px 52px 0 52px; max-width:1118px; margin:0 auto;">
+        <img src="${endingImg}" style="max-width:1066px; width:100%; max-height:min(39vh, 312px); object-fit:contain; border-radius:8px; margin-bottom:18px;">
+        <p style="font-size:31px; font-weight:600;">Was ${pName} being careful?</p>
+      </div>`,
+    choices: choices,
+    button_html: buttonHtml,
+    data: {
+      is_checker_question: true,
+      is_practice: false,
+      scenario_id: scenario.id,
+      harm_type: scenario.harm_type,
+      p_name: pName,
+    },
+    on_finish: function(data) {
+      data.checker_response = choiceKeys[data.response] ?? null;
     },
   };
 }
@@ -937,7 +1164,8 @@ function buildTestTrial(scenario, scenarioIdx, total) {
     },
   };
 
-  return [storySlide, slideG, faultQuestionSlide];
+  const trials = [storySlide, slideG, faultQuestionSlide, buildCheckerTrial(scenario)];
+  return trials;
 }
 
 /* ----------------------------------------------------------
@@ -979,7 +1207,10 @@ const warmupBlock = [
   warmupPracticeFromV,
   warmupPracticeSummary,
   warmupPracticeBoth,
-  warmupSliderDemo,
+  scaleDemo1, scalePractice1,
+  scaleDemo2, scalePractice2,
+  scaleDemo3, scalePractice3,
+  scaleDemo4, scalePractice4,
   warmupFinishVideo,
   testCaseIntroVideo,
 ];
@@ -1208,21 +1439,60 @@ const SHOW_DEBUG_PANEL = false;  // ← change to true to show the Jump-to-Scree
     return `<option value="${i}"${sel}>${i}: ${label}</option>`;
   }).join('');
 
+  // Two-scale warmup screens (intro + the 4 demo/practice pairs) get their
+  // own quick-jump tab so researchers don't have to hunt for them in the
+  // full slide dropdown while iterating on that flow specifically.
+  const scaleIndices = timeline
+    .map((trial, i) => ({ i, label: trial._debugLabel || '' }))
+    .filter(({ label }) => /^Warmup: Bar (Demo|Practice)/.test(label));
+  const scaleButtons = scaleIndices.map(({ i, label }) =>
+    `<button class="rdp-scale-jump" data-idx="${i}">${label.replace(/^Warmup: /, '')}</button>`
+  ).join('');
+
   const panel = document.createElement('div');
   panel.id = 'researcher-debug-panel';
   panel.innerHTML = `
     <div id="rdp-title">🔬 Researcher: Jump to Screen</div>
-    <select id="rdp-select">${options}</select>
-    <button id="rdp-jump">▶ Jump</button>
+    <div id="rdp-tabs">
+      <button id="rdp-tab-btn-all" class="rdp-tab-btn active">All Screens</button>
+      <button id="rdp-tab-btn-scale" class="rdp-tab-btn">Two-Bar Warmup</button>
+    </div>
+    <div id="rdp-tab-all" class="rdp-tab-panel">
+      <select id="rdp-select">${options}</select>
+      <button id="rdp-jump">▶ Jump</button>
+    </div>
+    <div id="rdp-tab-scale" class="rdp-tab-panel" style="display:none;">
+      ${scaleButtons}
+    </div>
     <button id="rdp-clear" title="Clear saved trial data">🗑 Clear data</button>
   `;
   document.body.appendChild(panel);
 
-  document.getElementById('rdp-jump').addEventListener('click', () => {
+  function jumpTo_(idx) {
     // Save current data before reloading so it survives the jump.
     sessionStorage.setItem(DATA_KEY, jsPsych.data.get().json());
-    const idx = document.getElementById('rdp-select').value;
     window.location.search = '?jumpTo=' + idx;
+  }
+
+  document.getElementById('rdp-jump').addEventListener('click', () => {
+    jumpTo_(document.getElementById('rdp-select').value);
+  });
+
+  document.querySelectorAll('.rdp-scale-jump').forEach(btn => {
+    btn.addEventListener('click', () => jumpTo_(btn.dataset.idx));
+  });
+
+  document.getElementById('rdp-tab-btn-all').addEventListener('click', () => {
+    document.getElementById('rdp-tab-all').style.display = '';
+    document.getElementById('rdp-tab-scale').style.display = 'none';
+    document.getElementById('rdp-tab-btn-all').classList.add('active');
+    document.getElementById('rdp-tab-btn-scale').classList.remove('active');
+  });
+  document.getElementById('rdp-tab-btn-scale').addEventListener('click', () => {
+    document.getElementById('rdp-tab-all').style.display = 'none';
+    document.getElementById('rdp-tab-scale').style.display = '';
+    document.getElementById('rdp-tab-btn-all').classList.remove('active');
+    document.getElementById('rdp-tab-btn-scale').classList.add('active');
   });
 
   document.getElementById('rdp-clear').addEventListener('click', () => {
