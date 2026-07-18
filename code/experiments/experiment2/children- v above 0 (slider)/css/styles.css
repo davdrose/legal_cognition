@@ -1104,6 +1104,18 @@ body {
   width: 480px;
   height: 120px;
   user-select: none;
+  transition: opacity 0.25s ease;
+}
+
+/* Faint until the participant deliberately clicks somewhere on the bar
+   (even the zero endpoint) — makes "unanswered" visually distinct from
+   just having clicked all the way at zero. */
+.two-scale-track-unanswered {
+  opacity: 0.4;
+}
+
+.two-scale-track-unanswered.answered {
+  opacity: 1;
 }
 
 .two-scale-track-bg {
@@ -1176,4 +1188,37 @@ body {
   font-size: 23px;
   font-weight: 600;
   color: #333;
+}
+
+.two-scale-col-highlight {
+  border-radius: 12px;
+  box-shadow: 0 0 0 4px #ffd54f, 0 0 22px 6px rgba(255, 213, 79, 0.85);
+  transition: box-shadow 0.3s ease;
+}
+
+.checker-btn-pressed {
+  transform: scale(0.92);
+  background: #ffd54f;
+  border-color: #ffc107;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.two-scale-click-ripple {
+  position: fixed;
+  width: 34px;
+  height: 34px;
+  margin-left: -17px;
+  margin-top: -17px;
+  border: 3px solid #ffc107;
+  border-radius: 50%;
+  transform: scale(0.4);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 3;
+  transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+}
+
+.two-scale-click-ripple.animate {
+  transform: scale(1.6);
+  opacity: 0;
 }

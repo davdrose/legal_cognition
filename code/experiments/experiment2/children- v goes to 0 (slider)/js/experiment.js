@@ -381,7 +381,7 @@ const warmupLayoutLocked = {
   hud_v_cookies: 3,
   trash_on_left: TRASH_ON_LEFT,
   harm_text: '',
-  instruction_text: "If you think anyone should be punished, you can decide how they lose their cookies.",
+  instruction_text: "In our game, if you think anyone should be punished, you can decide how they lose their cookies.",
   locked: true,
   is_practice: true,
   scenario_id: 0,
@@ -652,18 +652,19 @@ const warmupPracticeBoth = {
    Volume-bar style: narrow + see-through at 0, wide + full red
    at 100. Used by the warmup demo/practice pairs below.
    ---------------------------------------------------------- */
-function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst) {
+function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst, unanswered) {
   const cls = draggable ? ' draggable' : '';
+  const unansweredCls = unanswered ? ' two-scale-track-unanswered' : '';
   const vPortrait = vImg ? `<img src="${vImg}" class="two-scale-portrait" alt="${vName}">` : '';
   const pPortrait = pImg ? `<img src="${pImg}" class="two-scale-portrait" alt="${pName}">` : '';
   // Display order only — the track ids stay keyed to the true V/P role
   // below regardless of which side of the screen they're drawn on, so
   // fault_rating_v/fault_rating_p never depend on left/right placement.
   const vCol = `
-      <div class="two-scale-col">
+      <div class="two-scale-col" id="${id}-v-col">
         ${vPortrait}
         <div class="two-scale-name">${vName}</div>
-        <div class="two-scale-track${cls}" id="${id}-v-track">
+        <div class="two-scale-track${cls}${unansweredCls}" id="${id}-v-track">
           <div class="two-scale-track-bg"></div>
           <div class="two-scale-fill-wrap" id="${id}-v-wrap">
             <div class="two-scale-fill" id="${id}-v-fill"></div>
@@ -672,10 +673,10 @@ function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst) {
         </div>
       </div>`;
   const pCol = `
-      <div class="two-scale-col">
+      <div class="two-scale-col" id="${id}-p-col">
         ${pPortrait}
         <div class="two-scale-name">${pName}</div>
-        <div class="two-scale-track${cls}" id="${id}-p-track">
+        <div class="two-scale-track${cls}${unansweredCls}" id="${id}-p-track">
           <div class="two-scale-track-bg"></div>
           <div class="two-scale-fill-wrap" id="${id}-p-wrap">
             <div class="two-scale-fill" id="${id}-p-fill"></div>
@@ -697,8 +698,13 @@ function setScaleValue(id, who, val) {
 }
 
 /** Maggie walks in from her usual corner and demonstrates one target
- *  combination of the two bars, then the child clicks "Got it!". */
-function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, introHTML) {
+ *  combination of the two bars, then the child clicks "Got it!". `visitPFirst`
+ *  controls which bar she visits first — independent of on-screen layout,
+ *  which always keeps Claire on the left and Michael on the right so the
+ *  bars never appear to swap places between screens. If `afterText` is
+ *  given, it replaces the rule text once Maggie's demonstration finishes,
+ *  as a brief recap of what she just showed. */
+function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, visitPFirst, afterText) {
   return {
     _debugLabel: `Warmup: Bar Demo — ${label}`,
     type: jsPsychHtmlButtonResponse,
@@ -710,11 +716,10 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, introHTML) {
       <div id="${id}-cursor" style="position:fixed; pointer-events:none; z-index:1; visibility:hidden;">
         <img src="${SHARED_BASE}maggie.png" alt="Maggie" style="width:8.4vw; transform:scaleX(-1);">
       </div>
-      <div style="text-align:center; padding:2px 20px 0 20px; max-width:1200px; margin:0 auto;">
-        ${introHTML ? `<p style="font-size:21px; color:#555; text-align:center; max-width:850px; margin:0 auto 5px auto; line-height:1.25;">${introHTML}</p>` : ''}
-        <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.2;">${ruleText}</p>
-        ${twoScaleHTML(id, 'Claire', 'Michael', false, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png')}
-        <div style="margin-top:4px;">
+      <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
+        <p id="${id}-text" style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.2;">${ruleText}</p>
+        ${twoScaleHTML(id, 'Claire', 'Michael', false, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png', false, true)}
+        <div style="margin-top:14px;">
           <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Got it!</button>
         </div>
       </div>`,
@@ -722,6 +727,7 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, introHTML) {
       const cursor       = document.getElementById(`${id}-cursor`);
       const cornerStatic = document.getElementById(`${id}-corner`);
       const btn          = document.getElementById(`${id}-continue`);
+      const textEl       = document.getElementById(`${id}-text`);
       const vTrack       = document.getElementById(`${id}-v-track`);
       const pTrack       = document.getElementById(`${id}-p-track`);
 
@@ -738,6 +744,20 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, introHTML) {
       }
       setCursorPos(cornerPos);
 
+      /** Flashes a brief ripple at the click point, so Maggie's click on the
+       *  zero endpoint is visibly deliberate even though the bar itself
+       *  doesn't change (0 -> 0), rather than looking like she just parked
+       *  there without answering. */
+      function showClickRipple(pt) {
+        const ripple = document.createElement('div');
+        ripple.className = 'two-scale-click-ripple';
+        ripple.style.left = pt.x + 'px';
+        ripple.style.top  = pt.y + 'px';
+        document.body.appendChild(ripple);
+        requestAnimationFrame(() => ripple.classList.add('animate'));
+        setTimeout(() => ripple.remove(), 550);
+      }
+
       function animateCursorTo(from, to, duration, onDone) {
         const t0 = performance.now();
         function step(now) {
@@ -753,6 +773,7 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, introHTML) {
        *  track so she visibly tracks the current fill boundary, like a
        *  slider thumb, rather than sitting still at the track's center. */
       function animateBarValue(who, from, to, duration, trackEl, onDone) {
+        trackEl.classList.add('answered');
         const t0 = performance.now();
         function step(now) {
           const t = Math.min(1, (now - t0) / duration);
@@ -765,20 +786,30 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, introHTML) {
         requestAnimationFrame(step);
       }
 
+      const firstKey    = visitPFirst ? 'p' : 'v';
+      const secondKey   = visitPFirst ? 'v' : 'p';
+      const firstTrack  = visitPFirst ? pTrack : vTrack;
+      const secondTrack = visitPFirst ? vTrack : pTrack;
+      const firstTarget  = visitPFirst ? targetP : targetV;
+      const secondTarget = visitPFirst ? targetV : targetP;
+
       setTimeout(() => {
         cornerStatic.style.visibility = 'hidden';
         cursor.style.visibility = 'visible';
-        animateCursorTo(cornerPos, trackPosAtVal(vTrack, 0), 900, () => {
+        animateCursorTo(cornerPos, trackPosAtVal(firstTrack, 0), 900, () => {
+          showClickRipple(trackPosAtVal(firstTrack, 0));
           setTimeout(() => {
-            animateBarValue('v', 0, targetV, 1100, vTrack, () => {
+            animateBarValue(firstKey, 0, firstTarget, 1100, firstTrack, () => {
               setTimeout(() => {
-                animateCursorTo(trackPosAtVal(vTrack, targetV), trackPosAtVal(pTrack, 0), 700, () => {
+                animateCursorTo(trackPosAtVal(firstTrack, firstTarget), trackPosAtVal(secondTrack, 0), 700, () => {
+                  showClickRipple(trackPosAtVal(secondTrack, 0));
                   setTimeout(() => {
-                    animateBarValue('p', 0, targetP, 1100, pTrack, () => {
+                    animateBarValue(secondKey, 0, secondTarget, 1100, secondTrack, () => {
                       setTimeout(() => {
-                        animateCursorTo(trackPosAtVal(pTrack, targetP), cornerPos, 900, () => {
+                        animateCursorTo(trackPosAtVal(secondTrack, secondTarget), cornerPos, 900, () => {
                           cursor.style.visibility = 'hidden';
                           cornerStatic.style.visibility = 'visible';
+                          if (afterText) { textEl.textContent = afterText; }
                           btn.disabled = false;
                           btn.style.opacity = '1';
                           btn.style.cursor = 'pointer';
@@ -808,7 +839,7 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg) {
     stimulus: `
       <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
         <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.2;">${practiceText}</p>
-        ${twoScaleHTML(id, 'Claire', 'Michael', true, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png')}
+        ${twoScaleHTML(id, 'Claire', 'Michael', true, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png', false, true)}
         <div id="${id}-hint" class="alloc-hint-hidden"></div>
         <div style="margin-top:14px;">
           <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Continue</button>
@@ -832,6 +863,7 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg) {
 
       function updateFromClientX(who, clientX) {
         const track = who === 'v' ? vTrack : pTrack;
+        track.classList.add('answered');
         const r = track.getBoundingClientRect();
         const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
         const val = Math.round(pct * 100);
@@ -869,63 +901,371 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg) {
   };
 }
 
-// Slide 2f – Maggie demonstrates four scenarios (V more at fault, P more at
-// fault, both equally at fault, neither at fault), each followed by the
-// child trying the same combination themselves, before the two-bar fault
-// question first appears in a real trial (which now comes after allocation).
-// The two-bar concept intro (one sentence per line) is shown on this first
-// demo screen rather than as its own slide.
-const scaleIntroHTML =
-  'There are two bars — one for Claire and one for Michael.<br>' +
-  'Each bar shows how much you think that person is at fault.<br>' +
-  'It starts small and see-through when someone is not at fault at all, and gets bigger and redder the more at fault they are.';
+// Slide 2e-intro – introduces the two bars' existence, one at a time, each
+// highlighted with a glowing outline as it's mentioned.
+const barExistsIntro = {
+  type: jsPsychHtmlButtonResponse,
+  choices: [],
+  stimulus: `
+    <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
+      <p id="bei-text" style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, Claire has a bar. This is Claire's bar.</p>
+      ${twoScaleHTML('bei', 'Claire', 'Michael', false, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png')}
+      <div style="margin-top:14px;">
+        <button id="bei-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Next</button>
+      </div>
+    </div>`,
+  on_load: function() {
+    const textEl = document.getElementById('bei-text');
+    const vCol    = document.getElementById('bei-v-col');
+    const pCol    = document.getElementById('bei-p-col');
+    const btn     = document.getElementById('bei-continue');
+
+    setTimeout(() => {
+      vCol.classList.add('two-scale-col-highlight');
+      setTimeout(() => {
+        vCol.classList.remove('two-scale-col-highlight');
+        textEl.textContent = "Michael also has a bar. This is Michael's bar.";
+        pCol.classList.add('two-scale-col-highlight');
+        setTimeout(() => {
+          pCol.classList.remove('two-scale-col-highlight');
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+        }, 1800);
+      }, 1800);
+    }, 500);
+  },
+  _debugLabel: 'Warmup: Bar Exists Intro',
+};
+
+// Slide 2e-2 – explains what the bars mean: gray when not at fault, red
+// fills in as fault increases. Briefly fills and empties an example bar
+// while that part of the narration plays, then returns it to gray.
+const barMeaningIntro = {
+  type: jsPsychHtmlButtonResponse,
+  choices: [],
+  stimulus: `
+    <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
+      <p id="bmi-text" style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">The bars show how much each person is at fault. When someone is not at fault at all, their bar is gray. The more at fault they are, the more red fills their bar.</p>
+      ${twoScaleHTML('bmi', 'Claire', 'Michael', false, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png')}
+      <div style="margin-top:14px;">
+        <button id="bmi-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Next</button>
+      </div>
+    </div>`,
+  on_load: function() {
+    const btn = document.getElementById('bmi-continue');
+
+    function animateFill(who, from, to, duration, onDone) {
+      const t0 = performance.now();
+      function step(now) {
+        const t = Math.min(1, (now - t0) / duration);
+        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        setScaleValue('bmi', who, from + (to - from) * eased);
+        if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
+      }
+      requestAnimationFrame(step);
+    }
+
+    setTimeout(() => {
+      animateFill('v', 0, 65, 600, () => {
+        setTimeout(() => {
+          animateFill('v', 65, 0, 600, () => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+          });
+        }, 500);
+      });
+    }, 300);
+  },
+  _debugLabel: 'Warmup: Bar Meaning Intro',
+};
+
+// Slide 2e-3 – explains that both people need an answer, and that clicking
+// the very beginning of a bar is how you deliberately choose zero. Flashes
+// a ripple at each bar's zero point in turn, Claire then Michael.
+const zeroAnswerIntro = {
+  type: jsPsychHtmlButtonResponse,
+  choices: [],
+  stimulus: `
+    <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
+      <p id="zai-text" style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">You need to choose an answer for both people. If someone is not at fault at all, click the very beginning of their bar to choose zero.</p>
+      ${twoScaleHTML('zai', 'Claire', 'Michael', false, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png')}
+      <div style="margin-top:14px;">
+        <button id="zai-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Next</button>
+      </div>
+    </div>`,
+  on_load: function() {
+    const btn    = document.getElementById('zai-continue');
+    const vTrack = document.getElementById('zai-v-track');
+    const pTrack = document.getElementById('zai-p-track');
+
+    function zeroPoint(trackEl) {
+      const r = trackEl.getBoundingClientRect();
+      return { x: r.left, y: r.top + r.height / 2 };
+    }
+    function showRipple(pt) {
+      const ripple = document.createElement('div');
+      ripple.className = 'two-scale-click-ripple';
+      ripple.style.left = pt.x + 'px';
+      ripple.style.top  = pt.y + 'px';
+      document.body.appendChild(ripple);
+      requestAnimationFrame(() => ripple.classList.add('animate'));
+      setTimeout(() => ripple.remove(), 550);
+    }
+
+    setTimeout(() => {
+      showRipple(zeroPoint(vTrack));
+      setTimeout(() => {
+        showRipple(zeroPoint(pTrack));
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+        }, 700);
+      }, 1000);
+    }, 700);
+  },
+  _debugLabel: 'Warmup: Zero Answer Intro',
+};
+
+// Slide 2f – Maggie demonstrates five scenarios (Claire at fault only,
+// Michael at fault only, Claire more at fault than Michael, both equally
+// at fault, neither at fault), each followed by the child trying the same
+// combination themselves, before the two-bar fault question first appears
+// in a real trial (which now comes after allocation).
 const scaleDemo1 = buildScaleDemoTrial(
-  'sd1', 'V more at fault',
-  "If you think Claire is at fault, but Michael isn't, Claire's bar should be big and red, and Michael's bar should stay small. Let's watch Maggie try it.",
-  85, 10,
-  scaleIntroHTML
+  'sd1', 'Claire at fault only',
+  "In our game, if Claire is at fault but Michael is not at fault, Claire's bar should have some red, and Michael's bar should stay gray. Let's see Maggie do it.",
+  85, 0,
+  false,
+  "Claire has some fault, but Michael has no fault."
 );
 const scalePractice1 = buildScalePracticeTrial(
-  'sp1', 'V more at fault',
-  "Now you try! Make Claire's bar bigger than Michael's.",
-  (v, p, tv, tp) => tv && tp && v > p + 15,
-  "⚠️ Move Claire's bar higher than Michael's."
+  'sp1', 'Claire at fault only',
+  "Now you try! Give Claire some fault, and keep Michael at zero.",
+  (v, p, tv, tp) => tv && tp && v >= 40 && p <= 15,
+  "⚠️ Give Claire some fault, and keep Michael at zero."
 );
 
 const scaleDemo2 = buildScaleDemoTrial(
-  'sd2', 'P more at fault',
-  "If you think Michael is at fault, but Claire isn't, Michael's bar should be big and red, and Claire's bar should stay small. Let's watch Maggie try it.",
-  10, 85
+  'sd2', 'Michael at fault only',
+  "In our game, if Michael is at fault but Claire is not at fault, Michael's bar should have some red, and Claire's bar should stay gray. Let's see Maggie do it.",
+  0, 85,
+  false,
+  "Michael has some fault, but Claire has no fault."
 );
 const scalePractice2 = buildScalePracticeTrial(
-  'sp2', 'P more at fault',
-  "Now you try! Make Michael's bar bigger than Claire's.",
-  (v, p, tv, tp) => tv && tp && p > v + 15,
-  "⚠️ Move Michael's bar higher than Claire's."
+  'sp2', 'Michael at fault only',
+  "Now you try! Give Michael some fault, and keep Claire at zero.",
+  (v, p, tv, tp) => tv && tp && p >= 40 && v <= 15,
+  "⚠️ Give Michael some fault, and keep Claire at zero."
 );
 
 const scaleDemo3 = buildScaleDemoTrial(
-  'sd3', 'Both equally at fault',
-  "If you think Claire and Michael are both at fault, both of their bars should be the same size. Let's watch Maggie try it.",
-  55, 55
+  'sd3', 'Claire more at fault',
+  "Sometimes both people can be at fault, but one person can be more at fault than the other. If Claire is more at fault than Michael, Claire's bar should have more red.",
+  70, 30,
+  false,
+  "Claire is more at fault than Michael."
 );
 const scalePractice3 = buildScalePracticeTrial(
-  'sp3', 'Both equally at fault',
+  'sp3', 'Claire more at fault',
+  "Now you try! Give both Claire and Michael some fault, but make Claire's bigger.",
+  (v, p, tv, tp) => tv && tp && v > p + 15 && p >= 15,
+  "⚠️ Give both some fault, but make Claire's bar bigger than Michael's."
+);
+
+const scaleDemo4 = buildScaleDemoTrial(
+  'sd4', 'Equally at fault',
+  "If Claire and Michael are equally at fault, their bars should have the same amount of red. Let's see Maggie do it.",
+  55, 55,
+  false,
+  "Claire and Michael are equally at fault."
+);
+const scalePractice4 = buildScalePracticeTrial(
+  'sp4', 'Equally at fault',
   "Now you try! Make Claire's and Michael's bars the same size.",
   (v, p, tv, tp) => tv && tp && Math.abs(v - p) <= 10 && v >= 25 && p >= 25,
   "⚠️ Make Claire's and Michael's bars about the same size."
 );
 
-const scaleDemo4 = buildScaleDemoTrial(
-  'sd4', 'Neither at fault',
-  "If you think neither Claire nor Michael is at fault, both bars should stay small and see-through. Don't move the bar.",
-  0, 0
+const scaleDemo5 = buildScaleDemoTrial(
+  'sd5', 'Neither at fault',
+  "If neither Claire nor Michael is at fault, both bars should stay gray. Maggie still needs to choose an answer for each person. Let's see her do it.",
+  0, 0,
+  false,
+  "Neither Claire nor Michael is at fault."
 );
-const scalePractice4 = buildScalePracticeTrial(
-  'sp4', 'Neither at fault',
-  "Now you try! Keep both bars small.",
+const scalePractice5 = buildScalePracticeTrial(
+  'sp5', 'Neither at fault',
+  "Now you try! Click the very beginning of both Claire's and Michael's bars to choose zero for each.",
   (v, p, tv, tp) => tv && tp && v <= 20 && p <= 20,
-  '⚠️ Keep both bars small.'
+  "⚠️ Click the very beginning of both bars to choose zero."
+);
+
+/** Renders one person's portrait + name + "Was X being careful?" with big
+ *  green-check/red-cross buttons — the single-person warmup version of the
+ *  real checker-question widget used in `buildCheckerTrial`. */
+function checkerPersonHTML(id, name, imgUrl) {
+  return `
+    <div style="display:flex; flex-direction:column; align-items:center; gap:8px; margin:16px auto 0 auto;">
+      <img src="${imgUrl}" alt="${name}" class="two-scale-portrait">
+      <div class="two-scale-name">${name}</div>
+      <p style="font-size:28px; font-weight:600; margin:8px 0 4px 0;">Was ${name} being careful?</p>
+      <div style="display:flex; gap:24px;">
+        <button id="${id}-yes-btn" type="button" class="jspsych-btn checker-btn checker-btn-yes"><span class="checker-icon">✓</span><span class="checker-label">Yes</span></button>
+        <button id="${id}-no-btn" type="button" class="jspsych-btn checker-btn checker-btn-no"><span class="checker-icon">✗</span><span class="checker-label">No</span></button>
+      </div>
+    </div>`;
+}
+
+/** Maggie walks in and presses the target Yes/No button, then the child
+ *  clicks "Got it!". Mirrors buildScaleDemoTrial's cursor-walk pattern. */
+function buildCheckerDemoTrial(id, label, ruleText, name, imgUrl, targetAnswer) {
+  return {
+    _debugLabel: `Warmup: Checker Demo — ${label}`,
+    type: jsPsychHtmlButtonResponse,
+    choices: [],
+    stimulus: `
+      <div class="video-frame-domain">
+        <img id="${id}-corner" src="${SHARED_BASE}maggie.png" class="corner-char-img" alt="">
+      </div>
+      <div id="${id}-cursor" style="position:fixed; pointer-events:none; z-index:1; visibility:hidden;">
+        <img src="${SHARED_BASE}maggie.png" alt="Maggie" style="width:8.4vw; transform:scaleX(-1);">
+      </div>
+      <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
+        <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.2;">${ruleText}</p>
+        ${checkerPersonHTML(id, name, imgUrl)}
+        <div style="margin-top:14px;">
+          <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Got it!</button>
+        </div>
+      </div>`,
+    on_load: function() {
+      const cursor       = document.getElementById(`${id}-cursor`);
+      const cornerStatic = document.getElementById(`${id}-corner`);
+      const btn          = document.getElementById(`${id}-continue`);
+      const targetBtn    = document.getElementById(`${id}-${targetAnswer}-btn`);
+
+      const cr = cornerStatic.getBoundingClientRect();
+      const cornerPos = { x: cr.left + cr.width / 2, y: cr.top + cr.height / 2 };
+
+      function btnPos(el) {
+        const r = el.getBoundingClientRect();
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      }
+      function setCursorPos(pt) {
+        cursor.style.left = (pt.x - window.innerWidth * 0.042) + 'px';
+        cursor.style.top  = (pt.y - 70) + 'px';
+      }
+      setCursorPos(cornerPos);
+
+      function animateCursorTo(from, to, duration, onDone) {
+        const t0 = performance.now();
+        function step(now) {
+          const t = Math.min(1, (now - t0) / duration);
+          const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+          setCursorPos({ x: from.x + (to.x - from.x) * eased, y: from.y + (to.y - from.y) * eased });
+          if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
+        }
+        requestAnimationFrame(step);
+      }
+
+      setTimeout(() => {
+        cornerStatic.style.visibility = 'hidden';
+        cursor.style.visibility = 'visible';
+        animateCursorTo(cornerPos, btnPos(targetBtn), 900, () => {
+          targetBtn.classList.add('checker-btn-pressed');
+          setTimeout(() => {
+            animateCursorTo(btnPos(targetBtn), cornerPos, 900, () => {
+              cursor.style.visibility = 'hidden';
+              cornerStatic.style.visibility = 'visible';
+              targetBtn.classList.remove('checker-btn-pressed');
+              btn.disabled = false;
+              btn.style.opacity = '1';
+              btn.style.cursor = 'pointer';
+            });
+          }, 700);
+        });
+      }, 500);
+
+      btn.addEventListener('click', () => jsPsych.finishTrial());
+    },
+  };
+}
+
+/** Child tries clicking Yes/No themselves; Continue stays disabled until
+ *  they click the correct button (matching what Maggie just demonstrated). */
+function buildCheckerPracticeTrial(id, label, practiceText, name, imgUrl, correctAnswer, hintMsg) {
+  return {
+    _debugLabel: `Warmup: Checker Practice — ${label}`,
+    type: jsPsychHtmlButtonResponse,
+    choices: [],
+    stimulus: `
+      <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
+        <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.2;">${practiceText}</p>
+        ${checkerPersonHTML(id, name, imgUrl)}
+        <div id="${id}-hint" class="alloc-hint-hidden"></div>
+        <div style="margin-top:14px;">
+          <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Continue</button>
+        </div>
+      </div>`,
+    on_load: function() {
+      const yesBtn = document.getElementById(`${id}-yes-btn`);
+      const noBtn  = document.getElementById(`${id}-no-btn`);
+      const btn    = document.getElementById(`${id}-continue`);
+      const hintEl = document.getElementById(`${id}-hint`);
+      let picked = null;
+
+      function checkValid() {
+        const ok = picked === correctAnswer;
+        btn.disabled = !ok;
+        btn.style.opacity = ok ? '1' : '0.4';
+        btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+        hintEl.textContent = (picked && !ok) ? hintMsg : '';
+        hintEl.className   = (picked && !ok) ? 'alloc-hint-visible' : 'alloc-hint-hidden';
+      }
+
+      yesBtn.addEventListener('click', () => {
+        picked = 'yes';
+        yesBtn.classList.add('checker-btn-pressed');
+        noBtn.classList.remove('checker-btn-pressed');
+        checkValid();
+      });
+      noBtn.addEventListener('click', () => {
+        picked = 'no';
+        noBtn.classList.add('checker-btn-pressed');
+        yesBtn.classList.remove('checker-btn-pressed');
+        checkValid();
+      });
+
+      btn.addEventListener('click', () => jsPsych.finishTrial());
+    },
+  };
+}
+
+const checkerDemoYes = buildCheckerDemoTrial(
+  'cd1', 'Yes (careful)',
+  "In our game, you can also decide if Claire and Michael were careful. If you think Claire was careful, click the green yes mark. Let's watch Maggie try it.",
+  'Claire', CHAR_IMG_BASE + 'claire.png', 'yes'
+);
+const checkerPracticeYes = buildCheckerPracticeTrial(
+  'cp1', 'Yes (careful)',
+  "Now you try! Click the green yes mark for Claire.",
+  'Claire', CHAR_IMG_BASE + 'claire.png', 'yes',
+  '⚠️ Click the green checkmark for Yes.'
+);
+
+const checkerDemoNo = buildCheckerDemoTrial(
+  'cd2', 'No (not careful)',
+  "Now let's think about Michael. If you think Michael was not careful, click the red no mark. Let's watch Maggie try it.",
+  'Michael', CHAR_IMG_BASE + 'michael.png', 'no'
+);
+const checkerPracticeNo = buildCheckerPracticeTrial(
+  'cp2', 'No (not careful)',
+  "Now you try! Click the red no mark for Michael.",
+  'Michael', CHAR_IMG_BASE + 'michael.png', 'no',
+  '⚠️ Click the red cross for No.'
 );
 
 // Slide 3 – Practice confirmation
@@ -995,9 +1335,9 @@ function buildFaultQuestionTrial(scenario) {
       <div style="text-align:center; padding:8px 20px 0 20px; max-width:1200px; margin:0 auto;">
         <img src="${togetherImg}" style="max-width:984px; width:100%; max-height:min(24vh, 180px); object-fit:contain; border-radius:8px; margin-bottom:7px;">
         <p style="font-size:24px; font-weight:600; margin:0 0 12px 0;">Now that you saw what happened, how much do you think each person is at fault?</p>
-        ${twoScaleHTML(id, vName, pName, true, CHAR_IMG_BASE + vImg, CHAR_IMG_BASE + pImg, true)}
+        ${twoScaleHTML(id, vName, pName, true, CHAR_IMG_BASE + vImg, CHAR_IMG_BASE + pImg, true, true)}
         <div style="margin-top:14px;">
-          <button id="${id}-continue" class="jspsych-btn">Continue</button>
+          <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Continue</button>
         </div>
       </div>`,
     scenario_id: scenario.id,
@@ -1005,18 +1345,27 @@ function buildFaultQuestionTrial(scenario) {
     data: { scenario_id: scenario.id, is_practice: false, is_fault_rating: true, p_name: pName, v_name: vName },
     on_load: function() {
       const startTime = performance.now();
-      let vVal = 0, pVal = 0, dragging = null;
+      let vVal = 0, pVal = 0, touchedV = false, touchedP = false, dragging = null;
       const vTrack = document.getElementById(`${id}-v-track`);
       const pTrack = document.getElementById(`${id}-p-track`);
       const btn    = document.getElementById(`${id}-continue`);
 
+      function checkValid() {
+        const ok = touchedV && touchedP;
+        btn.disabled = !ok;
+        btn.style.opacity = ok ? '1' : '0.4';
+        btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+      }
+
       function updateFromClientX(who, clientX) {
         const track = who === 'v' ? vTrack : pTrack;
+        track.classList.add('answered');
         const r = track.getBoundingClientRect();
         const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
         const val = Math.round(pct * 100);
         setScaleValue(id, who, val);
-        if (who === 'v') { vVal = val; } else { pVal = val; }
+        if (who === 'v') { vVal = val; touchedV = true; } else { pVal = val; touchedP = true; }
+        checkValid();
       }
 
       function onMouseDownFactory(who) {
@@ -1036,6 +1385,7 @@ function buildFaultQuestionTrial(scenario) {
       pTrack.addEventListener('mousedown', onMouseDownFactory('p'));
       document.addEventListener('mousemove', onMouseMove);
       document.addEventListener('mouseup', onMouseUp);
+      checkValid();
 
       btn.addEventListener('click', () => {
         document.removeEventListener('mousemove', onMouseMove);
@@ -1061,25 +1411,23 @@ function buildCheckerTrial(scenario) {
   const pName = scenario.p_name || 'Finn';
   const vName = scenario.v_name || 'Cleo';
   const endingImg = scenario.story_slides[scenario.story_slides.length - 1];
-  // Yes (green check) is always on the left, No (red cross) always on the
-  // right — these are fixed iconic symbols, not phrasing to counterbalance.
-  const choices    = ['Yes', 'No'];
-  const choiceKeys = ['careful', 'not_careful'];
-  const buttonHtml = [
-    '<button class="jspsych-btn checker-btn checker-btn-yes"><span class="checker-icon">✓</span><span class="checker-label">%choice%</span></button>',
-    '<button class="jspsych-btn checker-btn checker-btn-no"><span class="checker-icon">✗</span><span class="checker-label">%choice%</span></button>',
-  ];
+  const id = `ck${scenario.id}`;
 
   return {
     _debugLabel: `${pName} & ${vName} — Checker Question`,
     type: jsPsychHtmlButtonResponse,
+    choices: [],
     stimulus: `
       <div style="text-align:center; padding:10px 52px 0 52px; max-width:1118px; margin:0 auto;">
         <img src="${endingImg}" style="max-width:1066px; width:100%; max-height:min(39vh, 312px); object-fit:contain; border-radius:8px; margin-bottom:18px;">
         <p style="font-size:31px; font-weight:600;">Was ${pName} being careful?</p>
+        <div style="display:flex; justify-content:center; gap:24px; margin-top:14px;">
+          <button id="${id}-yes-btn" type="button" class="jspsych-btn checker-btn checker-btn-yes"><span class="checker-icon">✓</span><span class="checker-label">Yes</span></button>
+          <button id="${id}-no-btn" type="button" class="jspsych-btn checker-btn checker-btn-no"><span class="checker-icon">✗</span><span class="checker-label">No</span></button>
+        </div>
       </div>`,
-    choices: choices,
-    button_html: buttonHtml,
+    scenario_id: scenario.id,
+    is_practice: false,
     data: {
       is_checker_question: true,
       is_practice: false,
@@ -1087,8 +1435,25 @@ function buildCheckerTrial(scenario) {
       harm_type: scenario.harm_type,
       p_name: pName,
     },
-    on_finish: function(data) {
-      data.checker_response = choiceKeys[data.response] ?? null;
+    on_load: function() {
+      const startTime = performance.now();
+      const yesBtn = document.getElementById(`${id}-yes-btn`);
+      const noBtn  = document.getElementById(`${id}-no-btn`);
+
+      function pick(key, btn) {
+        yesBtn.disabled = true;
+        noBtn.disabled  = true;
+        btn.classList.add('checker-btn-pressed');
+        setTimeout(() => {
+          jsPsych.finishTrial({
+            checker_response: key,
+            rt: Math.round(performance.now() - startTime),
+          });
+        }, 400);
+      }
+
+      yesBtn.addEventListener('click', () => pick('careful', yesBtn));
+      noBtn.addEventListener('click',  () => pick('not_careful', noBtn));
     },
   };
 }
@@ -1207,10 +1572,16 @@ const warmupBlock = [
   warmupPracticeFromV,
   warmupPracticeSummary,
   warmupPracticeBoth,
+  barExistsIntro,
+  barMeaningIntro,
+  zeroAnswerIntro,
   scaleDemo1, scalePractice1,
   scaleDemo2, scalePractice2,
   scaleDemo3, scalePractice3,
   scaleDemo4, scalePractice4,
+  scaleDemo5, scalePractice5,
+  checkerDemoYes, checkerPracticeYes,
+  checkerDemoNo, checkerPracticeNo,
   warmupFinishVideo,
   testCaseIntroVideo,
 ];
@@ -1444,7 +1815,7 @@ const SHOW_DEBUG_PANEL = false;  // ← change to true to show the Jump-to-Scree
   // full slide dropdown while iterating on that flow specifically.
   const scaleIndices = timeline
     .map((trial, i) => ({ i, label: trial._debugLabel || '' }))
-    .filter(({ label }) => /^Warmup: Bar (Demo|Practice)/.test(label));
+    .filter(({ label }) => /^Warmup: (Bar Exists Intro|Bar (Demo|Practice)|Checker (Demo|Practice))/.test(label));
   const scaleButtons = scaleIndices.map(({ i, label }) =>
     `<button class="rdp-scale-jump" data-idx="${i}">${label.replace(/^Warmup: /, '')}</button>`
   ).join('');
