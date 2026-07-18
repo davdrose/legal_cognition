@@ -963,6 +963,8 @@ const barExistsIntro = {
         }, 1800);
       }, 1800);
     }, 500);
+
+    btn.addEventListener('click', () => jsPsych.finishTrial());
   },
   _debugLabel: 'Warmup: Bar Exists Intro',
 };
@@ -1006,6 +1008,8 @@ const barMeaningIntro = {
         }, 500);
       });
     }, 300);
+
+    btn.addEventListener('click', () => jsPsych.finishTrial());
   },
   _debugLabel: 'Warmup: Bar Meaning Intro',
 };
@@ -1054,6 +1058,8 @@ const zeroAnswerIntro = {
         }, 700);
       }, 1000);
     }, 700);
+
+    btn.addEventListener('click', () => jsPsych.finishTrial());
   },
   _debugLabel: 'Warmup: Zero Answer Intro',
 };
