@@ -38,8 +38,16 @@ const jsPsych = initJsPsych({
         merged.fault_rating_p  = row.fault_rating_p;
         merged.fault_rating_rt = row.rt;
       } else if (row.is_checker_question) {
-        merged.checker_response = row.checker_response;
-        merged.checker_rt       = row.rt;
+        // Two checker rows per scenario (actor + victim, order randomized) —
+        // key by which role this particular row asked about so the second
+        // response never overwrites the first.
+        if (row.checker_target_role === 'p') {
+          merged.checker_response_p = row.checker_response;
+          merged.checker_rt_p       = row.rt;
+        } else {
+          merged.checker_response_v = row.checker_response;
+          merged.checker_rt_v       = row.rt;
+        }
       } else {
         Object.assign(merged, row);
       }
@@ -367,7 +375,7 @@ const warmupLayoutLocked = {
   hud_v_cookies: 3,
   trash_on_left: TRASH_ON_LEFT,
   harm_text: '',
-  instruction_text: "If you think anyone should be punished, you can decide how they lose their cookies.",
+  instruction_text: "In our game, if you think anyone should be punished, you can decide how they lose their cookies.",
   locked: true,
   is_practice: true,
   scenario_id: 0,
@@ -376,14 +384,20 @@ const warmupLayoutLocked = {
   corner_char_img: '../children-shared%20files/maggie.png',
   on_load: function() {
     const audio = document.createElement('audio');
-    audio.src = '../children-shared%20files/If you think anyone should be punished, you can decide how they lose their cookies..m4a';
+    // NOTE: this filename doesn't exist in children-shared files yet — the
+    // old recording says "If you think anyone..." without "In our game,".
+    // Needs a fresh recording of the updated line; the 'error' fallback
+    // below keeps this locked screen from stalling until it's added.
+    audio.src = '../children-shared%20files/In our game, if you think anyone should be punished, you can decide how they lose their cookies..m4a';
     audio.style.display = 'none';
     document.body.appendChild(audio);
     audio.play().catch(() => {});
-    audio.addEventListener('ended', () => {
+    const advance = () => {
       audio.remove();
       setTimeout(() => jsPsych.finishTrial(), 1000);
-    });
+    };
+    audio.addEventListener('ended', advance);
+    audio.addEventListener('error', advance);
   },
 };
 
@@ -733,7 +747,7 @@ function setScaleValue(id, who, val) {
  *  bars never appear to swap places between screens. If `afterText` is
  *  given, it replaces the rule text once Maggie's demonstration finishes,
  *  as a brief recap of what she just showed. */
-function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, visitPFirst, afterText) {
+function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, visitPFirst, afterText, audioSrc, afterAudioSrc) {
   return {
     _debugLabel: `Warmup: Bar Demo — ${label}`,
     type: jsPsychHtmlButtonResponse,
@@ -822,36 +836,70 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, visitPFirst,
       const firstTarget  = visitPFirst ? targetP : targetV;
       const secondTarget = visitPFirst ? targetV : targetP;
 
-      setTimeout(() => {
-        cornerStatic.style.visibility = 'hidden';
-        cursor.style.visibility = 'visible';
-        animateCursorTo(cornerPos, trackPosAtVal(firstTrack, 0), 900, () => {
-          showClickRipple(trackPosAtVal(firstTrack, 0));
-          setTimeout(() => {
-            animateBarValue(firstKey, 0, firstTarget, 1100, firstTrack, () => {
-              setTimeout(() => {
-                animateCursorTo(trackPosAtVal(firstTrack, firstTarget), trackPosAtVal(secondTrack, 0), 700, () => {
-                  showClickRipple(trackPosAtVal(secondTrack, 0));
-                  setTimeout(() => {
-                    animateBarValue(secondKey, 0, secondTarget, 1100, secondTrack, () => {
-                      setTimeout(() => {
-                        animateCursorTo(trackPosAtVal(secondTrack, secondTarget), cornerPos, 900, () => {
-                          cursor.style.visibility = 'hidden';
-                          cornerStatic.style.visibility = 'visible';
-                          if (afterText) { textEl.textContent = afterText; }
-                          btn.disabled = false;
-                          btn.style.opacity = '1';
-                          btn.style.cursor = 'pointer';
-                        });
-                      }, 400);
-                    });
-                  }, 300);
-                });
-              }, 400);
-            });
-          }, 400);
-        });
-      }, 500);
+      /** Maggie's walk-and-demonstrate animation. Runs once, when we're
+       *  ready to show it (see below — gated on the rule audio finishing,
+       *  not a blind delay from page load). */
+      function runDemo() {
+        setTimeout(() => {
+          cornerStatic.style.visibility = 'hidden';
+          cursor.style.visibility = 'visible';
+          animateCursorTo(cornerPos, trackPosAtVal(firstTrack, 0), 900, () => {
+            showClickRipple(trackPosAtVal(firstTrack, 0));
+            setTimeout(() => {
+              animateBarValue(firstKey, 0, firstTarget, 1100, firstTrack, () => {
+                setTimeout(() => {
+                  animateCursorTo(trackPosAtVal(firstTrack, firstTarget), trackPosAtVal(secondTrack, 0), 700, () => {
+                    showClickRipple(trackPosAtVal(secondTrack, 0));
+                    setTimeout(() => {
+                      animateBarValue(secondKey, 0, secondTarget, 1100, secondTrack, () => {
+                        setTimeout(() => {
+                          animateCursorTo(trackPosAtVal(secondTrack, secondTarget), cornerPos, 900, () => {
+                            cursor.style.visibility = 'hidden';
+                            cornerStatic.style.visibility = 'visible';
+                            btn.disabled = false;
+                            btn.style.opacity = '1';
+                            btn.style.cursor = 'pointer';
+                          });
+                        }, 400);
+                      });
+                    }, 300);
+                  });
+                }, 400);
+              });
+            }, 400);
+          });
+        }, 500);
+      }
+
+      /** Flips the caption to the recap line and starts its audio (if any),
+       *  then runs Maggie's demo — so the demo is only on screen while the
+       *  recap narration plays, not during the (longer) rule explanation. */
+      function showRecapAndDemo() {
+        if (afterText) { textEl.textContent = afterText; }
+        if (afterAudioSrc) {
+          const audio2 = document.createElement('audio');
+          audio2.src = afterAudioSrc;
+          audio2.style.display = 'none';
+          document.body.appendChild(audio2);
+          audio2.play().catch(() => {});
+          audio2.addEventListener('ended', () => audio2.remove());
+          audio2.addEventListener('error', () => audio2.remove());
+        }
+        runDemo();
+      }
+
+      if (audioSrc) {
+        const audio = document.createElement('audio');
+        audio.src = audioSrc;
+        audio.style.display = 'none';
+        document.body.appendChild(audio);
+        audio.play().catch(() => {});
+        const afterRuleAudio = () => { audio.remove(); showRecapAndDemo(); };
+        audio.addEventListener('ended', afterRuleAudio);
+        audio.addEventListener('error', afterRuleAudio);
+      } else {
+        showRecapAndDemo();
+      }
 
       btn.addEventListener('click', () => jsPsych.finishTrial());
     },
@@ -860,7 +908,7 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, visitPFirst,
 
 /** Child tries the same combination themselves; Continue stays disabled
  *  until both bars have been touched and validate(vVal, pVal) passes. */
-function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg) {
+function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg, audioSrc) {
   return {
     _debugLabel: `Warmup: Bar Practice — ${label}`,
     type: jsPsychHtmlButtonResponse,
@@ -875,6 +923,15 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg) {
         </div>
       </div>`,
     on_load: function() {
+      if (audioSrc) {
+        const audio = document.createElement('audio');
+        audio.src = audioSrc;
+        audio.style.display = 'none';
+        document.body.appendChild(audio);
+        audio.play().catch(() => {});
+        audio.addEventListener('ended', () => audio.remove());
+        audio.addEventListener('error', () => audio.remove());
+      }
       let vVal = 0, pVal = 0, touchedV = false, touchedP = false, dragging = null;
       const vTrack = document.getElementById(`${id}-v-track`);
       const pTrack = document.getElementById(`${id}-p-track`);
@@ -901,29 +958,33 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg) {
         checkValid();
       }
 
-      function onMouseDownFactory(who) {
+      function onPointerDownFactory(who) {
         return function(e) {
           dragging = who;
           updateFromClientX(who, e.clientX);
           e.preventDefault();
         };
       }
-      function onMouseMove(e) {
+      function onPointerMove(e) {
         if (!dragging) return;
         updateFromClientX(dragging, e.clientX);
       }
-      function onMouseUp() { dragging = null; }
+      function onPointerUp() { dragging = null; }
 
-      vTrack.addEventListener('mousedown', onMouseDownFactory('v'));
-      pTrack.addEventListener('mousedown', onMouseDownFactory('p'));
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
+      // Pointer events (not mouse-only) so mouse, touchscreen, and stylus
+      // input all work identically for dragging the fault bars.
+      vTrack.addEventListener('pointerdown', onPointerDownFactory('v'));
+      pTrack.addEventListener('pointerdown', onPointerDownFactory('p'));
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+      document.addEventListener('pointercancel', onPointerUp);
 
       checkValid();
 
       btn.addEventListener('click', () => {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        document.removeEventListener('pointercancel', onPointerUp);
         jsPsych.finishTrial();
       });
     },
@@ -949,19 +1010,30 @@ const barExistsIntro = {
     const pCol    = document.getElementById('bei-p-col');
     const btn     = document.getElementById('bei-continue');
 
+    function playClip(src, onDone) {
+      const audio = document.createElement('audio');
+      audio.src = src;
+      audio.style.display = 'none';
+      document.body.appendChild(audio);
+      audio.play().catch(() => {});
+      const done = () => { audio.remove(); onDone(); };
+      audio.addEventListener('ended', done);
+      audio.addEventListener('error', done);
+    }
+
     setTimeout(() => {
       vCol.classList.add('two-scale-col-highlight');
-      setTimeout(() => {
+      playClip('../children-shared%20files/In our game, Claire has a bar. This is Claire’s bar.m4a', () => {
         vCol.classList.remove('two-scale-col-highlight');
         textEl.textContent = "Michael also has a bar. This is Michael's bar.";
         pCol.classList.add('two-scale-col-highlight');
-        setTimeout(() => {
+        playClip('../children-shared%20files/Michael also has a bar. This is Michael’s bar.m4a', () => {
           pCol.classList.remove('two-scale-col-highlight');
           btn.disabled = false;
           btn.style.opacity = '1';
           btn.style.cursor = 'pointer';
-        }, 1800);
-      }, 1800);
+        });
+      });
     }, 500);
 
     btn.addEventListener('click', () => jsPsych.finishTrial());
@@ -997,71 +1069,165 @@ const barMeaningIntro = {
       requestAnimationFrame(step);
     }
 
-    setTimeout(() => {
-      animateFill('v', 0, 65, 600, () => {
-        setTimeout(() => {
-          animateFill('v', 65, 0, 600, () => {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.style.cursor = 'pointer';
-          });
-        }, 500);
-      });
-    }, 300);
+    function enableNext() {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+    }
+
+    const audio = document.createElement('audio');
+    audio.src = '../children-shared%20files/The bars show how much each person is at fault. When someone is not at fault at all.m4a';
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+
+    // Recording runs ~15.8s; "...the more red fills their bar" begins around
+    // the 82%-through mark (~12.8s at this file's length). Wait for the audio
+    // to actually reach that point (rather than a blind setTimeout) so the
+    // fill stays in sync even if playback stalls, then fill slowly enough
+    // (2.5s) that the color change is clearly visible before the bar resets.
+    let triggered = false;
+    audio.addEventListener('timeupdate', () => {
+      if (!triggered && audio.currentTime >= 12.6) {
+        triggered = true;
+        animateFill('v', 0, 65, 2500, () => {
+          setTimeout(() => animateFill('v', 65, 0, 600, () => {}), 400);
+        });
+      }
+    });
+
+    let done = false;
+    function finishIntro() {
+      if (done) return;
+      done = true;
+      audio.remove();
+      if (!triggered) {
+        // Audio never played (missing/blocked) — still show the fill once,
+        // slowly, so the concept is demonstrated either way.
+        animateFill('v', 0, 65, 2500, () => {
+          setTimeout(() => animateFill('v', 65, 0, 600, enableNext), 400);
+        });
+      } else {
+        enableNext();
+      }
+    }
+    audio.addEventListener('ended', finishIntro);
+    audio.addEventListener('error', finishIntro);
 
     btn.addEventListener('click', () => jsPsych.finishTrial());
   },
   _debugLabel: 'Warmup: Bar Meaning Intro',
 };
 
-// Slide 2e-3 – explains that both people need an answer, and that clicking
-// the very beginning of a bar is how you deliberately choose zero. Flashes
-// a ripple at each bar's zero point in turn, Claire then Michael.
-const zeroAnswerIntro = {
+/** Shared helper for the two "how to show..." concept screens below: plays
+ *  the "You need to choose an answer for both people." lead-in clip. */
+function playChooseBothLeadIn(onDone) {
+  const audio = document.createElement('audio');
+  audio.src = '../children-shared%20files/You need to choose an answer for both people.m4a';
+  audio.style.display = 'none';
+  document.body.appendChild(audio);
+  audio.play().catch(() => {});
+  const done = () => { audio.remove(); if (onDone) onDone(); };
+  audio.addEventListener('ended', done);
+  audio.addEventListener('error', done);
+}
+
+function trackPosAtVal(trackEl, val) {
+  const r = trackEl.getBoundingClientRect();
+  return { x: r.left + r.width * (val / 100), y: r.top + r.height / 2 };
+}
+function showScaleClickRipple(pt) {
+  const ripple = document.createElement('div');
+  ripple.className = 'two-scale-click-ripple';
+  ripple.style.left = pt.x + 'px';
+  ripple.style.top  = pt.y + 'px';
+  document.body.appendChild(ripple);
+  requestAnimationFrame(() => ripple.classList.add('animate'));
+  setTimeout(() => ripple.remove(), 550);
+}
+
+// Slide 2e-3 – explains how to show that someone IS at fault: click their
+// bar to add some red, then click/move farther along to make it redder.
+// NOTE: needs a recording of "If someone is at fault, click their bar to
+// make it red. The more red in their bar, the more at fault they are." —
+// not yet in children-shared files, so only the lead-in clip plays for now.
+const howToShowAtFault = {
   type: jsPsychHtmlButtonResponse,
-  choices: [],
+  choices: ['Next'],
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p id="zai-text" style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">You need to choose an answer for both people. If someone is not at fault at all, click the very beginning of their bar to choose zero.</p>
-      ${twoScaleHTML('zai', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
-      <div style="margin-top:14px;">
-        <button id="zai-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Next</button>
-      </div>
+      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">You need to choose an answer for both people. If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are.</p>
+      ${twoScaleHTML('hsaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
     </div>`,
   on_load: function() {
-    const btn    = document.getElementById('zai-continue');
-    const vTrack = document.getElementById('zai-v-track');
-    const pTrack = document.getElementById('zai-p-track');
-
-    function zeroPoint(trackEl) {
-      const r = trackEl.getBoundingClientRect();
-      return { x: r.left, y: r.top + r.height / 2 };
+    const vTrack = document.getElementById('hsaf-v-track');
+    function animateFill(who, from, to, duration, onDone) {
+      const t0 = performance.now();
+      function step(now) {
+        const t = Math.min(1, (now - t0) / duration);
+        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        setScaleValue('hsaf', who, from + (to - from) * eased);
+        if (t < 1) { requestAnimationFrame(step); } else if (onDone) { onDone(); }
+      }
+      requestAnimationFrame(step);
     }
-    function showRipple(pt) {
-      const ripple = document.createElement('div');
-      ripple.className = 'two-scale-click-ripple';
-      ripple.style.left = pt.x + 'px';
-      ripple.style.top  = pt.y + 'px';
-      document.body.appendChild(ripple);
-      requestAnimationFrame(() => ripple.classList.add('animate'));
-      setTimeout(() => ripple.remove(), 550);
-    }
+    // Recording is ~10.6s: "click their bar to make it red" comes first
+    // (~35% through, by word count), then "the more red...the more at
+    // fault they are" (~65% through) — the demo below is nested inside
+    // this second clip's playback (not a top-level setTimeout) so it
+    // starts when the narration actually starts, not while the long
+    // lead-in clip is still playing.
+    playChooseBothLeadIn(() => {
+      const audio = document.createElement('audio');
+      audio.src = '../children-shared%20files/If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are..m4a';
+      audio.style.display = 'none';
+      document.body.appendChild(audio);
+      audio.play().catch(() => {});
+      audio.addEventListener('ended', () => audio.remove());
+      audio.addEventListener('error', () => audio.remove());
 
-    setTimeout(() => {
-      showRipple(zeroPoint(vTrack));
       setTimeout(() => {
-        showRipple(zeroPoint(pTrack));
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.style.opacity = '1';
-          btn.style.cursor = 'pointer';
-        }, 700);
-      }, 1000);
-    }, 700);
-
-    btn.addEventListener('click', () => jsPsych.finishTrial());
+        showScaleClickRipple(trackPosAtVal(vTrack, 30));
+        animateFill('v', 0, 30, 700, () => {
+          setTimeout(() => {
+            showScaleClickRipple(trackPosAtVal(vTrack, 75));
+            animateFill('v', 30, 75, 900);
+          }, 3000);
+        });
+      }, 500);
+    });
   },
-  _debugLabel: 'Warmup: Zero Answer Intro',
+  _debugLabel: 'Warmup: How To Show At Fault',
+};
+
+// Slide 2e-4 – explains how to show that someone is NOT at fault at all: a
+// deliberate click at the very beginning of the bar, which stays gray.
+// NOTE: needs a recording of "If someone is not at fault at all, click the
+// very beginning of their bar. Their bar will stay gray." — not yet in
+// children-shared files, so only the lead-in clip plays for now.
+const howToShowNotAtFault = {
+  type: jsPsychHtmlButtonResponse,
+  choices: ['Next'],
+  stimulus: `
+    <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
+      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">You need to choose an answer for both people. If someone is not at fault at all, click the very beginning of their bar. Their bar will stay gray.</p>
+      ${twoScaleHTML('hsnaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+    </div>`,
+  on_load: function() {
+    const vTrack = document.getElementById('hsnaf-v-track');
+    // Dedicated recording for this screen (distinct from the shared lead-in
+    // clip used on the "how to show at fault" screen) — the click demo is
+    // gated on this audio finishing, not a blind delay.
+    const audio = document.createElement('audio');
+    audio.src = '../children-shared%20files/15 You need to choose an answer for both people.m4a';
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+    const showDemo = () => { audio.remove(); showScaleClickRipple(trackPosAtVal(vTrack, 0)); };
+    audio.addEventListener('ended', showDemo);
+    audio.addEventListener('error', showDemo);
+  },
+  _debugLabel: 'Warmup: How To Show Not At Fault',
 };
 
 const scaleDemo1 = buildScaleDemoTrial(
@@ -1069,13 +1235,19 @@ const scaleDemo1 = buildScaleDemoTrial(
   "In our game, if Claire is at fault but Michael is not at fault, Claire's bar should have some red, and Michael's bar should stay gray. Let's see Maggie do it.",
   85, 0,
   false,
-  "Claire has some fault, but Michael has no fault."
+  "Claire has some fault, but Michael has no fault.",
+  `../children-shared%20files/In our game, if Claire is at fault but Michael is not at fault,.m4a`,
+  `../children-shared%20files/Claire has some fault, but Michael has no fault..m4a`
 );
 const scalePractice1 = buildScalePracticeTrial(
   'sp1', 'Claire at fault only',
-  "Now you try! Give Claire some fault, and keep Michael at zero.",
-  (v, p, tv, tp) => tv && tp && v >= 40 && p <= 15,
-  "⚠️ Give Claire some fault, and keep Michael at zero."
+  "Now you try! Show that Claire is at fault and Michael is not at fault.",
+  // Deliberate "not at fault" means the gray endpoint, not just a low value —
+  // tolerance is small (click imprecision only), not enough to accept a
+  // visibly red 15-20 as "not at fault".
+  (v, p, tv, tp) => tv && tp && v >= 40 && p <= 5,
+  "⚠️ Show that Claire is at fault and Michael is not at fault.",
+  `../children-shared%20files/Now you try! Show that Claire is at fault and Michael is not at fault.m4a`
 );
 
 const scaleDemo2 = buildScaleDemoTrial(
@@ -1083,13 +1255,16 @@ const scaleDemo2 = buildScaleDemoTrial(
   "In our game, if Michael is at fault but Claire is not at fault, Michael's bar should have some red, and Claire's bar should stay gray. Let's see Maggie do it.",
   0, 85,
   false,
-  "Michael has some fault, but Claire has no fault."
+  "Michael has some fault, but Claire has no fault.",
+  `../children-shared%20files/In our game, if Michael is at fault but Claire is not at fault,.m4a`,
+  `../children-shared%20files/Michael has some fault, but Claire has no fault..m4a`
 );
 const scalePractice2 = buildScalePracticeTrial(
   'sp2', 'Michael at fault only',
-  "Now you try! Give Michael some fault, and keep Claire at zero.",
-  (v, p, tv, tp) => tv && tp && p >= 40 && v <= 15,
-  "⚠️ Give Michael some fault, and keep Claire at zero."
+  "Now you try! Show that Michael is at fault and Claire is not at fault.",
+  (v, p, tv, tp) => tv && tp && p >= 40 && v <= 5,
+  "⚠️ Show that Michael is at fault and Claire is not at fault.",
+  `../children-shared%20files/Now you try! Show that Michael is at fault and Claire is not at fault.m4a`
 );
 
 const scaleDemo3 = buildScaleDemoTrial(
@@ -1097,13 +1272,16 @@ const scaleDemo3 = buildScaleDemoTrial(
   "Sometimes both people can be at fault, but one person can be more at fault than the other. If Claire is more at fault than Michael, Claire's bar should have more red.",
   70, 30,
   false,
-  "Claire is more at fault than Michael."
+  "Claire is more at fault than Michael.",
+  `../children-shared%20files/Sometimes both people can be at fault, but one person can be more at fault than the other.m4a`,
+  `../children-shared%20files/Claire is more at fault than Michael..m4a`
 );
 const scalePractice3 = buildScalePracticeTrial(
   'sp3', 'Claire more at fault',
   "Now you try! Give both Claire and Michael some fault, but make Claire's bigger.",
   (v, p, tv, tp) => tv && tp && v > p + 15 && p >= 15,
-  "⚠️ Give both some fault, but make Claire's bar bigger than Michael's."
+  "⚠️ Give both some fault, but make Claire's bar bigger than Michael's.",
+  `../children-shared%20files/Now you try! Give both Claire and Michael some fault, but make Claire's bigger.m4a`
 );
 
 const scaleDemo4 = buildScaleDemoTrial(
@@ -1111,13 +1289,16 @@ const scaleDemo4 = buildScaleDemoTrial(
   "If Claire and Michael are equally at fault, their bars should have the same amount of red. Let's see Maggie do it.",
   55, 55,
   false,
-  "Claire and Michael are equally at fault."
+  "Claire and Michael are equally at fault.",
+  `../children-shared%20files/If Claire and Michael are equally at fault,.m4a`,
+  `../children-shared%20files/Claire and Michael are equally at fault..m4a`
 );
 const scalePractice4 = buildScalePracticeTrial(
   'sp4', 'Equally at fault',
   "Now you try! Make Claire's and Michael's bars the same size.",
   (v, p, tv, tp) => tv && tp && Math.abs(v - p) <= 10 && v >= 25 && p >= 25,
-  "⚠️ Make Claire's and Michael's bars about the same size."
+  "⚠️ Make Claire's and Michael's bars about the same size.",
+  `../children-shared%20files/Now you try! Make Claire's and Michael's bars the same size.m4a`
 );
 
 const scaleDemo5 = buildScaleDemoTrial(
@@ -1125,13 +1306,16 @@ const scaleDemo5 = buildScaleDemoTrial(
   "If neither Claire nor Michael is at fault, both bars should stay gray. Maggie still needs to choose an answer for each person. Let's see her do it.",
   0, 0,
   false,
-  "Neither Claire nor Michael is at fault."
+  "Neither Claire nor Michael is at fault.",
+  `../children-shared%20files/If neither Claire nor Michael is at fault.m4a`,
+  `../children-shared%20files/Neither Claire nor Michael is at fault..m4a`
 );
 const scalePractice5 = buildScalePracticeTrial(
   'sp5', 'Neither at fault',
-  "Now you try! Click the very beginning of both Claire's and Michael's bars to choose zero for each.",
-  (v, p, tv, tp) => tv && tp && v <= 20 && p <= 20,
-  "⚠️ Click the very beginning of both bars to choose zero."
+  "Now you try! Show that neither Claire nor Michael is at fault.",
+  (v, p, tv, tp) => tv && tp && v <= 5 && p <= 5,
+  "⚠️ Show that neither Claire nor Michael is at fault.",
+  `../children-shared%20files/Now you try! Show that neither Claire nor Michael is at fault.m4a`
 );
 
 /* ----------------------------------------------------------
@@ -1152,7 +1336,7 @@ function checkerPersonHTML(id, name, imgUrl) {
 
 /** Maggie walks in and presses the target Yes/No button, then the child
  *  clicks "Got it!". Mirrors buildScaleDemoTrial's cursor-walk pattern. */
-function buildCheckerDemoTrial(id, label, ruleText, name, imgUrl, targetAnswer) {
+function buildCheckerDemoTrial(id, label, ruleText, name, imgUrl, targetAnswer, audioSrc, questionAudioSrc) {
   return {
     _debugLabel: `Warmup: Checker Demo — ${label}`,
     type: jsPsychHtmlButtonResponse,
@@ -1201,23 +1385,54 @@ function buildCheckerDemoTrial(id, label, ruleText, name, imgUrl, targetAnswer) 
         requestAnimationFrame(step);
       }
 
-      setTimeout(() => {
-        cornerStatic.style.visibility = 'hidden';
-        cursor.style.visibility = 'visible';
-        animateCursorTo(cornerPos, btnPos(targetBtn), 900, () => {
-          targetBtn.classList.add('checker-btn-pressed');
-          setTimeout(() => {
-            animateCursorTo(btnPos(targetBtn), cornerPos, 900, () => {
-              cursor.style.visibility = 'hidden';
-              cornerStatic.style.visibility = 'visible';
-              targetBtn.classList.remove('checker-btn-pressed');
-              btn.disabled = false;
-              btn.style.opacity = '1';
-              btn.style.cursor = 'pointer';
-            });
-          }, 700);
-        });
-      }, 500);
+      /** Maggie's walk-to-button-and-click demo. Only shown once the rule
+       *  audio has finished, in sync with the "Was [name] being careful?"
+       *  clip (if any) rather than during the (longer) rule explanation. */
+      function runDemo() {
+        setTimeout(() => {
+          cornerStatic.style.visibility = 'hidden';
+          cursor.style.visibility = 'visible';
+          animateCursorTo(cornerPos, btnPos(targetBtn), 900, () => {
+            targetBtn.classList.add('checker-btn-pressed');
+            setTimeout(() => {
+              animateCursorTo(btnPos(targetBtn), cornerPos, 900, () => {
+                cursor.style.visibility = 'hidden';
+                cornerStatic.style.visibility = 'visible';
+                targetBtn.classList.remove('checker-btn-pressed');
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+              });
+            }, 700);
+          });
+        }, 500);
+      }
+
+      function showQuestionAndDemo() {
+        if (questionAudioSrc) {
+          const audio2 = document.createElement('audio');
+          audio2.src = questionAudioSrc;
+          audio2.style.display = 'none';
+          document.body.appendChild(audio2);
+          audio2.play().catch(() => {});
+          audio2.addEventListener('ended', () => audio2.remove());
+          audio2.addEventListener('error', () => audio2.remove());
+        }
+        runDemo();
+      }
+
+      if (audioSrc) {
+        const audio = document.createElement('audio');
+        audio.src = audioSrc;
+        audio.style.display = 'none';
+        document.body.appendChild(audio);
+        audio.play().catch(() => {});
+        const afterRuleAudio = () => { audio.remove(); showQuestionAndDemo(); };
+        audio.addEventListener('ended', afterRuleAudio);
+        audio.addEventListener('error', afterRuleAudio);
+      } else {
+        showQuestionAndDemo();
+      }
 
       btn.addEventListener('click', () => jsPsych.finishTrial());
     },
@@ -1226,7 +1441,7 @@ function buildCheckerDemoTrial(id, label, ruleText, name, imgUrl, targetAnswer) 
 
 /** Child tries clicking Yes/No themselves; Continue stays disabled until
  *  they click the correct button (matching what Maggie just demonstrated). */
-function buildCheckerPracticeTrial(id, label, practiceText, name, imgUrl, correctAnswer, hintMsg) {
+function buildCheckerPracticeTrial(id, label, practiceText, name, imgUrl, correctAnswer, hintMsg, audioSrc) {
   return {
     _debugLabel: `Warmup: Checker Practice — ${label}`,
     type: jsPsychHtmlButtonResponse,
@@ -1241,6 +1456,15 @@ function buildCheckerPracticeTrial(id, label, practiceText, name, imgUrl, correc
         </div>
       </div>`,
     on_load: function() {
+      if (audioSrc) {
+        const audio = document.createElement('audio');
+        audio.src = audioSrc;
+        audio.style.display = 'none';
+        document.body.appendChild(audio);
+        audio.play().catch(() => {});
+        audio.addEventListener('ended', () => audio.remove());
+        audio.addEventListener('error', () => audio.remove());
+      }
       const yesBtn = document.getElementById(`${id}-yes-btn`);
       const noBtn  = document.getElementById(`${id}-no-btn`);
       const btn    = document.getElementById(`${id}-continue`);
@@ -1277,25 +1501,31 @@ function buildCheckerPracticeTrial(id, label, practiceText, name, imgUrl, correc
 const checkerDemoYes = buildCheckerDemoTrial(
   'cd1', 'Yes (careful)',
   "In our game, you can also decide if Claire and Michael were careful. If you think Claire was careful, click the green yes mark. Let's watch Maggie try it.",
-  'Claire', 'img/claire.png', 'yes'
+  'Claire', 'img/claire.png', 'yes',
+  '../children-shared%20files/In our game, you can also decide if Claire and Michael were careful. If you think Claire w.m4a',
+  '../children-shared%20files/Was Claire being careful%3F.m4a'
 );
 const checkerPracticeYes = buildCheckerPracticeTrial(
   'cp1', 'Yes (careful)',
   "Now you try! Click the green yes mark for Claire.",
   'Claire', 'img/claire.png', 'yes',
-  '⚠️ Click the green checkmark for Yes.'
+  '⚠️ Click the green checkmark for Yes.',
+  '../children-shared%20files/Now you try! Click the green yes mark for Claire.m4a'
 );
 
 const checkerDemoNo = buildCheckerDemoTrial(
   'cd2', 'No (not careful)',
   "Now let's think about Michael. If you think Michael was not careful, click the red no mark. Let's watch Maggie try it.",
-  'Michael', 'img/michael.png', 'no'
+  'Michael', 'img/michael.png', 'no',
+  '../children-shared%20files/Now let\'s think about Michael. If you think Michael was not careful, click the red no mark.m4a',
+  '../children-shared%20files/Was Michael being careful%3F.m4a'
 );
 const checkerPracticeNo = buildCheckerPracticeTrial(
   'cp2', 'No (not careful)',
   "Now you try! Click the red no mark for Michael.",
   'Michael', 'img/michael.png', 'no',
-  '⚠️ Click the red cross for No.'
+  '⚠️ Click the red cross for No.',
+  '../children-shared%20files/Now you try! Click the red no mark for Michael.m4a'
 );
 
 /* ----------------------------------------------------------
@@ -1333,6 +1563,14 @@ function buildFaultQuestionTrial(scenario) {
       const pTrack = document.getElementById(`${id}-p-track`);
       const btn    = document.getElementById(`${id}-continue`);
 
+      const questionAudio = document.createElement('audio');
+      questionAudio.src = '../children-shared%20files/Now that you saw what happened, how much do you think each person is at fault%3F.m4a';
+      questionAudio.style.display = 'none';
+      document.body.appendChild(questionAudio);
+      questionAudio.play().catch(() => {});
+      questionAudio.addEventListener('ended', () => questionAudio.remove());
+      questionAudio.addEventListener('error', () => questionAudio.remove());
+
       function checkValid() {
         const ok = touchedV && touchedP;
         btn.disabled = !ok;
@@ -1351,28 +1589,34 @@ function buildFaultQuestionTrial(scenario) {
         checkValid();
       }
 
-      function onMouseDownFactory(who) {
+      function onPointerDownFactory(who) {
         return function(e) {
           dragging = who;
           updateFromClientX(who, e.clientX);
           e.preventDefault();
         };
       }
-      function onMouseMove(e) {
+      function onPointerMove(e) {
         if (!dragging) return;
         updateFromClientX(dragging, e.clientX);
       }
-      function onMouseUp() { dragging = null; }
+      function onPointerUp() { dragging = null; }
 
-      vTrack.addEventListener('mousedown', onMouseDownFactory('v'));
-      pTrack.addEventListener('mousedown', onMouseDownFactory('p'));
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
+      // Pointer events (not mouse-only) so mouse, touchscreen, and stylus
+      // input all work identically for dragging the fault bars.
+      vTrack.addEventListener('pointerdown', onPointerDownFactory('v'));
+      pTrack.addEventListener('pointerdown', onPointerDownFactory('p'));
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+      document.addEventListener('pointercancel', onPointerUp);
       checkValid();
 
       btn.addEventListener('click', () => {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
+        questionAudio.pause();
+        questionAudio.remove();
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        document.removeEventListener('pointercancel', onPointerUp);
         jsPsych.finishTrial({
           fault_rating_v: vVal,
           fault_rating_p: pVal,
@@ -1390,20 +1634,24 @@ function buildFaultQuestionTrial(scenario) {
    Shown after the fault question, on every scenario. Always shows
    the scenario's ending picture.
    ---------------------------------------------------------- */
-function buildCheckerTrial(scenario) {
+/** One carefulness question, about either the actor (targetRole 'p') or
+ *  the victim (targetRole 'v'). Two of these — order randomized per
+ *  scenario — are shown so both characters get asked about. */
+function buildCheckerTrial(scenario, targetRole) {
   const pName = scenario.p_name || 'Finn';
   const vName = scenario.v_name || 'Cleo';
+  const targetName = targetRole === 'p' ? pName : vName;
   const endingImg = scenario.story_slides[scenario.story_slides.length - 1];
-  const id = `ck${scenario.id}`;
+  const id = `ck${scenario.id}${targetRole}`;
 
   return {
-    _debugLabel: `${pName} & ${vName} — Checker Question`,
+    _debugLabel: `${pName} & ${vName} — Checker Question (${targetName})`,
     type: jsPsychHtmlButtonResponse,
     choices: [],
     stimulus: `
       <div style="text-align:center; padding:8px 40px 0 40px; max-width:860px; margin:0 auto;">
         <img src="${endingImg}" style="max-width:820px; width:100%; max-height:min(30vh, 240px); object-fit:contain; border-radius:8px; margin-bottom:14px;">
-        <p style="font-size:24px; font-weight:600;">Was ${pName} being careful?</p>
+        <p style="font-size:24px; font-weight:600;">Was ${targetName} being careful?</p>
         <div style="display:flex; justify-content:center; gap:24px; margin-top:14px;">
           <button id="${id}-yes-btn" type="button" class="jspsych-btn checker-btn checker-btn-yes"><span class="checker-icon">✓</span><span class="checker-label">Yes</span></button>
           <button id="${id}-no-btn" type="button" class="jspsych-btn checker-btn checker-btn-no"><span class="checker-icon">✗</span><span class="checker-label">No</span></button>
@@ -1416,20 +1664,38 @@ function buildCheckerTrial(scenario) {
       is_practice: false,
       scenario_id: scenario.id,
       harm_type: scenario.harm_type,
+      checker_target_role: targetRole,
       p_name: pName,
+      v_name: vName,
     },
     on_load: function() {
       const startTime = performance.now();
       const yesBtn = document.getElementById(`${id}-yes-btn`);
       const noBtn  = document.getElementById(`${id}-no-btn`);
 
+      // "Was [Name] being careful?" — one recording per character, matching
+      // the on-screen question exactly (not the generic Yes/No reminder).
+      const questionAudio = document.createElement('audio');
+      questionAudio.src = `../children-shared%20files/Was ${targetName} being careful%3F.m4a`;
+      questionAudio.style.display = 'none';
+      document.body.appendChild(questionAudio);
+      questionAudio.play().catch(() => {});
+      questionAudio.addEventListener('ended', () => questionAudio.remove());
+      questionAudio.addEventListener('error', () => questionAudio.remove());
+      function stopAudio() {
+        questionAudio.pause();
+        questionAudio.remove();
+      }
+
       function pick(key, btn) {
+        stopAudio();
         yesBtn.disabled = true;
         noBtn.disabled  = true;
         btn.classList.add('checker-btn-pressed');
         setTimeout(() => {
           jsPsych.finishTrial({
             checker_response: key,
+            checker_target_role: targetRole,
             rt: Math.round(performance.now() - startTime),
           });
         }, 400);
@@ -1510,7 +1776,13 @@ function buildTestTrial(scenario, scenarioIdx, total) {
   };
 
   const faultQuestionSlide = buildFaultQuestionTrial(scenario);
-  return [storySlide, slideG, faultQuestionSlide, buildCheckerTrial(scenario)];
+  // Ask about both characters' carefulness, order randomized per scenario
+  // rather than always asking about the actor first.
+  const actorFirst = sessionGet('exp1_children_vgo0_checker_order_' + scenario.id, () => Math.random() < 0.5);
+  const checkerTrials = actorFirst
+    ? [buildCheckerTrial(scenario, 'p'), buildCheckerTrial(scenario, 'v')]
+    : [buildCheckerTrial(scenario, 'v'), buildCheckerTrial(scenario, 'p')];
+  return [storySlide, slideG, faultQuestionSlide, ...checkerTrials];
 }
 
 /* ----------------------------------------------------------
@@ -1554,7 +1826,8 @@ const warmupBlock = [
   warmupPracticeBoth,
   barExistsIntro,
   barMeaningIntro,
-  zeroAnswerIntro,
+  howToShowAtFault,
+  howToShowNotAtFault,
   scaleDemo1, scalePractice1,
   scaleDemo2, scalePractice2,
   scaleDemo3, scalePractice3,
