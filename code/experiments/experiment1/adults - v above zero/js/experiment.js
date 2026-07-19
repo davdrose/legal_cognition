@@ -370,7 +370,7 @@ const warmupLayoutLocked = {
   hud_v_cookies: 3,
   trash_on_left: TRASH_ON_LEFT,
   harm_text: '',
-  instruction_text: "If you think anyone should be punished, you can decide how they lose their cookies.",
+  instruction_text: "In our game, if you think anyone should be punished, you can decide how they lose their cookies.",
   locked: true,
   is_practice: true,
   scenario_id: 0,
@@ -567,6 +567,7 @@ function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst, unanswere
           </div>
           <div class="two-scale-track-mid"></div>
         </div>
+        <div class="two-scale-pct" id="${id}-v-pct" style="font-size:14px; color:#555; min-height:18px; margin-top:4px;"></div>
       </div>`;
   const pCol = `
       <div class="two-scale-col" id="${id}-p-col">
@@ -579,10 +580,64 @@ function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst, unanswere
           </div>
           <div class="two-scale-track-mid"></div>
         </div>
+        <div class="two-scale-pct" id="${id}-p-pct" style="font-size:14px; color:#555; min-height:18px; margin-top:4px;"></div>
       </div>`;
   return `
     <div class="two-scale-row">${pFirst ? pCol + vCol : vCol + pCol}
     </div>`;
+}
+
+/** Shows the numeric percentage next to a bar once the participant has
+ *  actually clicked/dragged it — not called during the animated warmup
+ *  demos, so it only appears in response to a real interaction. */
+function showScalePercent(id, who, val) {
+  const pctEl = document.getElementById(`${id}-${who}-pct`);
+  if (pctEl) pctEl.textContent = `${val}%`;
+}
+
+/* ----------------------------------------------------------
+   CURSOR ICON — demonstrates clicks/drags on the warmup screens
+   (no mascot for adults, so a plain pointer icon stands in for
+   "here's where you'd click/drag").
+   ---------------------------------------------------------- */
+function cursorImgHTML(prefix) {
+  return `<img id="${prefix}-cursor" src="img/cursor.png" alt="" style="position:fixed; width:26px; visibility:hidden; pointer-events:none; z-index:5;">`;
+}
+function setCursorPos(prefix, pt) {
+  const el = document.getElementById(`${prefix}-cursor`);
+  if (!el) return;
+  el.style.visibility = 'visible';
+  el.style.left = (pt.x - 4) + 'px';
+  el.style.top  = (pt.y - 3) + 'px';
+}
+function hideCursor(prefix) {
+  const el = document.getElementById(`${prefix}-cursor`);
+  if (el) el.style.visibility = 'hidden';
+}
+/** Slides the cursor icon from one point to another (simulates dragging),
+ *  then calls onDone. If from and to are the same point, it just appears
+ *  there (simulates a single click, e.g. at the zero end of a bar). */
+function animateCursorTo(prefix, from, to, duration, onDone) {
+  const t0 = performance.now();
+  function step(now) {
+    const t = Math.min(1, (now - t0) / duration);
+    const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    setCursorPos(prefix, { x: from.x + (to.x - from.x) * eased, y: from.y + (to.y - from.y) * eased });
+    if (t < 1) { requestAnimationFrame(step); } else if (onDone) { onDone(); }
+  }
+  requestAnimationFrame(step);
+}
+
+/** Brief pulsing ripple at a point, to show a click actually happened
+ *  (used right when the cursor icon "presses" something). */
+function showClickEffect(pt) {
+  const ripple = document.createElement('div');
+  ripple.className = 'two-scale-click-ripple';
+  ripple.style.left = pt.x + 'px';
+  ripple.style.top  = pt.y + 'px';
+  document.body.appendChild(ripple);
+  requestAnimationFrame(() => ripple.classList.add('animate'));
+  setTimeout(() => ripple.remove(), 550);
 }
 
 function setScaleValue(id, who, val) {
@@ -605,22 +660,48 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP) {
       <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
         <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">${ruleText}</p>
         ${twoScaleHTML(id, 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+        ${cursorImgHTML(id)}
       </div>`,
     on_load: function() {
-      function animateFill(who, to, duration, delay) {
-        setTimeout(() => {
-          const t0 = performance.now();
-          function step(now) {
-            const t = Math.min(1, (now - t0) / duration);
-            const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-            setScaleValue(id, who, to * eased);
-            if (t < 1) requestAnimationFrame(step);
-          }
-          requestAnimationFrame(step);
-        }, delay);
+      const vTrack = document.getElementById(`${id}-v-track`);
+      const pTrack = document.getElementById(`${id}-p-track`);
+      function trackPosAtVal(trackEl, val) {
+        const r = trackEl.getBoundingClientRect();
+        return { x: r.left + r.width * (val / 100), y: r.top + r.height / 2 };
       }
-      animateFill('v', targetV, 1000, 400);
-      animateFill('p', targetP, 1000, 400);
+      // Drags the cursor along the track in sync with the fill — when the
+      // target is 0 this is a no-op motion, so the cursor just sits at the
+      // zero point (a click, not a drag), matching how the same value would
+      // really be set.
+      function animateFillWithCursor(who, trackEl, to, duration, onDone) {
+        const t0 = performance.now();
+        function step(now) {
+          const t = Math.min(1, (now - t0) / duration);
+          const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+          const val = to * eased;
+          setScaleValue(id, who, val);
+          setCursorPos(id, trackPosAtVal(trackEl, val));
+          if (t < 1) { requestAnimationFrame(step); } else if (onDone) { onDone(); }
+        }
+        requestAnimationFrame(step);
+      }
+      setTimeout(() => {
+        setCursorPos(id, trackPosAtVal(vTrack, 0));
+        showClickEffect(trackPosAtVal(vTrack, 0));
+        setTimeout(() => {
+          animateFillWithCursor('v', vTrack, targetV, 1000, () => {
+            setTimeout(() => {
+              setCursorPos(id, trackPosAtVal(pTrack, 0));
+              showClickEffect(trackPosAtVal(pTrack, 0));
+              setTimeout(() => {
+                animateFillWithCursor('p', pTrack, targetP, 1000, () => {
+                  setTimeout(() => hideCursor(id), 600);
+                });
+              }, 300);
+            }, 300);
+          });
+        }, 200);
+      }, 400);
     },
   };
 }
@@ -664,6 +745,7 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg) {
         const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
         const val = Math.round(pct * 100);
         setScaleValue(id, who, val);
+        showScalePercent(id, who, val);
         if (who === 'v') { vVal = val; touchedV = true; } else { pVal = val; touchedP = true; }
         checkValid();
       }
@@ -707,23 +789,33 @@ const barExistsIntro = {
   choices: ['Next'],
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, each person has a bar. The bars show how much each person is at fault. When someone is not at fault at all, their bar is gray. The more at fault they are, the more red fills their bar.</p>
+      <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, each person has a bar. The bars show how much each person is at fault.</p>
       ${twoScaleHTML('bei', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+      ${cursorImgHTML('bei')}
     </div>`,
   on_load: function() {
+    const vTrack = document.getElementById('bei-v-track');
+    function trackPosAtVal(trackEl, val) {
+      const r = trackEl.getBoundingClientRect();
+      return { x: r.left + r.width * (val / 100), y: r.top + r.height / 2 };
+    }
     function animateFill(who, from, to, duration, onDone) {
       const t0 = performance.now();
       function step(now) {
         const t = Math.min(1, (now - t0) / duration);
         const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-        setScaleValue('bei', who, from + (to - from) * eased);
+        const val = from + (to - from) * eased;
+        setScaleValue('bei', who, val);
+        setCursorPos('bei', trackPosAtVal(vTrack, val));
         if (t < 1) { requestAnimationFrame(step); } else if (onDone) { onDone(); }
       }
       requestAnimationFrame(step);
     }
     setTimeout(() => {
+      setCursorPos('bei', trackPosAtVal(vTrack, 0));
+      showClickEffect(trackPosAtVal(vTrack, 0));
       animateFill('v', 0, 65, 1200, () => {
-        setTimeout(() => animateFill('v', 65, 0, 1000), 700);
+        setTimeout(() => animateFill('v', 65, 0, 1000, () => hideCursor('bei')), 700);
       });
     }, 500);
   },
@@ -739,20 +831,12 @@ const howToShowAtFault = {
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
       <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are.</p>
       ${twoScaleHTML('hsaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+      ${cursorImgHTML('hsaf')}
     </div>`,
   on_load: function() {
     function trackPosAtVal(trackEl, val) {
       const r = trackEl.getBoundingClientRect();
       return { x: r.left + r.width * (val / 100), y: r.top + r.height / 2 };
-    }
-    function showRipple(pt) {
-      const ripple = document.createElement('div');
-      ripple.className = 'two-scale-click-ripple';
-      ripple.style.left = pt.x + 'px';
-      ripple.style.top  = pt.y + 'px';
-      document.body.appendChild(ripple);
-      requestAnimationFrame(() => ripple.classList.add('animate'));
-      setTimeout(() => ripple.remove(), 550);
     }
     function animateFill(who, from, to, duration, onDone) {
       const t0 = performance.now();
@@ -766,11 +850,15 @@ const howToShowAtFault = {
     }
     const vTrack = document.getElementById('hsaf-v-track');
     setTimeout(() => {
-      showRipple(trackPosAtVal(vTrack, 30));
+      setCursorPos('hsaf', trackPosAtVal(vTrack, 30));
+      showClickEffect(trackPosAtVal(vTrack, 30));
       animateFill('v', 0, 30, 700, () => {
         setTimeout(() => {
-          showRipple(trackPosAtVal(vTrack, 75));
-          animateFill('v', 30, 75, 900);
+          setCursorPos('hsaf', trackPosAtVal(vTrack, 75));
+          showClickEffect(trackPosAtVal(vTrack, 75));
+          animateFill('v', 30, 75, 900, () => {
+            setTimeout(() => hideCursor('hsaf'), 600);
+          });
         }, 500);
       });
     }, 500);
@@ -787,23 +875,19 @@ const howToShowNotAtFault = {
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
       <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">If someone is not at fault at all, click the very beginning of their bar. Their bar will stay gray.</p>
       ${twoScaleHTML('hsnaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+      ${cursorImgHTML('hsnaf')}
     </div>`,
   on_load: function() {
     function trackPosAtVal(trackEl, val) {
       const r = trackEl.getBoundingClientRect();
       return { x: r.left + r.width * (val / 100), y: r.top + r.height / 2 };
     }
-    function showRipple(pt) {
-      const ripple = document.createElement('div');
-      ripple.className = 'two-scale-click-ripple';
-      ripple.style.left = pt.x + 'px';
-      ripple.style.top  = pt.y + 'px';
-      document.body.appendChild(ripple);
-      requestAnimationFrame(() => ripple.classList.add('animate'));
-      setTimeout(() => ripple.remove(), 550);
-    }
     const vTrack = document.getElementById('hsnaf-v-track');
-    setTimeout(() => showRipple(trackPosAtVal(vTrack, 0)), 500);
+    setTimeout(() => {
+      setCursorPos('hsnaf', trackPosAtVal(vTrack, 0));
+      showClickEffect(trackPosAtVal(vTrack, 0));
+      setTimeout(() => hideCursor('hsnaf'), 900);
+    }, 500);
   },
   _debugLabel: 'Warmup: How To Show Not At Fault',
 };
@@ -895,9 +979,21 @@ function buildCheckerDemoTrial(id, label, ruleText, name, imgUrl, exampleAnswer)
       <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
         <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">${ruleText}</p>
         ${checkerPersonHTML(id, name, imgUrl)}
+        ${cursorImgHTML(id)}
       </div>`,
     on_load: function() {
-      document.getElementById(`${id}-${exampleAnswer}-btn`).classList.add('checker-btn-pressed');
+      const btnEl = document.getElementById(`${id}-${exampleAnswer}-btn`);
+      const r = btnEl.getBoundingClientRect();
+      const target = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      const start  = { x: target.x, y: target.y - 60 };
+      setTimeout(() => {
+        setCursorPos(id, start);
+        animateCursorTo(id, start, target, 500, () => {
+          showClickEffect(target);
+          btnEl.classList.add('checker-btn-pressed');
+          setTimeout(() => hideCursor(id), 700);
+        });
+      }, 400);
     },
   };
 }
@@ -1038,6 +1134,7 @@ function buildFaultQuestionTrial(scenario, headerImg) {
         const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
         const val = Math.round(pct * 100);
         setScaleValue(id, who, val);
+        showScalePercent(id, who, val);
         if (who === 'v') { vVal = val; touchedV = true; } else { pVal = val; touchedP = true; }
         checkValid();
       }
@@ -1529,7 +1626,7 @@ const timeline = [
    Hidden by default for public / participant deployment.
    To reveal it (researcher use only), set SHOW_DEBUG_PANEL = true.
    ============================================================ */
-const SHOW_DEBUG_PANEL = false;   // ← change to true to show the Jump-to-Screen panel
+const SHOW_DEBUG_PANEL = true;   // ← change to true to show the Jump-to-Screen panel
 
 (function () {
   // Public deployment: panel stays hidden — just run the experiment normally.

@@ -122,7 +122,7 @@ var jsPsychAllocation = (function (jspsych) {
           <div class="alloc-panel" id="v-panel">
             <img src="img/${trial.v_img}" class="alloc-char-img" alt="${trial.v_name}">
             <p class="alloc-char-name">${trial.v_name}</p>
-            <div class="panel-name">${vLabel}</div>
+            <div class="panel-name" id="v-count-label">${vLabel}</div>
             ${plateHTML}
           </div>`;
       }
@@ -164,7 +164,7 @@ var jsPsychAllocation = (function (jspsych) {
             <div class="p-pool-col">
               <img src="img/${trial.p_img}" class="alloc-char-img" alt="${trial.p_name}">
               <p class="alloc-char-name">${trial.p_name}</p>
-              <div class="panel-name">${trial.p_name} has ${trial.p_cookies} cookie${trial.p_cookies !== 1 ? 's' : ''}</div>
+              <div class="panel-name" id="p-count-label">${trial.p_name} has ${trial.p_cookies} cookie${trial.p_cookies !== 1 ? 's' : ''}</div>
               ${pPlateHTML()}
             </div>
             ${rightPanel}
@@ -241,6 +241,18 @@ var jsPsychAllocation = (function (jspsych) {
       function getPCookieEl(id) { return display_element.querySelector(`#p-cookie-${id}`); }
       function getVCookieEl(id) { return display_element.querySelector(`#v-existing-${id}`); }
 
+      /** Keeps the "[Name] has N cookies" labels in sync with each plate's
+       *  current contents (own cookies still there, plus any moved in from
+       *  the other character), rather than the trial's starting counts. */
+      function updateCookieLabels() {
+        const pLabelEl = display_element.querySelector('#p-count-label');
+        const vLabelEl = display_element.querySelector('#v-count-label');
+        const pCount = countInZone('pool') + countVInZone('p');
+        const vCount = countVInZone('v')   + countInZone('v');
+        if (pLabelEl) pLabelEl.textContent = `${trial.p_name} has ${pCount} cookie${pCount !== 1 ? 's' : ''}`;
+        if (vLabelEl) vLabelEl.textContent = `${trial.v_name} has ${vCount} cookie${vCount !== 1 ? 's' : ''}`;
+      }
+
       function placePCookie(cookieEl, containerEl, left, top, zone, id) {
         containerEl.appendChild(cookieEl);
         cookieEl.style.left    = left + 'px';
@@ -248,6 +260,7 @@ var jsPsychAllocation = (function (jspsych) {
         cookieEl.style.opacity = '1';
         cookieDest[id] = zone;
         updateConfirmBtn();
+        updateCookieLabels();
       }
 
       function placeVCookie(cookieEl, containerEl, left, top, zone, id) {
@@ -257,6 +270,7 @@ var jsPsychAllocation = (function (jspsych) {
         cookieEl.style.opacity = '1';
         vCookieDest[id] = zone;
         updateConfirmBtn();
+        updateCookieLabels();
       }
 
       function returnToPool(id) {
