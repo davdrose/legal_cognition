@@ -948,8 +948,9 @@ const scaleDemo4 = buildScaleDemoTrial(
 const scalePractice4 = buildScalePracticeTrial(
   'sp4', 'Equally at fault',
   "Now you try! Make Claire's and Michael's bars the same size.",
-  (v, p, tv, tp) => tv && tp && Math.abs(v - p) <= 10 && v >= 25 && p >= 25,
-  "⚠️ Make Claire's and Michael's bars about the same size."
+  // "Equally at fault" means exactly equal — no tolerance.
+  (v, p, tv, tp) => tv && tp && v === p && v >= 25,
+  "⚠️ Make Claire's and Michael's bars exactly the same size."
 );
 
 const scaleDemo5 = buildScaleDemoTrial(
