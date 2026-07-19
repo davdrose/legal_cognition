@@ -791,36 +791,10 @@ const barExistsIntro = {
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
       <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, each person has a bar. The bars show how much each person is at fault.</p>
       ${twoScaleHTML('bei', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
-      ${cursorImgHTML('bei')}
     </div>`,
-  on_load: function() {
-    const vTrack = document.getElementById('bei-v-track');
-    function trackPosAtVal(trackEl, val) {
-      const r = trackEl.getBoundingClientRect();
-      return { x: r.left + r.width * (val / 100), y: r.top + r.height / 2 };
-    }
-    function animateFill(who, from, to, duration, onDone) {
-      const t0 = performance.now();
-      function step(now) {
-        const t = Math.min(1, (now - t0) / duration);
-        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-        const val = from + (to - from) * eased;
-        setScaleValue('bei', who, val);
-        setCursorPos('bei', trackPosAtVal(vTrack, val));
-        if (t < 1) { requestAnimationFrame(step); } else if (onDone) { onDone(); }
-      }
-      requestAnimationFrame(step);
-    }
-    setTimeout(() => {
-      setCursorPos('bei', trackPosAtVal(vTrack, 0));
-      showClickEffect(trackPosAtVal(vTrack, 0));
-      animateFill('v', 0, 65, 1200, () => {
-        setTimeout(() => animateFill('v', 65, 0, 1000, () => hideCursor('bei')), 700);
-      });
-    }, 500);
-  },
   _debugLabel: 'Warmup: Bar Exists Intro',
 };
+
 
 // Explains how to show that someone IS at fault: click their bar to add
 // red, then click/move farther along to make it redder.
@@ -900,7 +874,8 @@ const scaleDemo1 = buildScaleDemoTrial(
 const scalePractice1 = buildScalePracticeTrial(
   'sp1', 'Claire at fault only',
   "Now you try! Show that Claire is at fault and Michael is not at fault.",
-  (v, p, tv, tp) => tv && tp && v >= 40 && p <= 8,
+  // "Not at fault" means exactly 0 — no tolerance.
+  (v, p, tv, tp) => tv && tp && v >= 40 && p === 0,
   "⚠️ Show that Claire is at fault and Michael is not at fault."
 );
 
@@ -912,7 +887,8 @@ const scaleDemo2 = buildScaleDemoTrial(
 const scalePractice2 = buildScalePracticeTrial(
   'sp2', 'Michael at fault only',
   "Now you try! Show that Michael is at fault and Claire is not at fault.",
-  (v, p, tv, tp) => tv && tp && p >= 40 && v <= 8,
+  // "Not at fault" means exactly 0 — no tolerance.
+  (v, p, tv, tp) => tv && tp && p >= 40 && v === 0,
   "⚠️ Show that Michael is at fault and Claire is not at fault."
 );
 
@@ -948,7 +924,8 @@ const scaleDemo5 = buildScaleDemoTrial(
 const scalePractice5 = buildScalePracticeTrial(
   'sp5', 'Neither at fault',
   "Now you try! Show that neither Claire nor Michael is at fault.",
-  (v, p, tv, tp) => tv && tp && v <= 8 && p <= 8,
+  // "Not at fault" means exactly 0 — no tolerance.
+  (v, p, tv, tp) => tv && tp && v === 0 && p === 0,
   "⚠️ Show that neither Claire nor Michael is at fault."
 );
 
