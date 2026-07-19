@@ -1214,7 +1214,10 @@ function buildFaultQuestionTrial(scenario, headerImg) {
 function buildCheckerTrial(scenario, targetRole) {
   const pName = scenario.p_name || 'Finn';
   const vName = scenario.v_name || 'Cleo';
+  const pImg  = scenario.p_img  || 'finn_neutral.png';
+  const vImg  = scenario.v_img  || 'cleo_neutral.png';
   const targetName = targetRole === 'p' ? pName : vName;
+  const targetImg  = targetRole === 'p' ? pImg  : vImg;
   const endingImg = scenario.story_slides[scenario.story_slides.length - 1];
   const id = `ck${scenario.id}${targetRole}`;
 
@@ -1225,6 +1228,7 @@ function buildCheckerTrial(scenario, targetRole) {
     stimulus: `
       <div style="text-align:center; padding:10px 40px 0 40px; max-width:900px; margin:0 auto;">
         <img src="${endingImg}" style="max-width:860px; width:100%; max-height:min(30vh, 240px); object-fit:contain; border-radius:8px; margin-bottom:14px;">
+        <img src="img/${targetImg}" alt="${targetName}" style="width:88px; height:88px; object-fit:contain; border-radius:50%; margin-bottom:10px;">
         <p style="font-size:20px; font-weight:600;">Was ${targetName} being careful?</p>
         <div style="display:flex; justify-content:center; gap:24px; margin-top:14px;">
           <button id="${id}-yes-btn" type="button" class="jspsych-btn checker-btn checker-btn-yes"><span class="checker-icon">✓</span><span class="checker-label">Yes</span></button>
