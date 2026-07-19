@@ -38,8 +38,16 @@ const jsPsych = initJsPsych({
         merged.fault_rating_p  = row.fault_rating_p;
         merged.fault_rating_rt = row.rt;
       } else if (row.is_checker_question) {
-        merged.checker_response = row.checker_response;
-        merged.checker_rt       = row.rt;
+        // Two checker rows per scenario (actor + victim, order randomized) —
+        // key by which role this particular row asked about so the second
+        // response never overwrites the first.
+        if (row.checker_target_role === 'p') {
+          merged.checker_response_p = row.checker_response;
+          merged.checker_rt_p       = row.rt;
+        } else {
+          merged.checker_response_v = row.checker_response;
+          merged.checker_rt_v       = row.rt;
+        }
       } else {
         Object.assign(merged, row);
       }
@@ -540,8 +548,9 @@ const warmupPracticeBoth = {
    here: demos just show the example bar values directly, and practice
    is the same drag-to-set-value interaction as the children version.
    ---------------------------------------------------------- */
-function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst) {
+function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst, unanswered) {
   const cls = draggable ? ' draggable' : '';
+  const unansweredCls = unanswered ? ' two-scale-track-unanswered' : '';
   const vPortrait = vImg ? `<img src="${vImg}" class="two-scale-portrait" alt="${vName}">` : '';
   const pPortrait = pImg ? `<img src="${pImg}" class="two-scale-portrait" alt="${pName}">` : '';
   // Display order only — the track ids stay keyed to the true V/P role
@@ -551,7 +560,7 @@ function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst) {
       <div class="two-scale-col" id="${id}-v-col">
         ${vPortrait}
         <div class="two-scale-name">${vName}</div>
-        <div class="two-scale-track${cls}" id="${id}-v-track">
+        <div class="two-scale-track${cls}${unansweredCls}" id="${id}-v-track">
           <div class="two-scale-track-bg"></div>
           <div class="two-scale-fill-wrap" id="${id}-v-wrap">
             <div class="two-scale-fill" id="${id}-v-fill"></div>
@@ -563,7 +572,7 @@ function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst) {
       <div class="two-scale-col" id="${id}-p-col">
         ${pPortrait}
         <div class="two-scale-name">${pName}</div>
-        <div class="two-scale-track${cls}" id="${id}-p-track">
+        <div class="two-scale-track${cls}${unansweredCls}" id="${id}-p-track">
           <div class="two-scale-track-bg"></div>
           <div class="two-scale-fill-wrap" id="${id}-p-wrap">
             <div class="two-scale-fill" id="${id}-p-fill"></div>
@@ -584,8 +593,9 @@ function setScaleValue(id, who, val) {
   fill.style.background = `rgba(217, 33, 33, ${Math.max(0, Math.min(1, val / 100))})`;
 }
 
-/** Static example: shows both bars already set to their target values,
- *  with the explanatory rule text above, and a Next button. */
+/** Animated example: fills both bars from empty up to their target values
+ *  (no mascot — just the bars animating), with the explanatory rule text
+ *  above, and a Next button. */
 function buildScaleDemoTrial(id, label, ruleText, targetV, targetP) {
   return {
     _debugLabel: `Warmup: Bar Demo — ${label}`,
@@ -597,8 +607,20 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP) {
         ${twoScaleHTML(id, 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
       </div>`,
     on_load: function() {
-      setScaleValue(id, 'v', targetV);
-      setScaleValue(id, 'p', targetP);
+      function animateFill(who, to, duration, delay) {
+        setTimeout(() => {
+          const t0 = performance.now();
+          function step(now) {
+            const t = Math.min(1, (now - t0) / duration);
+            const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+            setScaleValue(id, who, to * eased);
+            if (t < 1) requestAnimationFrame(step);
+          }
+          requestAnimationFrame(step);
+        }, delay);
+      }
+      animateFill('v', targetV, 1000, 400);
+      animateFill('p', targetP, 1000, 400);
     },
   };
 }
@@ -613,7 +635,7 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg) {
     stimulus: `
       <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
         <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">${practiceText}</p>
-        ${twoScaleHTML(id, 'Claire', 'Michael', true, 'img/claire.png', 'img/michael.png')}
+        ${twoScaleHTML(id, 'Claire', 'Michael', true, 'img/claire.png', 'img/michael.png', false, true)}
         <div id="${id}-hint" class="alloc-hint-hidden"></div>
         <div style="margin-top:14px;">
           <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Continue</button>
@@ -637,6 +659,7 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg) {
 
       function updateFromClientX(who, clientX) {
         const track = who === 'v' ? vTrack : pTrack;
+        track.classList.add('answered');
         const r = track.getBoundingClientRect();
         const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
         const val = Math.round(pct * 100);
@@ -645,29 +668,33 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg) {
         checkValid();
       }
 
-      function onMouseDownFactory(who) {
+      function onPointerDownFactory(who) {
         return function(e) {
           dragging = who;
           updateFromClientX(who, e.clientX);
           e.preventDefault();
         };
       }
-      function onMouseMove(e) {
+      function onPointerMove(e) {
         if (!dragging) return;
         updateFromClientX(dragging, e.clientX);
       }
-      function onMouseUp() { dragging = null; }
+      function onPointerUp() { dragging = null; }
 
-      vTrack.addEventListener('mousedown', onMouseDownFactory('v'));
-      pTrack.addEventListener('mousedown', onMouseDownFactory('p'));
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
+      // Pointer events (not mouse-only) so mouse, touchscreen, and stylus
+      // input all work identically for dragging the fault bars.
+      vTrack.addEventListener('pointerdown', onPointerDownFactory('v'));
+      pTrack.addEventListener('pointerdown', onPointerDownFactory('p'));
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+      document.addEventListener('pointercancel', onPointerUp);
 
       checkValid();
 
       btn.addEventListener('click', () => {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        document.removeEventListener('pointercancel', onPointerUp);
         jsPsych.finishTrial();
       });
     },
@@ -680,58 +707,165 @@ const barExistsIntro = {
   choices: ['Next'],
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, each person has a bar. Claire's bar and Michael's bar each show how much you think that person is at fault. A bar starts small and see-through when someone is not at fault at all, and gets bigger and redder the more at fault they are.</p>
+      <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, each person has a bar. The bars show how much each person is at fault. When someone is not at fault at all, their bar is gray. The more at fault they are, the more red fills their bar.</p>
       ${twoScaleHTML('bei', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
     </div>`,
+  on_load: function() {
+    function animateFill(who, from, to, duration, onDone) {
+      const t0 = performance.now();
+      function step(now) {
+        const t = Math.min(1, (now - t0) / duration);
+        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        setScaleValue('bei', who, from + (to - from) * eased);
+        if (t < 1) { requestAnimationFrame(step); } else if (onDone) { onDone(); }
+      }
+      requestAnimationFrame(step);
+    }
+    setTimeout(() => {
+      animateFill('v', 0, 65, 1200, () => {
+        setTimeout(() => animateFill('v', 65, 0, 1000), 700);
+      });
+    }, 500);
+  },
   _debugLabel: 'Warmup: Bar Exists Intro',
 };
 
+// Explains how to show that someone IS at fault: click their bar to add
+// red, then click/move farther along to make it redder.
+const howToShowAtFault = {
+  type: jsPsychHtmlButtonResponse,
+  choices: ['Next'],
+  stimulus: `
+    <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
+      <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are.</p>
+      ${twoScaleHTML('hsaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+    </div>`,
+  on_load: function() {
+    function trackPosAtVal(trackEl, val) {
+      const r = trackEl.getBoundingClientRect();
+      return { x: r.left + r.width * (val / 100), y: r.top + r.height / 2 };
+    }
+    function showRipple(pt) {
+      const ripple = document.createElement('div');
+      ripple.className = 'two-scale-click-ripple';
+      ripple.style.left = pt.x + 'px';
+      ripple.style.top  = pt.y + 'px';
+      document.body.appendChild(ripple);
+      requestAnimationFrame(() => ripple.classList.add('animate'));
+      setTimeout(() => ripple.remove(), 550);
+    }
+    function animateFill(who, from, to, duration, onDone) {
+      const t0 = performance.now();
+      function step(now) {
+        const t = Math.min(1, (now - t0) / duration);
+        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        setScaleValue('hsaf', who, from + (to - from) * eased);
+        if (t < 1) { requestAnimationFrame(step); } else if (onDone) { onDone(); }
+      }
+      requestAnimationFrame(step);
+    }
+    const vTrack = document.getElementById('hsaf-v-track');
+    setTimeout(() => {
+      showRipple(trackPosAtVal(vTrack, 30));
+      animateFill('v', 0, 30, 700, () => {
+        setTimeout(() => {
+          showRipple(trackPosAtVal(vTrack, 75));
+          animateFill('v', 30, 75, 900);
+        }, 500);
+      });
+    }, 500);
+  },
+  _debugLabel: 'Warmup: How To Show At Fault',
+};
+
+// Explains how to show that someone is NOT at fault at all: a deliberate
+// click at the very beginning of the bar, which stays gray.
+const howToShowNotAtFault = {
+  type: jsPsychHtmlButtonResponse,
+  choices: ['Next'],
+  stimulus: `
+    <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
+      <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">If someone is not at fault at all, click the very beginning of their bar. Their bar will stay gray.</p>
+      ${twoScaleHTML('hsnaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+    </div>`,
+  on_load: function() {
+    function trackPosAtVal(trackEl, val) {
+      const r = trackEl.getBoundingClientRect();
+      return { x: r.left + r.width * (val / 100), y: r.top + r.height / 2 };
+    }
+    function showRipple(pt) {
+      const ripple = document.createElement('div');
+      ripple.className = 'two-scale-click-ripple';
+      ripple.style.left = pt.x + 'px';
+      ripple.style.top  = pt.y + 'px';
+      document.body.appendChild(ripple);
+      requestAnimationFrame(() => ripple.classList.add('animate'));
+      setTimeout(() => ripple.remove(), 550);
+    }
+    const vTrack = document.getElementById('hsnaf-v-track');
+    setTimeout(() => showRipple(trackPosAtVal(vTrack, 0)), 500);
+  },
+  _debugLabel: 'Warmup: How To Show Not At Fault',
+};
+
 const scaleDemo1 = buildScaleDemoTrial(
-  'sd1', 'V more at fault',
-  "In our game, if you think Claire is at fault, but Michael isn't, Claire's bar should be big and red, and Michael's bar should be kept empty. Here's an example.",
+  'sd1', 'Claire at fault only',
+  "In our game, if Claire is at fault but Michael is not at fault, Claire's bar should have some red, and Michael's bar should stay gray. Here's an example.",
   85, 0
 );
 const scalePractice1 = buildScalePracticeTrial(
-  'sp1', 'V more at fault',
-  "Now you try! Make Claire's bar bigger than Michael's.",
-  (v, p, tv, tp) => tv && tp && v > p + 15,
-  "⚠️ Move Claire's bar higher than Michael's."
+  'sp1', 'Claire at fault only',
+  "Now you try! Show that Claire is at fault and Michael is not at fault.",
+  (v, p, tv, tp) => tv && tp && v >= 40 && p <= 8,
+  "⚠️ Show that Claire is at fault and Michael is not at fault."
 );
 
 const scaleDemo2 = buildScaleDemoTrial(
-  'sd2', 'P more at fault',
-  "In our game, if you think Michael has more fault than Claire, then Michael's bar should be big and red, and Claire's bar should stay small. Here's an example.",
-  10, 85
+  'sd2', 'Michael at fault only',
+  "In our game, if Michael is at fault but Claire is not at fault, Michael's bar should have some red, and Claire's bar should stay gray. Here's an example.",
+  0, 85
 );
 const scalePractice2 = buildScalePracticeTrial(
-  'sp2', 'P more at fault',
-  "Now you try! Make Michael's bar bigger than Claire's.",
-  (v, p, tv, tp) => tv && tp && p > v + 15,
-  "⚠️ Move Michael's bar higher than Claire's."
+  'sp2', 'Michael at fault only',
+  "Now you try! Show that Michael is at fault and Claire is not at fault.",
+  (v, p, tv, tp) => tv && tp && p >= 40 && v <= 8,
+  "⚠️ Show that Michael is at fault and Claire is not at fault."
 );
 
 const scaleDemo3 = buildScaleDemoTrial(
-  'sd3', 'Both equally at fault',
-  "In our game, if you think Claire and Michael are both at fault, both of their bars should be the same size. Here's an example.",
-  55, 55
+  'sd3', 'Claire more at fault',
+  "Sometimes both people can be at fault, but one person can be more at fault than the other. If Claire is more at fault than Michael, Claire's bar should have more red. Here's an example.",
+  70, 30
 );
 const scalePractice3 = buildScalePracticeTrial(
-  'sp3', 'Both equally at fault',
+  'sp3', 'Claire more at fault',
+  "Now you try! Give both Claire and Michael some fault, but make Claire's bigger.",
+  (v, p, tv, tp) => tv && tp && v > p + 15 && p >= 15,
+  "⚠️ Give both some fault, but make Claire's bar bigger than Michael's."
+);
+
+const scaleDemo4 = buildScaleDemoTrial(
+  'sd4', 'Equally at fault',
+  "If Claire and Michael are equally at fault, their bars should have the same amount of red. Here's an example.",
+  55, 55
+);
+const scalePractice4 = buildScalePracticeTrial(
+  'sp4', 'Equally at fault',
   "Now you try! Make Claire's and Michael's bars the same size.",
   (v, p, tv, tp) => tv && tp && Math.abs(v - p) <= 10 && v >= 25 && p >= 25,
   "⚠️ Make Claire's and Michael's bars about the same size."
 );
 
-const scaleDemo4 = buildScaleDemoTrial(
-  'sd4', 'Neither at fault',
-  "In our game, if you think neither Claire nor Michael is at fault, both bars should stay small and see-through. Here's an example.",
+const scaleDemo5 = buildScaleDemoTrial(
+  'sd5', 'Neither at fault',
+  "If neither Claire nor Michael is at fault, both bars should stay gray. Here's an example.",
   0, 0
 );
-const scalePractice4 = buildScalePracticeTrial(
-  'sp4', 'Neither at fault',
-  "Now you try! Keep both bars small.",
-  (v, p, tv, tp) => tv && tp && v <= 20 && p <= 20,
-  '⚠️ Keep both bars small.'
+const scalePractice5 = buildScalePracticeTrial(
+  'sp5', 'Neither at fault',
+  "Now you try! Show that neither Claire nor Michael is at fault.",
+  (v, p, tv, tp) => tv && tp && v <= 8 && p <= 8,
+  "⚠️ Show that neither Claire nor Michael is at fault."
 );
 
 /* ----------------------------------------------------------
@@ -875,9 +1009,9 @@ function buildFaultQuestionTrial(scenario, headerImg) {
       <div style="text-align:center; padding:8px 20px 0 20px; max-width:1200px; margin:0 auto;">
         <img src="${headerImg}" style="max-width:963px; width:100%; max-height:min(27vh, 213px); object-fit:contain; border-radius:8px; margin-bottom:7px;">
         <p style="font-size:20px; font-weight:600; margin:0 0 12px 0;">Now that you saw what happened, how much do you think each person is at fault?</p>
-        ${twoScaleHTML(id, vName, pName, true, `img/${vImg}`, `img/${pImg}`, true)}
+        ${twoScaleHTML(id, vName, pName, true, `img/${vImg}`, `img/${pImg}`, true, true)}
         <div style="margin-top:14px;">
-          <button id="${id}-continue" class="jspsych-btn">Continue</button>
+          <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Continue</button>
         </div>
       </div>`,
     scenario_id: scenario.id,
@@ -885,41 +1019,55 @@ function buildFaultQuestionTrial(scenario, headerImg) {
     data: { scenario_id: scenario.id, is_practice: false, is_fault_rating: true, p_name: pName, v_name: vName },
     on_load: function() {
       const startTime = performance.now();
-      let vVal = 0, pVal = 0, dragging = null;
+      let vVal = 0, pVal = 0, touchedV = false, touchedP = false, dragging = null;
       const vTrack = document.getElementById(`${id}-v-track`);
       const pTrack = document.getElementById(`${id}-p-track`);
       const btn    = document.getElementById(`${id}-continue`);
 
+      function checkValid() {
+        const ok = touchedV && touchedP;
+        btn.disabled = !ok;
+        btn.style.opacity = ok ? '1' : '0.4';
+        btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+      }
+
       function updateFromClientX(who, clientX) {
         const track = who === 'v' ? vTrack : pTrack;
+        track.classList.add('answered');
         const r = track.getBoundingClientRect();
         const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
         const val = Math.round(pct * 100);
         setScaleValue(id, who, val);
-        if (who === 'v') { vVal = val; } else { pVal = val; }
+        if (who === 'v') { vVal = val; touchedV = true; } else { pVal = val; touchedP = true; }
+        checkValid();
       }
 
-      function onMouseDownFactory(who) {
+      function onPointerDownFactory(who) {
         return function(e) {
           dragging = who;
           updateFromClientX(who, e.clientX);
           e.preventDefault();
         };
       }
-      function onMouseMove(e) {
+      function onPointerMove(e) {
         if (!dragging) return;
         updateFromClientX(dragging, e.clientX);
       }
-      function onMouseUp() { dragging = null; }
+      function onPointerUp() { dragging = null; }
 
-      vTrack.addEventListener('mousedown', onMouseDownFactory('v'));
-      pTrack.addEventListener('mousedown', onMouseDownFactory('p'));
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
+      // Pointer events (not mouse-only) so mouse, touchscreen, and stylus
+      // input all work identically for dragging the fault bars.
+      vTrack.addEventListener('pointerdown', onPointerDownFactory('v'));
+      pTrack.addEventListener('pointerdown', onPointerDownFactory('p'));
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+      document.addEventListener('pointercancel', onPointerUp);
+      checkValid();
 
       btn.addEventListener('click', () => {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        document.removeEventListener('pointercancel', onPointerUp);
         jsPsych.finishTrial({
           fault_rating_v: vVal,
           fault_rating_p: pVal,
@@ -937,20 +1085,24 @@ function buildFaultQuestionTrial(scenario, headerImg) {
    Shown after the fault question, on every scenario. Always shows
    the scenario's ending picture.
    ---------------------------------------------------------- */
-function buildCheckerTrial(scenario) {
+/** One carefulness question, about either the actor (targetRole 'p') or
+ *  the victim (targetRole 'v'). Two of these — order randomized per
+ *  scenario — are shown so both characters get asked about. */
+function buildCheckerTrial(scenario, targetRole) {
   const pName = scenario.p_name || 'Finn';
   const vName = scenario.v_name || 'Cleo';
+  const targetName = targetRole === 'p' ? pName : vName;
   const endingImg = scenario.story_slides[scenario.story_slides.length - 1];
-  const id = `ck${scenario.id}`;
+  const id = `ck${scenario.id}${targetRole}`;
 
   return {
-    _debugLabel: `${pName} & ${vName} — Checker Question`,
+    _debugLabel: `${pName} & ${vName} — Checker Question (${targetName})`,
     type: jsPsychHtmlButtonResponse,
     choices: [],
     stimulus: `
       <div style="text-align:center; padding:10px 40px 0 40px; max-width:900px; margin:0 auto;">
         <img src="${endingImg}" style="max-width:860px; width:100%; max-height:min(30vh, 240px); object-fit:contain; border-radius:8px; margin-bottom:14px;">
-        <p style="font-size:20px; font-weight:600;">Was ${pName} being careful?</p>
+        <p style="font-size:20px; font-weight:600;">Was ${targetName} being careful?</p>
         <div style="display:flex; justify-content:center; gap:24px; margin-top:14px;">
           <button id="${id}-yes-btn" type="button" class="jspsych-btn checker-btn checker-btn-yes"><span class="checker-icon">✓</span><span class="checker-label">Yes</span></button>
           <button id="${id}-no-btn" type="button" class="jspsych-btn checker-btn checker-btn-no"><span class="checker-icon">✗</span><span class="checker-label">No</span></button>
@@ -963,7 +1115,9 @@ function buildCheckerTrial(scenario) {
       is_practice: false,
       scenario_id: scenario.id,
       harm_type: scenario.harm_type,
+      checker_target_role: targetRole,
       p_name: pName,
+      v_name: vName,
     },
     on_load: function() {
       const startTime = performance.now();
@@ -977,6 +1131,7 @@ function buildCheckerTrial(scenario) {
         setTimeout(() => {
           jsPsych.finishTrial({
             checker_response: key,
+            checker_target_role: targetRole,
             rt: Math.round(performance.now() - startTime),
           });
         }, 400);
@@ -1078,7 +1233,13 @@ function buildTestTrial(scenario, scenarioIdx, total) {
   };
 
   const faultQuestionSlide = buildFaultQuestionTrial(scenario, headerImg);
-  return [storySlide, slideG, faultQuestionSlide, buildCheckerTrial(scenario)];
+  // Ask about both characters' carefulness, order randomized per scenario
+  // rather than always asking about the actor first.
+  const actorFirst = sessionGet('exp1_adults_vgo0_checker_order_' + scenario.id, () => Math.random() < 0.5);
+  const checkerTrials = actorFirst
+    ? [buildCheckerTrial(scenario, 'p'), buildCheckerTrial(scenario, 'v')]
+    : [buildCheckerTrial(scenario, 'v'), buildCheckerTrial(scenario, 'p')];
+  return [storySlide, slideG, faultQuestionSlide, ...checkerTrials];
 }
 
 /* ----------------------------------------------------------
@@ -1122,10 +1283,13 @@ const warmupBlock = [
   warmupPracticeSummary,
   warmupPracticeBoth,
   barExistsIntro,
+  howToShowAtFault,
+  howToShowNotAtFault,
   scaleDemo1, scalePractice1,
   scaleDemo2, scalePractice2,
   scaleDemo3, scalePractice3,
   scaleDemo4, scalePractice4,
+  scaleDemo5, scalePractice5,
   checkerDemoYes, checkerPracticeYes,
   checkerDemoNo, checkerPracticeNo,
   warmupDone,

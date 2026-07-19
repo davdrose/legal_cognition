@@ -955,6 +955,18 @@ body {
   width: 480px;
   height: 120px;
   user-select: none;
+  transition: opacity 0.25s ease;
+}
+
+/* Faint until the participant deliberately clicks somewhere on the bar
+   (even the zero endpoint) — makes "unanswered" visually distinct from
+   just having clicked all the way at zero. */
+.two-scale-track-unanswered {
+  opacity: 0.4;
+}
+
+.two-scale-track-unanswered.answered {
+  opacity: 1;
 }
 
 .two-scale-track-bg {
@@ -970,6 +982,9 @@ body {
 
 .two-scale-track.draggable {
   cursor: pointer;
+  /* Prevent touch/stylus drags on the bar from scrolling the page — the
+     drag itself is handled entirely via pointer events in JS. */
+  touch-action: none;
 }
 
 .two-scale-track-mid {
