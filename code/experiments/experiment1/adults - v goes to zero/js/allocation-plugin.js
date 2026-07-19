@@ -120,7 +120,7 @@ var jsPsychAllocation = (function (jspsych) {
           <div class="alloc-panel" id="v-panel">
             <img src="img/${trial.v_img}" class="alloc-char-img" alt="${trial.v_name}">
             <p class="alloc-char-name">${trial.v_name}</p>
-            <div class="panel-name">${vLabel}</div>
+            <div class="panel-name" id="v-count-label">${vLabel}</div>
             ${plateHTML}
           </div>`;
       }
@@ -166,7 +166,7 @@ var jsPsychAllocation = (function (jspsych) {
             <div class="p-pool-col">
               <img src="img/${trial.p_img}" class="alloc-char-img" alt="${trial.p_name}">
               <p class="alloc-char-name">${trial.p_name}</p>
-              <div class="panel-name">${trial.p_name} has ${trial.p_cookies} cookie${trial.p_cookies !== 1 ? 's' : ''}</div>
+              <div class="panel-name" id="p-count-label">${trial.p_name} has ${trial.p_cookies} cookie${trial.p_cookies !== 1 ? 's' : ''}</div>
               ${pPlateHTML()}
             </div>
             ${rightPanel}
@@ -241,6 +241,18 @@ var jsPsychAllocation = (function (jspsych) {
       function getCookieEl(id)  { return display_element.querySelector(`#p-cookie-${id}`); }
       function getVCookieEl(id) { return display_element.querySelector(`#v-existing-${id}`); }
 
+      /** Keeps the "[Name] has N cookies" labels in sync with each plate's
+       *  current contents (own cookies still there, plus any moved in from
+       *  the other character), rather than the trial's starting counts. */
+      function updateCookieLabels() {
+        const pLabelEl = display_element.querySelector('#p-count-label');
+        const vLabelEl = display_element.querySelector('#v-count-label');
+        const pCount = countInZone('pool') + vCookieDest.filter(d => d === 'p').length;
+        const vCount = vCookieDest.filter(d => d === 'v').length + countInZone('v');
+        if (pLabelEl) pLabelEl.textContent = `${trial.p_name} has ${pCount} cookie${pCount !== 1 ? 's' : ''}`;
+        if (vLabelEl) vLabelEl.textContent = `${trial.v_name} has ${vCount} cookie${vCount !== 1 ? 's' : ''}`;
+      }
+
       function placeCookie(cookieEl, containerEl, left, top, zone, cookieId) {
         containerEl.appendChild(cookieEl);
         cookieEl.style.left  = left + 'px';
@@ -248,6 +260,7 @@ var jsPsychAllocation = (function (jspsych) {
         cookieEl.style.opacity = '1';
         cookieDest[cookieId] = zone;
         updateConfirmBtn();
+        updateCookieLabels();
       }
 
       function returnToPool(cookieId) {
@@ -266,6 +279,7 @@ var jsPsychAllocation = (function (jspsych) {
         cookieEl.style.opacity = '1';
         vCookieDest[vCookieId] = 'v';
         updateConfirmBtn();
+        updateCookieLabels();
       }
 
       /* -------------------------------------------------------
@@ -351,6 +365,7 @@ var jsPsychAllocation = (function (jspsych) {
             cookieEl.style.opacity = '1';
             vCookieDest[cookieId]  = 'trash';
             updateConfirmBtn();
+            updateCookieLabels();
           } else if (trial.allow_v_to_p && target?.closest('.p-pool-col')) {
             const pos = clampToPlate(pPlate, e.clientX, e.clientY);
             pPlate.appendChild(cookieEl);
@@ -359,6 +374,7 @@ var jsPsychAllocation = (function (jspsych) {
             cookieEl.style.opacity = '1';
             vCookieDest[cookieId]  = 'p';
             updateConfirmBtn();
+            updateCookieLabels();
           } else {
             returnVToPlate(cookieId);
           }
