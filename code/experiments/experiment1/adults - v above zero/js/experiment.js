@@ -663,6 +663,18 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP) {
         ${cursorImgHTML(id)}
       </div>`,
     on_load: function() {
+      const nextBtn = document.querySelector('#jspsych-html-button-response-btngroup .jspsych-btn');
+      if (nextBtn) {
+        nextBtn.disabled = true;
+        nextBtn.style.opacity = '0.4';
+        nextBtn.style.cursor = 'not-allowed';
+      }
+      function enableNext() {
+        if (!nextBtn) return;
+        nextBtn.disabled = false;
+        nextBtn.style.opacity = '1';
+        nextBtn.style.cursor = 'pointer';
+      }
       const vTrack = document.getElementById(`${id}-v-track`);
       const pTrack = document.getElementById(`${id}-p-track`);
       function trackPosAtVal(trackEl, val) {
@@ -695,7 +707,7 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP) {
               showClickEffect(trackPosAtVal(pTrack, 0));
               setTimeout(() => {
                 animateFillWithCursor('p', pTrack, targetP, 1000, () => {
-                  setTimeout(() => hideCursor(id), 600);
+                  setTimeout(() => { hideCursor(id); enableNext(); }, 600);
                 });
               }, 300);
             }, 300);
@@ -808,6 +820,18 @@ const howToShowAtFault = {
       ${cursorImgHTML('hsaf')}
     </div>`,
   on_load: function() {
+    const nextBtn = document.querySelector('#jspsych-html-button-response-btngroup .jspsych-btn');
+    if (nextBtn) {
+      nextBtn.disabled = true;
+      nextBtn.style.opacity = '0.4';
+      nextBtn.style.cursor = 'not-allowed';
+    }
+    function enableNext() {
+      if (!nextBtn) return;
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+      nextBtn.style.cursor = 'pointer';
+    }
     function trackPosAtVal(trackEl, val) {
       const r = trackEl.getBoundingClientRect();
       return { x: r.left + r.width * (val / 100), y: r.top + r.height / 2 };
@@ -831,7 +855,7 @@ const howToShowAtFault = {
           setCursorPos('hsaf', trackPosAtVal(vTrack, 75));
           showClickEffect(trackPosAtVal(vTrack, 75));
           animateFill('v', 30, 75, 900, () => {
-            setTimeout(() => hideCursor('hsaf'), 600);
+            setTimeout(() => { hideCursor('hsaf'); enableNext(); }, 600);
           });
         }, 500);
       });
@@ -852,6 +876,18 @@ const howToShowNotAtFault = {
       ${cursorImgHTML('hsnaf')}
     </div>`,
   on_load: function() {
+    const nextBtn = document.querySelector('#jspsych-html-button-response-btngroup .jspsych-btn');
+    if (nextBtn) {
+      nextBtn.disabled = true;
+      nextBtn.style.opacity = '0.4';
+      nextBtn.style.cursor = 'not-allowed';
+    }
+    function enableNext() {
+      if (!nextBtn) return;
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+      nextBtn.style.cursor = 'pointer';
+    }
     function trackPosAtVal(trackEl, val) {
       const r = trackEl.getBoundingClientRect();
       return { x: r.left + r.width * (val / 100), y: r.top + r.height / 2 };
@@ -860,7 +896,7 @@ const howToShowNotAtFault = {
     setTimeout(() => {
       setCursorPos('hsnaf', trackPosAtVal(vTrack, 0));
       showClickEffect(trackPosAtVal(vTrack, 0));
-      setTimeout(() => hideCursor('hsnaf'), 900);
+      setTimeout(() => { hideCursor('hsnaf'); enableNext(); }, 900);
     }, 500);
   },
   _debugLabel: 'Warmup: How To Show Not At Fault',
@@ -959,6 +995,18 @@ function buildCheckerDemoTrial(id, label, ruleText, name, imgUrl, exampleAnswer)
         ${cursorImgHTML(id)}
       </div>`,
     on_load: function() {
+      const nextBtn = document.querySelector('#jspsych-html-button-response-btngroup .jspsych-btn');
+      if (nextBtn) {
+        nextBtn.disabled = true;
+        nextBtn.style.opacity = '0.4';
+        nextBtn.style.cursor = 'not-allowed';
+      }
+      function enableNext() {
+        if (!nextBtn) return;
+        nextBtn.disabled = false;
+        nextBtn.style.opacity = '1';
+        nextBtn.style.cursor = 'pointer';
+      }
       const btnEl = document.getElementById(`${id}-${exampleAnswer}-btn`);
       const r = btnEl.getBoundingClientRect();
       const target = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
@@ -968,7 +1016,7 @@ function buildCheckerDemoTrial(id, label, ruleText, name, imgUrl, exampleAnswer)
         animateCursorTo(id, start, target, 500, () => {
           showClickEffect(target);
           btnEl.classList.add('checker-btn-pressed');
-          setTimeout(() => hideCursor(id), 700);
+          setTimeout(() => { hideCursor(id); enableNext(); }, 700);
         });
       }, 400);
     },
