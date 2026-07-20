@@ -1223,7 +1223,7 @@ const scaleDemo3 = buildScaleDemoTrial(
   70, 30,
   false,
   undefined,
-  `../children-shared%20files/Sometimes both people can be at fault, but one person can be more at fault than the other.m4a`
+  `../children-shared%20files/Sometimes both people can be at fault, but one person can be more at fault than the other. If.m4a`
 );
 const scalePractice3 = buildScalePracticeTrial(
   'sp3', 'Claire more at fault',
