@@ -1086,24 +1086,19 @@ const howToShowAtFault = {
 
 // Slide 2e-4 – explains how to show that someone is NOT at fault at all: a
 // deliberate click at the very beginning of the bar, which stays gray.
-// NOTE: needs a recording of "If someone is not at fault at all, click the
-// very beginning of their bar. Their bar will stay gray." — not yet in
-// children-shared files, so only the lead-in clip plays for now.
 const howToShowNotAtFault = {
   type: jsPsychHtmlButtonResponse,
   choices: ['Next'],
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">You need to choose an answer for both people. If someone is not at fault at all, click the very beginning of their bar. Their bar will stay gray.</p>
+      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">If someone is not at fault at all, click the very beginning of their bar. Their bar will stay gray.</p>
       ${twoScaleHTML('hsnaf', 'Claire', 'Michael', false, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png')}
     </div>`,
   on_load: function() {
     const vTrack = document.getElementById('hsnaf-v-track');
-    // Dedicated recording for this screen (distinct from the shared lead-in
-    // clip used on the "how to show at fault" screen) — the click demo is
-    // gated on this audio finishing, not a blind delay.
+    // The click demo is gated on this audio finishing, not a blind delay.
     const audio = document.createElement('audio');
-    audio.src = `${SHARED_BASE}15 You need to choose an answer for both people.m4a`;
+    audio.src = `${SHARED_BASE}If someone is not at fault at all, click the very beginning of their bar. Their bar will stay gray..m4a`;
     audio.style.display = 'none';
     document.body.appendChild(audio);
     audio.play().catch(() => {});
