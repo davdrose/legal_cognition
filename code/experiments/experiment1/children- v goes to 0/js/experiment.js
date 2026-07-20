@@ -1157,9 +1157,6 @@ function showScaleClickRipple(pt) {
 
 // Slide 2e-3 – explains how to show that someone IS at fault: click their
 // bar to add some red, then click/move farther along to make it redder.
-// NOTE: needs a recording of "If someone is at fault, click their bar to
-// make it red. The more red in their bar, the more at fault they are." —
-// not yet in children-shared files, so only the lead-in clip plays for now.
 const howToShowAtFault = {
   type: jsPsychHtmlButtonResponse,
   choices: ['Next'],
