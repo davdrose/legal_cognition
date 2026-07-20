@@ -1223,8 +1223,8 @@ const scaleDemo1 = buildScaleDemoTrial(
 const scalePractice1 = buildScalePracticeTrial(
   'sp1', 'Claire at fault only',
   "Now you try! Show that Claire is at fault and Michael is not at fault.",
-  // "Not at fault" means exactly 0 — no tolerance.
-  (v, p, tv, tp) => tv && tp && v >= 40 && p === 0,
+  // "Not at fault" allows a small 0-2 margin.
+  (v, p, tv, tp) => tv && tp && v >= 40 && p <= 2,
   "⚠️ Show that Claire is at fault and Michael is not at fault.",
   `../children-shared%20files/Now you try! Show that Claire is at fault and Michael is not at fault.m4a`
 );
@@ -1241,8 +1241,8 @@ const scaleDemo2 = buildScaleDemoTrial(
 const scalePractice2 = buildScalePracticeTrial(
   'sp2', 'Michael at fault only',
   "Now you try! Show that Michael is at fault and Claire is not at fault.",
-  // "Not at fault" means exactly 0 — no tolerance.
-  (v, p, tv, tp) => tv && tp && p >= 40 && v === 0,
+  // "Not at fault" allows a small 0-2 margin.
+  (v, p, tv, tp) => tv && tp && p >= 40 && v <= 2,
   "⚠️ Show that Michael is at fault and Claire is not at fault.",
   `../children-shared%20files/Now you try! Show that Michael is at fault and Claire is not at fault.m4a`
 );
@@ -1276,8 +1276,8 @@ const scaleDemo4 = buildScaleDemoTrial(
 const scalePractice4 = buildScalePracticeTrial(
   'sp4', 'Equally at fault',
   "Now you try! Make Claire's and Michael's bars the same size.",
-  // "Equally at fault" means exactly equal — no tolerance.
-  (v, p, tv, tp) => tv && tp && v === p && v >= 25,
+  // "Equally at fault" allows a small +/-2 margin.
+  (v, p, tv, tp) => tv && tp && Math.abs(v - p) <= 2 && v >= 25,
   "⚠️ Make Claire's and Michael's bars exactly the same size.",
   `../children-shared%20files/Now you try! Make Claire's and Michael's bars the same size.m4a`
 );
@@ -1294,8 +1294,8 @@ const scaleDemo5 = buildScaleDemoTrial(
 const scalePractice5 = buildScalePracticeTrial(
   'sp5', 'Neither at fault',
   "Now you try! Show that neither Claire nor Michael is at fault.",
-  // "Not at fault" means exactly 0 — no tolerance.
-  (v, p, tv, tp) => tv && tp && v === 0 && p === 0,
+  // "Not at fault" allows a small 0-2 margin.
+  (v, p, tv, tp) => tv && tp && v <= 2 && p <= 2,
   "⚠️ Show that neither Claire nor Michael is at fault.",
   `../children-shared%20files/Now you try! Show that neither Claire nor Michael is at fault.m4a`
 );
