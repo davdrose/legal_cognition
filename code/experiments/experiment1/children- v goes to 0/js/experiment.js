@@ -1188,9 +1188,8 @@ const scaleDemo1 = buildScaleDemoTrial(
   "In our game, if Claire is at fault but Michael is not at fault, Claire's bar should have some red, and Michael's bar should stay gray. Let's see Maggie do it.",
   85, 0,
   false,
-  "Claire has some fault, but Michael has no fault.",
-  `../children-shared%20files/In our game, if Claire is at fault but Michael is not at fault,.m4a`,
-  `../children-shared%20files/Claire has some fault, but Michael has no fault..m4a`
+  undefined,
+  `../children-shared%20files/In our game, if Claire is at fault but Michael is not at fault,.m4a`
 );
 const scalePractice1 = buildScalePracticeTrial(
   'sp1', 'Claire at fault only',
@@ -1206,9 +1205,8 @@ const scaleDemo2 = buildScaleDemoTrial(
   "In our game, if Michael is at fault but Claire is not at fault, Michael's bar should have some red, and Claire's bar should stay gray. Let's see Maggie do it.",
   0, 85,
   false,
-  "Michael has some fault, but Claire has no fault.",
-  `../children-shared%20files/In our game, if Michael is at fault but Claire is not at fault,.m4a`,
-  `../children-shared%20files/Michael has some fault, but Claire has no fault..m4a`
+  undefined,
+  `../children-shared%20files/In our game, if Michael is at fault but Claire is not at fault,.m4a`
 );
 const scalePractice2 = buildScalePracticeTrial(
   'sp2', 'Michael at fault only',
@@ -1241,9 +1239,8 @@ const scaleDemo4 = buildScaleDemoTrial(
   "If Claire and Michael are equally at fault, their bars should have the same amount of red. Let's see Maggie do it.",
   55, 55,
   false,
-  "Claire and Michael are equally at fault.",
-  `../children-shared%20files/If Claire and Michael are equally at fault,.m4a`,
-  `../children-shared%20files/Claire and Michael are equally at fault..m4a`
+  undefined,
+  `../children-shared%20files/If Claire and Michael are equally at fault,.m4a`
 );
 const scalePractice4 = buildScalePracticeTrial(
   'sp4', 'Equally at fault',
@@ -1259,9 +1256,8 @@ const scaleDemo5 = buildScaleDemoTrial(
   "If neither Claire nor Michael is at fault, both bars should stay gray. Maggie still needs to choose an answer for each person. Let's see her do it.",
   0, 0,
   false,
-  "Neither Claire nor Michael is at fault.",
-  `../children-shared%20files/If neither Claire nor Michael is at fault.m4a`,
-  `../children-shared%20files/Neither Claire nor Michael is at fault..m4a`
+  undefined,
+  `../children-shared%20files/If neither Claire nor Michael is at fault.m4a`
 );
 const scalePractice5 = buildScalePracticeTrial(
   'sp5', 'Neither at fault',
