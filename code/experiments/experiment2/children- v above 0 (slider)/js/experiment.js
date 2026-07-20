@@ -685,6 +685,7 @@ function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst, unanswere
           </div>
           <div class="two-scale-track-mid"></div>
         </div>
+        <div class="two-scale-pct" id="${id}-v-pct" style="font-size:14px; color:#555; min-height:18px; margin-top:4px;"></div>
       </div>`;
   const pCol = `
       <div class="two-scale-col" id="${id}-p-col">
@@ -697,6 +698,7 @@ function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst, unanswere
           </div>
           <div class="two-scale-track-mid"></div>
         </div>
+        <div class="two-scale-pct" id="${id}-p-pct" style="font-size:14px; color:#555; min-height:18px; margin-top:4px;"></div>
       </div>`;
   return `
     <div class="two-scale-row">${pFirst ? pCol + vCol : vCol + pCol}
@@ -709,6 +711,15 @@ function setScaleValue(id, who, val) {
   if (!wrap || !fill) return;
   wrap.style.width = val + '%';
   fill.style.background = `rgba(217, 33, 33, ${Math.max(0, Math.min(1, val / 100))})`;
+}
+
+/** Shows the numeric percentage next to a bar, mirroring the adult
+ *  version's readout (there it only appears on real interaction; here
+ *  Maggie's demo also drives it so kids can see the number update as
+ *  she drags). */
+function setScalePercent(id, who, val) {
+  const pctEl = document.getElementById(`${id}-${who}-pct`);
+  if (pctEl) pctEl.textContent = `${Math.round(val)}%`;
 }
 
 /** Maggie walks in from her usual corner and demonstrates one target
@@ -794,6 +805,7 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, visitPFirst,
           const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
           const val = from + (to - from) * eased;
           setScaleValue(id, who, val);
+          setScalePercent(id, who, val);
           setCursorPos(trackPosAtVal(trackEl, val));
           if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
         }
@@ -1014,13 +1026,13 @@ const barExistsIntro = {
 
 // Slide 2e-2 – explains what the bars mean: gray when not at fault, red
 // fills in as fault increases. Briefly fills and empties an example bar
-// while that part of the narration plays, then returns it to gray.
+// to demonstrate, then returns it to gray.
 const barMeaningIntro = {
   type: jsPsychHtmlButtonResponse,
   choices: [],
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p id="bmi-text" style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">The bars show how much each person is at fault. When someone is not at fault at all, their bar is gray. The more at fault they are, the more red fills their bar.</p>
+      <p id="bmi-text" style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">The bars show how much each person is at fault.</p>
       ${twoScaleHTML('bmi', 'Claire', 'Michael', false, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png')}
       <div style="margin-top:14px;">
         <button id="bmi-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Next</button>
@@ -1046,44 +1058,11 @@ const barMeaningIntro = {
       btn.style.cursor = 'pointer';
     }
 
-    const audio = document.createElement('audio');
-    audio.src = `${SHARED_BASE}The bars show how much each person is at fault. When someone is not at fault at all.m4a`;
-    audio.style.display = 'none';
-    document.body.appendChild(audio);
-    audio.play().catch(() => {});
-
-    // Recording runs ~15.8s; "...the more red fills their bar" begins around
-    // the 82%-through mark (~12.8s at this file's length). Wait for the audio
-    // to actually reach that point (rather than a blind setTimeout) so the
-    // fill stays in sync even if playback stalls, then fill slowly enough
-    // (2.5s) that the color change is clearly visible before the bar resets.
-    let triggered = false;
-    audio.addEventListener('timeupdate', () => {
-      if (!triggered && audio.currentTime >= 12.6) {
-        triggered = true;
-        animateFill('v', 0, 65, 2500, () => {
-          setTimeout(() => animateFill('v', 65, 0, 600, () => {}), 400);
-        });
-      }
-    });
-
-    let done = false;
-    function finishIntro() {
-      if (done) return;
-      done = true;
-      audio.remove();
-      if (!triggered) {
-        // Audio never played (missing/blocked) — still show the fill once,
-        // slowly, so the concept is demonstrated either way.
-        animateFill('v', 0, 65, 2500, () => {
-          setTimeout(() => animateFill('v', 65, 0, 600, enableNext), 400);
-        });
-      } else {
-        enableNext();
-      }
-    }
-    audio.addEventListener('ended', finishIntro);
-    audio.addEventListener('error', finishIntro);
+    setTimeout(() => {
+      animateFill('v', 0, 65, 2500, () => {
+        setTimeout(() => animateFill('v', 65, 0, 600, enableNext), 400);
+      });
+    }, 500);
 
     btn.addEventListener('click', () => jsPsych.finishTrial());
   },
