@@ -1252,11 +1252,11 @@ const scalePractice4 = buildScalePracticeTrial(
 
 const scaleDemo5 = buildScaleDemoTrial(
   'sd5', 'Neither at fault',
-  "If neither Claire nor Michael is at fault, both bars should stay gray. Maggie still needs to choose an answer for each person. Let's see her do it.",
+  "If neither Claire nor Michael is at fault, both bars should stay gray. Let's see Maggie do it.",
   0, 0,
   false,
   undefined,
-  `../children-shared%20files/If neither Claire nor Michael is at fault.m4a`
+  `../children-shared%20files/If neither Claire nor Michael is at fault, both bars should stay gray..m4a`
 );
 const scalePractice5 = buildScalePracticeTrial(
   'sp5', 'Neither at fault',
