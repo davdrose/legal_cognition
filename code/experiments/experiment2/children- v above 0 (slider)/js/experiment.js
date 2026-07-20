@@ -1026,7 +1026,7 @@ const barExistsIntro = {
 
 // Slide 2e-2 – explains what the bars mean: gray when not at fault, red
 // fills in as fault increases. Briefly fills and empties an example bar
-// to demonstrate, then returns it to gray.
+// while the narration plays, then returns it to gray.
 const barMeaningIntro = {
   type: jsPsychHtmlButtonResponse,
   choices: [],
@@ -1058,11 +1058,27 @@ const barMeaningIntro = {
       btn.style.cursor = 'pointer';
     }
 
-    setTimeout(() => {
+    function runFillDemo() {
       animateFill('v', 0, 65, 2500, () => {
         setTimeout(() => animateFill('v', 65, 0, 600, enableNext), 400);
       });
-    }, 500);
+    }
+
+    const audio = document.createElement('audio');
+    audio.src = `${SHARED_BASE}The bars show how much each person is at fault..m4a`;
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+
+    let done = false;
+    function afterAudio() {
+      if (done) return;
+      done = true;
+      audio.remove();
+      runFillDemo();
+    }
+    audio.addEventListener('ended', afterAudio);
+    audio.addEventListener('error', afterAudio);
 
     btn.addEventListener('click', () => jsPsych.finishTrial());
   },
