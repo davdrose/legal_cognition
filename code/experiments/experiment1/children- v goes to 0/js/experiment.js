@@ -989,53 +989,16 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg, aud
   };
 }
 
-// Slide 2e-intro – introduces the two bars' existence, one at a time, each
-// highlighted with a glowing outline as it's mentioned.
+// Slide 2f-intro – introduces the two-bar concept (static, both bars at 0),
+// matching the adult version exactly.
 const barExistsIntro = {
   type: jsPsychHtmlButtonResponse,
-  choices: [],
+  choices: ['Next'],
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p id="bei-text" style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, Claire has a bar. The bar shows how much Claire is at fault.</p>
+      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, each person has a bar. The bars show how much each person is at fault.</p>
       ${twoScaleHTML('bei', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
-      <div style="margin-top:14px;">
-        <button id="bei-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Next</button>
-      </div>
     </div>`,
-  on_load: function() {
-    const textEl = document.getElementById('bei-text');
-    const vCol    = document.getElementById('bei-v-col');
-    const pCol    = document.getElementById('bei-p-col');
-    const btn     = document.getElementById('bei-continue');
-
-    function playClip(src, onDone) {
-      const audio = document.createElement('audio');
-      audio.src = src;
-      audio.style.display = 'none';
-      document.body.appendChild(audio);
-      audio.play().catch(() => {});
-      const done = () => { audio.remove(); onDone(); };
-      audio.addEventListener('ended', done);
-      audio.addEventListener('error', done);
-    }
-
-    setTimeout(() => {
-      vCol.classList.add('two-scale-col-highlight');
-      playClip('../children-shared%20files/In our game, Claire has a bar. The bar shows how much Claire is at fault..m4a', () => {
-        vCol.classList.remove('two-scale-col-highlight');
-        textEl.textContent = "Michael also has a bar. The bar shows how much Michael is at fault.";
-        pCol.classList.add('two-scale-col-highlight');
-        playClip('../children-shared%20files/Michael also has a bar. The bar shows how much Michael is at fault..m4a', () => {
-          pCol.classList.remove('two-scale-col-highlight');
-          btn.disabled = false;
-          btn.style.opacity = '1';
-          btn.style.cursor = 'pointer';
-        });
-      });
-    }, 500);
-
-    btn.addEventListener('click', () => jsPsych.finishTrial());
-  },
   _debugLabel: 'Warmup: Bar Exists Intro',
 };
 
