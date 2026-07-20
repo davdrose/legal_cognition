@@ -1024,19 +1024,6 @@ const barExistsIntro = {
   _debugLabel: 'Warmup: Bar Exists Intro',
 };
 
-/** Shared helper for the two "how to show..." concept screens below: plays
- *  the "You need to choose an answer for both people." lead-in clip. */
-function playChooseBothLeadIn(onDone) {
-  const audio = document.createElement('audio');
-  audio.src = `${SHARED_BASE}You need to choose an answer for both people.m4a`;
-  audio.style.display = 'none';
-  document.body.appendChild(audio);
-  audio.play().catch(() => {});
-  const done = () => { audio.remove(); if (onDone) onDone(); };
-  audio.addEventListener('ended', done);
-  audio.addEventListener('error', done);
-}
-
 function trackPosAtVal(trackEl, val) {
   const r = trackEl.getBoundingClientRect();
   return { x: r.left + r.width * (val / 100), y: r.top + r.height / 2 };
@@ -1058,7 +1045,7 @@ const howToShowAtFault = {
   choices: ['Next'],
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">You need to choose an answer for both people. If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are.</p>
+      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are.</p>
       ${twoScaleHTML('hsaf', 'Claire', 'Michael', false, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png')}
     </div>`,
   on_load: function() {
@@ -1075,29 +1062,24 @@ const howToShowAtFault = {
     }
     // Recording is ~10.6s: "click their bar to make it red" comes first
     // (~35% through, by word count), then "the more red...the more at
-    // fault they are" (~65% through) — the demo below is nested inside
-    // this second clip's playback (not a top-level setTimeout) so it
-    // starts when the narration actually starts, not while the long
-    // lead-in clip is still playing.
-    playChooseBothLeadIn(() => {
-      const audio = document.createElement('audio');
-      audio.src = `${SHARED_BASE}If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are..m4a`;
-      audio.style.display = 'none';
-      document.body.appendChild(audio);
-      audio.play().catch(() => {});
-      audio.addEventListener('ended', () => audio.remove());
-      audio.addEventListener('error', () => audio.remove());
+    // fault they are" (~65% through).
+    const audio = document.createElement('audio');
+    audio.src = `${SHARED_BASE}If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are..m4a`;
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+    audio.addEventListener('ended', () => audio.remove());
+    audio.addEventListener('error', () => audio.remove());
 
-      setTimeout(() => {
-        showScaleClickRipple(trackPosAtVal(vTrack, 30));
-        animateFill('v', 0, 30, 700, () => {
-          setTimeout(() => {
-            showScaleClickRipple(trackPosAtVal(vTrack, 75));
-            animateFill('v', 30, 75, 900);
-          }, 3000);
-        });
-      }, 500);
-    });
+    setTimeout(() => {
+      showScaleClickRipple(trackPosAtVal(vTrack, 30));
+      animateFill('v', 0, 30, 700, () => {
+        setTimeout(() => {
+          showScaleClickRipple(trackPosAtVal(vTrack, 75));
+          animateFill('v', 30, 75, 900);
+        }, 3000);
+      });
+    }, 500);
   },
   _debugLabel: 'Warmup: How To Show At Fault',
 };
