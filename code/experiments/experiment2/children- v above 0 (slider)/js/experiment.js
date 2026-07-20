@@ -714,9 +714,8 @@ function setScaleValue(id, who, val) {
 }
 
 /** Shows the numeric percentage next to a bar, mirroring the adult
- *  version's readout (there it only appears on real interaction; here
- *  Maggie's demo also drives it so kids can see the number update as
- *  she drags). */
+ *  version's readout — only called on real interaction (dragging during
+ *  practice or an actual trial), not during animated warmup demos. */
 function setScalePercent(id, who, val) {
   const pctEl = document.getElementById(`${id}-${who}-pct`);
   if (pctEl) pctEl.textContent = `${Math.round(val)}%`;
@@ -805,7 +804,6 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, visitPFirst,
           const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
           const val = from + (to - from) * eased;
           setScaleValue(id, who, val);
-          setScalePercent(id, who, val);
           setCursorPos(trackPosAtVal(trackEl, val));
           if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
         }
@@ -937,6 +935,7 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg, aud
         const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
         const val = Math.round(pct * 100);
         setScaleValue(id, who, val);
+        setScalePercent(id, who, val);
         if (who === 'v') { vVal = val; touchedV = true; } else { pVal = val; touchedP = true; }
         checkValid();
       }
@@ -1516,6 +1515,7 @@ function buildFaultQuestionTrial(scenario) {
         const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
         const val = Math.round(pct * 100);
         setScaleValue(id, who, val);
+        setScalePercent(id, who, val);
         if (who === 'v') { vVal = val; touchedV = true; } else { pVal = val; touchedP = true; }
         checkValid();
       }
