@@ -714,7 +714,6 @@ function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst, unanswere
           </div>
           <div class="two-scale-track-mid"></div>
         </div>
-        <div class="two-scale-pct" id="${id}-v-pct" style="font-size:14px; color:#555; min-height:18px; margin-top:4px;"></div>
       </div>`;
   const pCol = `
       <div class="two-scale-col" id="${id}-p-col">
@@ -727,19 +726,10 @@ function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst, unanswere
           </div>
           <div class="two-scale-track-mid"></div>
         </div>
-        <div class="two-scale-pct" id="${id}-p-pct" style="font-size:14px; color:#555; min-height:18px; margin-top:4px;"></div>
       </div>`;
   return `
     <div class="two-scale-row">${pFirst ? pCol + vCol : vCol + pCol}
     </div>`;
-}
-
-/** Shows the numeric percentage next to a bar once the participant has
- *  actually clicked/dragged it — not called during Maggie's animated
- *  demos, so it only appears in response to a real interaction. */
-function showScalePercent(id, who, val) {
-  const pctEl = document.getElementById(`${id}-${who}-pct`);
-  if (pctEl) pctEl.textContent = `${val}%`;
 }
 
 /** Brief pulsing ripple at a point, to show a click actually happened
@@ -962,7 +952,6 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg, aud
         const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
         const val = Math.round(pct * 100);
         setScaleValue(id, who, val);
-        showScalePercent(id, who, val);
         if (who === 'v') { vVal = val; touchedV = true; } else { pVal = val; touchedP = true; }
         checkValid();
       }
@@ -1579,7 +1568,6 @@ function buildFaultQuestionTrial(scenario) {
         const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
         const val = Math.round(pct * 100);
         setScaleValue(id, who, val);
-        showScalePercent(id, who, val);
         if (who === 'v') { vVal = val; touchedV = true; } else { pVal = val; touchedP = true; }
         checkValid();
       }
