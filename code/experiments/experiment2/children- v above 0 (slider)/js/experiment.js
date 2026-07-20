@@ -1025,8 +1025,7 @@ const barExistsIntro = {
 };
 
 // Slide 2e-2 – explains what the bars mean: gray when not at fault, red
-// fills in as fault increases. Briefly fills and empties an example bar
-// while the narration plays, then returns it to gray.
+// fills in as fault increases. Just narration over the (static) bars.
 const barMeaningIntro = {
   type: jsPsychHtmlButtonResponse,
   choices: [],
@@ -1041,27 +1040,10 @@ const barMeaningIntro = {
   on_load: function() {
     const btn = document.getElementById('bmi-continue');
 
-    function animateFill(who, from, to, duration, onDone) {
-      const t0 = performance.now();
-      function step(now) {
-        const t = Math.min(1, (now - t0) / duration);
-        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-        setScaleValue('bmi', who, from + (to - from) * eased);
-        if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
-      }
-      requestAnimationFrame(step);
-    }
-
     function enableNext() {
       btn.disabled = false;
       btn.style.opacity = '1';
       btn.style.cursor = 'pointer';
-    }
-
-    function runFillDemo() {
-      animateFill('v', 0, 65, 2500, () => {
-        setTimeout(() => animateFill('v', 65, 0, 600, enableNext), 400);
-      });
     }
 
     const audio = document.createElement('audio');
@@ -1075,7 +1057,7 @@ const barMeaningIntro = {
       if (done) return;
       done = true;
       audio.remove();
-      runFillDemo();
+      enableNext();
     }
     audio.addEventListener('ended', afterAudio);
     audio.addEventListener('error', afterAudio);
