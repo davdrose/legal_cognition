@@ -714,6 +714,7 @@ function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst, unanswere
           </div>
           <div class="two-scale-track-mid"></div>
         </div>
+        <div class="two-scale-pct" id="${id}-v-pct" style="font-size:14px; color:#555; min-height:18px; margin-top:4px;"></div>
       </div>`;
   const pCol = `
       <div class="two-scale-col" id="${id}-p-col">
@@ -726,10 +727,31 @@ function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst, unanswere
           </div>
           <div class="two-scale-track-mid"></div>
         </div>
+        <div class="two-scale-pct" id="${id}-p-pct" style="font-size:14px; color:#555; min-height:18px; margin-top:4px;"></div>
       </div>`;
   return `
     <div class="two-scale-row">${pFirst ? pCol + vCol : vCol + pCol}
     </div>`;
+}
+
+/** Shows the numeric percentage next to a bar once the participant has
+ *  actually clicked/dragged it — not called during Maggie's animated
+ *  demos, so it only appears in response to a real interaction. */
+function showScalePercent(id, who, val) {
+  const pctEl = document.getElementById(`${id}-${who}-pct`);
+  if (pctEl) pctEl.textContent = `${val}%`;
+}
+
+/** Brief pulsing ripple at a point, to show a click actually happened
+ *  (used right when Maggie's cursor "presses" something). */
+function showClickEffect(pt) {
+  const ripple = document.createElement('div');
+  ripple.className = 'two-scale-click-ripple';
+  ripple.style.left = pt.x + 'px';
+  ripple.style.top  = pt.y + 'px';
+  document.body.appendChild(ripple);
+  requestAnimationFrame(() => ripple.classList.add('animate'));
+  setTimeout(() => ripple.remove(), 550);
 }
 
 function setScaleValue(id, who, val) {
@@ -787,20 +809,6 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, visitPFirst,
       }
       setCursorPos(cornerPos);
 
-      /** Flashes a brief ripple at the click point, so Maggie's click on the
-       *  zero endpoint is visibly deliberate even though the bar itself
-       *  doesn't change (0 -> 0), rather than looking like she just parked
-       *  there without answering. */
-      function showClickRipple(pt) {
-        const ripple = document.createElement('div');
-        ripple.className = 'two-scale-click-ripple';
-        ripple.style.left = pt.x + 'px';
-        ripple.style.top  = pt.y + 'px';
-        document.body.appendChild(ripple);
-        requestAnimationFrame(() => ripple.classList.add('animate'));
-        setTimeout(() => ripple.remove(), 550);
-      }
-
       function animateCursorTo(from, to, duration, onDone) {
         const t0 = performance.now();
         function step(now) {
@@ -844,12 +852,12 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP, visitPFirst,
           cornerStatic.style.visibility = 'hidden';
           cursor.style.visibility = 'visible';
           animateCursorTo(cornerPos, trackPosAtVal(firstTrack, 0), 900, () => {
-            showClickRipple(trackPosAtVal(firstTrack, 0));
+            showClickEffect(trackPosAtVal(firstTrack, 0));
             setTimeout(() => {
               animateBarValue(firstKey, 0, firstTarget, 1100, firstTrack, () => {
                 setTimeout(() => {
                   animateCursorTo(trackPosAtVal(firstTrack, firstTarget), trackPosAtVal(secondTrack, 0), 700, () => {
-                    showClickRipple(trackPosAtVal(secondTrack, 0));
+                    showClickEffect(trackPosAtVal(secondTrack, 0));
                     setTimeout(() => {
                       animateBarValue(secondKey, 0, secondTarget, 1100, secondTrack, () => {
                         setTimeout(() => {
@@ -954,6 +962,7 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg, aud
         const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
         const val = Math.round(pct * 100);
         setScaleValue(id, who, val);
+        showScalePercent(id, who, val);
         if (who === 'v') { vVal = val; touchedV = true; } else { pVal = val; touchedP = true; }
         checkValid();
       }
@@ -1160,6 +1169,18 @@ const howToShowAtFault = {
       ${twoScaleHTML('hsaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
     </div>`,
   on_load: function() {
+    const nextBtn = document.querySelector('#jspsych-html-button-response-btngroup .jspsych-btn');
+    if (nextBtn) {
+      nextBtn.disabled = true;
+      nextBtn.style.opacity = '0.4';
+      nextBtn.style.cursor = 'not-allowed';
+    }
+    function enableNext() {
+      if (!nextBtn) return;
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+      nextBtn.style.cursor = 'pointer';
+    }
     const vTrack = document.getElementById('hsaf-v-track');
     function animateFill(who, from, to, duration, onDone) {
       const t0 = performance.now();
@@ -1191,7 +1212,7 @@ const howToShowAtFault = {
         animateFill('v', 0, 30, 700, () => {
           setTimeout(() => {
             showScaleClickRipple(trackPosAtVal(vTrack, 75));
-            animateFill('v', 30, 75, 900);
+            animateFill('v', 30, 75, 900, enableNext);
           }, 3000);
         });
       }, 500);
@@ -1214,6 +1235,18 @@ const howToShowNotAtFault = {
       ${twoScaleHTML('hsnaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
     </div>`,
   on_load: function() {
+    const nextBtn = document.querySelector('#jspsych-html-button-response-btngroup .jspsych-btn');
+    if (nextBtn) {
+      nextBtn.disabled = true;
+      nextBtn.style.opacity = '0.4';
+      nextBtn.style.cursor = 'not-allowed';
+    }
+    function enableNext() {
+      if (!nextBtn) return;
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+      nextBtn.style.cursor = 'pointer';
+    }
     const vTrack = document.getElementById('hsnaf-v-track');
     // Dedicated recording for this screen (distinct from the shared lead-in
     // clip used on the "how to show at fault" screen) — the click demo is
@@ -1223,7 +1256,7 @@ const howToShowNotAtFault = {
     audio.style.display = 'none';
     document.body.appendChild(audio);
     audio.play().catch(() => {});
-    const showDemo = () => { audio.remove(); showScaleClickRipple(trackPosAtVal(vTrack, 0)); };
+    const showDemo = () => { audio.remove(); showScaleClickRipple(trackPosAtVal(vTrack, 0)); enableNext(); };
     audio.addEventListener('ended', showDemo);
     audio.addEventListener('error', showDemo);
   },
@@ -1242,10 +1275,8 @@ const scaleDemo1 = buildScaleDemoTrial(
 const scalePractice1 = buildScalePracticeTrial(
   'sp1', 'Claire at fault only',
   "Now you try! Show that Claire is at fault and Michael is not at fault.",
-  // Deliberate "not at fault" means the gray endpoint, not just a low value —
-  // tolerance is small (click imprecision only), not enough to accept a
-  // visibly red 15-20 as "not at fault".
-  (v, p, tv, tp) => tv && tp && v >= 40 && p <= 5,
+  // "Not at fault" means exactly 0 — no tolerance.
+  (v, p, tv, tp) => tv && tp && v >= 40 && p === 0,
   "⚠️ Show that Claire is at fault and Michael is not at fault.",
   `../children-shared%20files/Now you try! Show that Claire is at fault and Michael is not at fault.m4a`
 );
@@ -1262,7 +1293,8 @@ const scaleDemo2 = buildScaleDemoTrial(
 const scalePractice2 = buildScalePracticeTrial(
   'sp2', 'Michael at fault only',
   "Now you try! Show that Michael is at fault and Claire is not at fault.",
-  (v, p, tv, tp) => tv && tp && p >= 40 && v <= 5,
+  // "Not at fault" means exactly 0 — no tolerance.
+  (v, p, tv, tp) => tv && tp && p >= 40 && v === 0,
   "⚠️ Show that Michael is at fault and Claire is not at fault.",
   `../children-shared%20files/Now you try! Show that Michael is at fault and Claire is not at fault.m4a`
 );
@@ -1296,8 +1328,9 @@ const scaleDemo4 = buildScaleDemoTrial(
 const scalePractice4 = buildScalePracticeTrial(
   'sp4', 'Equally at fault',
   "Now you try! Make Claire's and Michael's bars the same size.",
-  (v, p, tv, tp) => tv && tp && Math.abs(v - p) <= 10 && v >= 25 && p >= 25,
-  "⚠️ Make Claire's and Michael's bars about the same size.",
+  // "Equally at fault" means exactly equal — no tolerance.
+  (v, p, tv, tp) => tv && tp && v === p && v >= 25,
+  "⚠️ Make Claire's and Michael's bars exactly the same size.",
   `../children-shared%20files/Now you try! Make Claire's and Michael's bars the same size.m4a`
 );
 
@@ -1313,7 +1346,8 @@ const scaleDemo5 = buildScaleDemoTrial(
 const scalePractice5 = buildScalePracticeTrial(
   'sp5', 'Neither at fault',
   "Now you try! Show that neither Claire nor Michael is at fault.",
-  (v, p, tv, tp) => tv && tp && v <= 5 && p <= 5,
+  // "Not at fault" means exactly 0 — no tolerance.
+  (v, p, tv, tp) => tv && tp && v === 0 && p === 0,
   "⚠️ Show that neither Claire nor Michael is at fault.",
   `../children-shared%20files/Now you try! Show that neither Claire nor Michael is at fault.m4a`
 );
@@ -1393,6 +1427,7 @@ function buildCheckerDemoTrial(id, label, ruleText, name, imgUrl, targetAnswer, 
           cornerStatic.style.visibility = 'hidden';
           cursor.style.visibility = 'visible';
           animateCursorTo(cornerPos, btnPos(targetBtn), 900, () => {
+            showClickEffect(btnPos(targetBtn));
             targetBtn.classList.add('checker-btn-pressed');
             setTimeout(() => {
               animateCursorTo(btnPos(targetBtn), cornerPos, 900, () => {
@@ -1585,6 +1620,7 @@ function buildFaultQuestionTrial(scenario) {
         const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
         const val = Math.round(pct * 100);
         setScaleValue(id, who, val);
+        showScalePercent(id, who, val);
         if (who === 'v') { vVal = val; touchedV = true; } else { pVal = val; touchedP = true; }
         checkValid();
       }
@@ -1640,7 +1676,10 @@ function buildFaultQuestionTrial(scenario) {
 function buildCheckerTrial(scenario, targetRole) {
   const pName = scenario.p_name || 'Finn';
   const vName = scenario.v_name || 'Cleo';
+  const pImg  = scenario.p_img  || 'finn_neutral.png';
+  const vImg  = scenario.v_img  || 'cleo_neutral.png';
   const targetName = targetRole === 'p' ? pName : vName;
+  const targetImg  = targetRole === 'p' ? pImg  : vImg;
   const endingImg = scenario.story_slides[scenario.story_slides.length - 1];
   const id = `ck${scenario.id}${targetRole}`;
 
@@ -1651,6 +1690,7 @@ function buildCheckerTrial(scenario, targetRole) {
     stimulus: `
       <div style="text-align:center; padding:8px 40px 0 40px; max-width:860px; margin:0 auto;">
         <img src="${endingImg}" style="max-width:820px; width:100%; max-height:min(30vh, 240px); object-fit:contain; border-radius:8px; margin-bottom:14px;">
+        <img src="img/${targetImg}" alt="${targetName}" style="width:88px; height:88px; object-fit:contain; border-radius:50%; margin-bottom:10px;">
         <p style="font-size:24px; font-weight:600;">Was ${targetName} being careful?</p>
         <div style="display:flex; justify-content:center; gap:24px; margin-top:14px;">
           <button id="${id}-yes-btn" type="button" class="jspsych-btn checker-btn checker-btn-yes"><span class="checker-icon">✓</span><span class="checker-label">Yes</span></button>
