@@ -999,6 +999,15 @@ const barExistsIntro = {
       <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, each person has a bar. The bars show how much each person is at fault.</p>
       ${twoScaleHTML('bei', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
     </div>`,
+  on_load: function() {
+    const audio = document.createElement('audio');
+    audio.src = '../children-shared%20files/In our game, each person has a bar. The bars show how much each person is at fault..m4a';
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+    audio.addEventListener('ended', () => audio.remove());
+    audio.addEventListener('error', () => audio.remove());
+  },
   _debugLabel: 'Warmup: Bar Exists Intro',
 };
 
