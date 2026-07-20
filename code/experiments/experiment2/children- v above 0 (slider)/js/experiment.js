@@ -969,7 +969,7 @@ const barExistsIntro = {
   choices: [],
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p id="bei-text" style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, Claire has a bar. This is Claire's bar.</p>
+      <p id="bei-text" style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, Claire has a bar. The bar shows how much Claire is at fault.</p>
       ${twoScaleHTML('bei', 'Claire', 'Michael', false, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png')}
       <div style="margin-top:14px;">
         <button id="bei-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Next</button>
@@ -996,7 +996,7 @@ const barExistsIntro = {
       vCol.classList.add('two-scale-col-highlight');
       playClip(`${SHARED_BASE}In our game, Claire has a bar. This is Claire’s bar.m4a`, () => {
         vCol.classList.remove('two-scale-col-highlight');
-        textEl.textContent = "Michael also has a bar. This is Michael's bar.";
+        textEl.textContent = "Michael also has a bar. The bar shows how much Michael is at fault.";
         pCol.classList.add('two-scale-col-highlight');
         playClip(`${SHARED_BASE}Michael also has a bar. This is Michael’s bar.m4a`, () => {
           pCol.classList.remove('two-scale-col-highlight');
