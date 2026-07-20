@@ -1024,49 +1024,6 @@ const barExistsIntro = {
   _debugLabel: 'Warmup: Bar Exists Intro',
 };
 
-// Slide 2e-2 – explains what the bars mean: gray when not at fault, red
-// fills in as fault increases. Just narration over the (static) bars.
-const barMeaningIntro = {
-  type: jsPsychHtmlButtonResponse,
-  choices: [],
-  stimulus: `
-    <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p id="bmi-text" style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">The bars show how much each person is at fault.</p>
-      ${twoScaleHTML('bmi', 'Claire', 'Michael', false, CHAR_IMG_BASE + 'claire.png', CHAR_IMG_BASE + 'michael.png')}
-      <div style="margin-top:14px;">
-        <button id="bmi-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Next</button>
-      </div>
-    </div>`,
-  on_load: function() {
-    const btn = document.getElementById('bmi-continue');
-
-    function enableNext() {
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      btn.style.cursor = 'pointer';
-    }
-
-    const audio = document.createElement('audio');
-    audio.src = `${SHARED_BASE}The bars show how much each person is at fault..m4a`;
-    audio.style.display = 'none';
-    document.body.appendChild(audio);
-    audio.play().catch(() => {});
-
-    let done = false;
-    function afterAudio() {
-      if (done) return;
-      done = true;
-      audio.remove();
-      enableNext();
-    }
-    audio.addEventListener('ended', afterAudio);
-    audio.addEventListener('error', afterAudio);
-
-    btn.addEventListener('click', () => jsPsych.finishTrial());
-  },
-  _debugLabel: 'Warmup: Bar Meaning Intro',
-};
-
 /** Shared helper for the two "how to show..." concept screens below: plays
  *  the "You need to choose an answer for both people." lead-in clip. */
 function playChooseBothLeadIn(onDone) {
@@ -1826,7 +1783,6 @@ const warmupBlock = [
   warmupPracticeSummary,
   warmupPracticeBoth,
   barExistsIntro,
-  barMeaningIntro,
   howToShowAtFault,
   howToShowNotAtFault,
   scaleDemo1, scalePractice1,
