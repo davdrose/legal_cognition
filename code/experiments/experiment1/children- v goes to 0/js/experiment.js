@@ -1219,7 +1219,7 @@ const scalePractice2 = buildScalePracticeTrial(
 
 const scaleDemo3 = buildScaleDemoTrial(
   'sd3', 'Claire more at fault',
-  "Sometimes both people can be at fault, but one person can be more at fault than the other. If Claire is more at fault than Michael, Claire's bar should have more red.",
+  "Sometimes both people can be at fault, but one person can be more at fault than the other. If Claire is more at fault than Michael, Claire's bar should have more red. Let's see Maggie do it.",
   70, 30,
   false,
   undefined,
