@@ -740,6 +740,18 @@ function setScaleValue(id, who, val) {
   fill.style.background = `rgba(217, 33, 33, ${Math.max(0, Math.min(1, val / 100))})`;
 }
 
+/** Brief pulsing ripple at a point, to show a click actually happened
+ *  (used right when Maggie's cursor "presses" something). */
+function showClickEffect(pt) {
+  const ripple = document.createElement('div');
+  ripple.className = 'two-scale-click-ripple';
+  ripple.style.left = pt.x + 'px';
+  ripple.style.top  = pt.y + 'px';
+  document.body.appendChild(ripple);
+  requestAnimationFrame(() => ripple.classList.add('animate'));
+  setTimeout(() => ripple.remove(), 550);
+}
+
 /** Maggie walks in from her usual corner and demonstrates one target
  *  combination of the two bars, then the child clicks "Got it!". `visitPFirst`
  *  controls which bar she visits first — independent of on-screen layout,
@@ -991,176 +1003,108 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg, aud
   };
 }
 
-// Slide 2e-intro – introduces the two bars' existence, one at a time, each
-// highlighted with a glowing outline as it's mentioned.
+// Slide 2f-intro – introduces the two-bar concept (static, both bars at 0),
+// matching the adult version exactly.
 const barExistsIntro = {
   type: jsPsychHtmlButtonResponse,
-  choices: [],
+  choices: ['Next'],
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p id="bei-text" style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, Claire has a bar. This is Claire's bar.</p>
+      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, each person has a bar. The bars show how much each person is at fault.</p>
       ${twoScaleHTML('bei', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
-      <div style="margin-top:14px;">
-        <button id="bei-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Next</button>
-      </div>
     </div>`,
   on_load: function() {
-    const textEl = document.getElementById('bei-text');
-    const vCol    = document.getElementById('bei-v-col');
-    const pCol    = document.getElementById('bei-p-col');
-    const btn     = document.getElementById('bei-continue');
-
-    function playClip(src, onDone) {
-      const audio = document.createElement('audio');
-      audio.src = src;
-      audio.style.display = 'none';
-      document.body.appendChild(audio);
-      audio.play().catch(() => {});
-      const done = () => { audio.remove(); onDone(); };
-      audio.addEventListener('ended', done);
-      audio.addEventListener('error', done);
-    }
-
-    setTimeout(() => {
-      vCol.classList.add('two-scale-col-highlight');
-      playClip('../children-shared%20files/In our game, Claire has a bar. This is Claire’s bar.m4a', () => {
-        vCol.classList.remove('two-scale-col-highlight');
-        textEl.textContent = "Michael also has a bar. This is Michael's bar.";
-        pCol.classList.add('two-scale-col-highlight');
-        playClip('../children-shared%20files/Michael also has a bar. This is Michael’s bar.m4a', () => {
-          pCol.classList.remove('two-scale-col-highlight');
-          btn.disabled = false;
-          btn.style.opacity = '1';
-          btn.style.cursor = 'pointer';
-        });
-      });
-    }, 500);
-
-    btn.addEventListener('click', () => jsPsych.finishTrial());
-  },
-  _debugLabel: 'Warmup: Bar Exists Intro',
-};
-
-// Slide 2e-2 – explains what the bars mean: gray when not at fault, red
-// fills in as fault increases. Briefly fills and empties an example bar
-// while that part of the narration plays, then returns it to gray.
-const barMeaningIntro = {
-  type: jsPsychHtmlButtonResponse,
-  choices: [],
-  stimulus: `
-    <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p id="bmi-text" style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">The bars show how much each person is at fault. When someone is not at fault at all, their bar is gray. The more at fault they are, the more red fills their bar.</p>
-      ${twoScaleHTML('bmi', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
-      <div style="margin-top:14px;">
-        <button id="bmi-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Next</button>
-      </div>
-    </div>`,
-  on_load: function() {
-    const btn = document.getElementById('bmi-continue');
-
-    function animateFill(who, from, to, duration, onDone) {
-      const t0 = performance.now();
-      function step(now) {
-        const t = Math.min(1, (now - t0) / duration);
-        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-        setScaleValue('bmi', who, from + (to - from) * eased);
-        if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
-      }
-      requestAnimationFrame(step);
-    }
-
-    function enableNext() {
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      btn.style.cursor = 'pointer';
-    }
-
     const audio = document.createElement('audio');
-    audio.src = '../children-shared%20files/The bars show how much each person is at fault. When someone is not at fault at all.m4a';
+    audio.src = '../children-shared%20files/In our game, each person has a bar. The bars show how much each person is at fault..m4a';
     audio.style.display = 'none';
     document.body.appendChild(audio);
     audio.play().catch(() => {});
-
-    // Recording runs ~15.8s; "...the more red fills their bar" begins around
-    // the 82%-through mark (~12.8s at this file's length). Wait for the audio
-    // to actually reach that point (rather than a blind setTimeout) so the
-    // fill stays in sync even if playback stalls, then fill slowly enough
-    // (2.5s) that the color change is clearly visible before the bar resets.
-    let triggered = false;
-    audio.addEventListener('timeupdate', () => {
-      if (!triggered && audio.currentTime >= 12.6) {
-        triggered = true;
-        animateFill('v', 0, 65, 2500, () => {
-          setTimeout(() => animateFill('v', 65, 0, 600, () => {}), 400);
-        });
-      }
-    });
-
-    let done = false;
-    function finishIntro() {
-      if (done) return;
-      done = true;
-      audio.remove();
-      if (!triggered) {
-        // Audio never played (missing/blocked) — still show the fill once,
-        // slowly, so the concept is demonstrated either way.
-        animateFill('v', 0, 65, 2500, () => {
-          setTimeout(() => animateFill('v', 65, 0, 600, enableNext), 400);
-        });
-      } else {
-        enableNext();
-      }
-    }
-    audio.addEventListener('ended', finishIntro);
-    audio.addEventListener('error', finishIntro);
-
-    btn.addEventListener('click', () => jsPsych.finishTrial());
+    audio.addEventListener('ended', () => audio.remove());
+    audio.addEventListener('error', () => audio.remove());
   },
-  _debugLabel: 'Warmup: Bar Meaning Intro',
+  _debugLabel: 'Warmup: Bar Exists Intro',
 };
-
-/** Shared helper for the two "how to show..." concept screens below: plays
- *  the "You need to choose an answer for both people." lead-in clip. */
-function playChooseBothLeadIn(onDone) {
-  const audio = document.createElement('audio');
-  audio.src = '../children-shared%20files/You need to choose an answer for both people.m4a';
-  audio.style.display = 'none';
-  document.body.appendChild(audio);
-  audio.play().catch(() => {});
-  const done = () => { audio.remove(); if (onDone) onDone(); };
-  audio.addEventListener('ended', done);
-  audio.addEventListener('error', done);
-}
 
 function trackPosAtVal(trackEl, val) {
   const r = trackEl.getBoundingClientRect();
   return { x: r.left + r.width * (val / 100), y: r.top + r.height / 2 };
 }
-function showScaleClickRipple(pt) {
-  const ripple = document.createElement('div');
-  ripple.className = 'two-scale-click-ripple';
-  ripple.style.left = pt.x + 'px';
-  ripple.style.top  = pt.y + 'px';
-  document.body.appendChild(ripple);
-  requestAnimationFrame(() => ripple.classList.add('animate'));
-  setTimeout(() => ripple.remove(), 550);
+/** Sets up Maggie's corner-idle image + floating walking cursor for a
+ *  "how to show..." concept screen, mirroring buildScaleDemoTrial's pattern.
+ *  Returns helpers to walk her to a point, click, and send her home. */
+function setupMaggieWalker(id) {
+  const cursor       = document.getElementById(`${id}-cursor`);
+  const cornerStatic = document.getElementById(`${id}-corner`);
+  const cr = cornerStatic.getBoundingClientRect();
+  const cornerPos = { x: cr.left + cr.width / 2, y: cr.top + cr.height / 2 };
+
+  function setCursorPos(pt) {
+    cursor.style.left = (pt.x - window.innerWidth * 0.042) + 'px';
+    cursor.style.top  = (pt.y - 70) + 'px';
+  }
+  setCursorPos(cornerPos);
+
+  function animateCursorTo(from, to, duration, onDone) {
+    const t0 = performance.now();
+    function step(now) {
+      const t = Math.min(1, (now - t0) / duration);
+      const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      setCursorPos({ x: from.x + (to.x - from.x) * eased, y: from.y + (to.y - from.y) * eased });
+      if (t < 1) { requestAnimationFrame(step); } else { onDone(); }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function comeOut() {
+    cornerStatic.style.visibility = 'hidden';
+    cursor.style.visibility = 'visible';
+  }
+  function goHome(onDone) {
+    animateCursorTo(cursor._lastPos || cornerPos, cornerPos, 900, () => {
+      cursor.style.visibility = 'hidden';
+      cornerStatic.style.visibility = 'visible';
+      if (onDone) onDone();
+    });
+  }
+  function walkTo(pt, duration, onDone) {
+    animateCursorTo(cursor._lastPos || cornerPos, pt, duration, onDone);
+    cursor._lastPos = pt;
+  }
+
+  return { cornerPos, comeOut, goHome, walkTo };
 }
 
 // Slide 2e-3 – explains how to show that someone IS at fault: click their
 // bar to add some red, then click/move farther along to make it redder.
-// NOTE: needs a recording of "If someone is at fault, click their bar to
-// make it red. The more red in their bar, the more at fault they are." —
-// not yet in children-shared files, so only the lead-in clip plays for now.
 const howToShowAtFault = {
   type: jsPsychHtmlButtonResponse,
   choices: ['Next'],
   stimulus: `
+    <div class="video-frame-domain">
+      <img id="hsaf-corner" src="${MAGGIE_IMG}" class="corner-char-img" alt="">
+    </div>
+    <div id="hsaf-cursor" style="position:fixed; pointer-events:none; z-index:1; visibility:hidden;">
+      <img src="${MAGGIE_IMG}" alt="Maggie" style="width:8.4vw; transform:scaleX(-1);">
+    </div>
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">You need to choose an answer for both people. If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are.</p>
+      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are.</p>
       ${twoScaleHTML('hsaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
     </div>`,
   on_load: function() {
+    const nextBtn = document.querySelector('#jspsych-html-button-response-btngroup .jspsych-btn');
+    if (nextBtn) {
+      nextBtn.disabled = true;
+      nextBtn.style.opacity = '0.4';
+      nextBtn.style.cursor = 'not-allowed';
+    }
+    function enableNext() {
+      if (!nextBtn) return;
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+      nextBtn.style.cursor = 'pointer';
+    }
     const vTrack = document.getElementById('hsaf-v-track');
+    const maggie = setupMaggieWalker('hsaf');
     function animateFill(who, from, to, duration, onDone) {
       const t0 = performance.now();
       function step(now) {
@@ -1173,57 +1117,80 @@ const howToShowAtFault = {
     }
     // Recording is ~10.6s: "click their bar to make it red" comes first
     // (~35% through, by word count), then "the more red...the more at
-    // fault they are" (~65% through) — the demo below is nested inside
-    // this second clip's playback (not a top-level setTimeout) so it
-    // starts when the narration actually starts, not while the long
-    // lead-in clip is still playing.
-    playChooseBothLeadIn(() => {
-      const audio = document.createElement('audio');
-      audio.src = '../children-shared%20files/If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are..m4a';
-      audio.style.display = 'none';
-      document.body.appendChild(audio);
-      audio.play().catch(() => {});
-      audio.addEventListener('ended', () => audio.remove());
-      audio.addEventListener('error', () => audio.remove());
+    // fault they are" (~65% through).
+    const audio = document.createElement('audio');
+    audio.src = '../children-shared%20files/If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are..m4a';
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
+    audio.play().catch(() => {});
+    audio.addEventListener('ended', () => audio.remove());
+    audio.addEventListener('error', () => audio.remove());
 
-      setTimeout(() => {
-        showScaleClickRipple(trackPosAtVal(vTrack, 30));
+    setTimeout(() => {
+      maggie.comeOut();
+      maggie.walkTo(trackPosAtVal(vTrack, 30), 700, () => {
+        showClickEffect(trackPosAtVal(vTrack, 30));
         animateFill('v', 0, 30, 700, () => {
           setTimeout(() => {
-            showScaleClickRipple(trackPosAtVal(vTrack, 75));
-            animateFill('v', 30, 75, 900);
+            maggie.walkTo(trackPosAtVal(vTrack, 75), 700, () => {
+              showClickEffect(trackPosAtVal(vTrack, 75));
+              animateFill('v', 30, 75, 900, () => {
+                setTimeout(() => maggie.goHome(enableNext), 400);
+              });
+            });
           }, 3000);
         });
-      }, 500);
-    });
+      });
+    }, 500);
   },
   _debugLabel: 'Warmup: How To Show At Fault',
 };
 
 // Slide 2e-4 – explains how to show that someone is NOT at fault at all: a
 // deliberate click at the very beginning of the bar, which stays gray.
-// NOTE: needs a recording of "If someone is not at fault at all, click the
-// very beginning of their bar. Their bar will stay gray." — not yet in
-// children-shared files, so only the lead-in clip plays for now.
 const howToShowNotAtFault = {
   type: jsPsychHtmlButtonResponse,
   choices: ['Next'],
   stimulus: `
+    <div class="video-frame-domain">
+      <img id="hsnaf-corner" src="${MAGGIE_IMG}" class="corner-char-img" alt="">
+    </div>
+    <div id="hsnaf-cursor" style="position:fixed; pointer-events:none; z-index:1; visibility:hidden;">
+      <img src="${MAGGIE_IMG}" alt="Maggie" style="width:8.4vw; transform:scaleX(-1);">
+    </div>
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
-      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">You need to choose an answer for both people. If someone is not at fault at all, click the very beginning of their bar. Their bar will stay gray.</p>
+      <p style="font-size:26px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">If someone is not at fault at all, click the very beginning of their bar. Their bar will stay gray.</p>
       ${twoScaleHTML('hsnaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
     </div>`,
   on_load: function() {
+    const nextBtn = document.querySelector('#jspsych-html-button-response-btngroup .jspsych-btn');
+    if (nextBtn) {
+      nextBtn.disabled = true;
+      nextBtn.style.opacity = '0.4';
+      nextBtn.style.cursor = 'not-allowed';
+    }
+    function enableNext() {
+      if (!nextBtn) return;
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+      nextBtn.style.cursor = 'pointer';
+    }
     const vTrack = document.getElementById('hsnaf-v-track');
-    // Dedicated recording for this screen (distinct from the shared lead-in
-    // clip used on the "how to show at fault" screen) — the click demo is
-    // gated on this audio finishing, not a blind delay.
+    const maggie = setupMaggieWalker('hsnaf');
+    // The click demo is gated on this audio finishing, not a blind delay.
     const audio = document.createElement('audio');
-    audio.src = '../children-shared%20files/15 You need to choose an answer for both people.m4a';
+    audio.src = '../children-shared%20files/If someone is not at fault at all, click the very beginning of their bar. Their bar will stay gray..m4a';
     audio.style.display = 'none';
     document.body.appendChild(audio);
     audio.play().catch(() => {});
-    const showDemo = () => { audio.remove(); showScaleClickRipple(trackPosAtVal(vTrack, 0)); };
+    const showDemo = () => {
+      audio.remove();
+      maggie.comeOut();
+      maggie.walkTo(trackPosAtVal(vTrack, 0), 700, () => {
+        showClickEffect(trackPosAtVal(vTrack, 0));
+        setTimeout(() => maggie.goHome(enableNext), 500);
+      });
+    };
     audio.addEventListener('ended', showDemo);
     audio.addEventListener('error', showDemo);
   },
@@ -1235,17 +1202,14 @@ const scaleDemo1 = buildScaleDemoTrial(
   "In our game, if Claire is at fault but Michael is not at fault, Claire's bar should have some red, and Michael's bar should stay gray. Let's see Maggie do it.",
   85, 0,
   false,
-  "Claire has some fault, but Michael has no fault.",
-  `../children-shared%20files/In our game, if Claire is at fault but Michael is not at fault,.m4a`,
-  `../children-shared%20files/Claire has some fault, but Michael has no fault..m4a`
+  undefined,
+  `../children-shared%20files/In our game, if Claire is at fault but Michael is not at fault,.m4a`
 );
 const scalePractice1 = buildScalePracticeTrial(
   'sp1', 'Claire at fault only',
   "Now you try! Show that Claire is at fault and Michael is not at fault.",
-  // Deliberate "not at fault" means the gray endpoint, not just a low value —
-  // tolerance is small (click imprecision only), not enough to accept a
-  // visibly red 15-20 as "not at fault".
-  (v, p, tv, tp) => tv && tp && v >= 40 && p <= 5,
+  // "Not at fault" allows a small 0-2 margin.
+  (v, p, tv, tp) => tv && tp && v >= 40 && p <= 2,
   "⚠️ Show that Claire is at fault and Michael is not at fault.",
   `../children-shared%20files/Now you try! Show that Claire is at fault and Michael is not at fault.m4a`
 );
@@ -1255,26 +1219,25 @@ const scaleDemo2 = buildScaleDemoTrial(
   "In our game, if Michael is at fault but Claire is not at fault, Michael's bar should have some red, and Claire's bar should stay gray. Let's see Maggie do it.",
   0, 85,
   false,
-  "Michael has some fault, but Claire has no fault.",
-  `../children-shared%20files/In our game, if Michael is at fault but Claire is not at fault,.m4a`,
-  `../children-shared%20files/Michael has some fault, but Claire has no fault..m4a`
+  undefined,
+  `../children-shared%20files/In our game, if Michael is at fault but Claire is not at fault,.m4a`
 );
 const scalePractice2 = buildScalePracticeTrial(
   'sp2', 'Michael at fault only',
   "Now you try! Show that Michael is at fault and Claire is not at fault.",
-  (v, p, tv, tp) => tv && tp && p >= 40 && v <= 5,
+  // "Not at fault" allows a small 0-2 margin.
+  (v, p, tv, tp) => tv && tp && p >= 40 && v <= 2,
   "⚠️ Show that Michael is at fault and Claire is not at fault.",
   `../children-shared%20files/Now you try! Show that Michael is at fault and Claire is not at fault.m4a`
 );
 
 const scaleDemo3 = buildScaleDemoTrial(
   'sd3', 'Claire more at fault',
-  "Sometimes both people can be at fault, but one person can be more at fault than the other. If Claire is more at fault than Michael, Claire's bar should have more red.",
+  "Sometimes both people can be at fault, but one person can be more at fault than the other. If Claire is more at fault than Michael, Claire's bar should have more red. Let's see Maggie do it.",
   70, 30,
   false,
-  "Claire is more at fault than Michael.",
-  `../children-shared%20files/Sometimes both people can be at fault, but one person can be more at fault than the other.m4a`,
-  `../children-shared%20files/Claire is more at fault than Michael..m4a`
+  undefined,
+  `../children-shared%20files/Sometimes both people can be at fault, but one person can be more at fault than the other. If.m4a`
 );
 const scalePractice3 = buildScalePracticeTrial(
   'sp3', 'Claire more at fault',
@@ -1289,31 +1252,31 @@ const scaleDemo4 = buildScaleDemoTrial(
   "If Claire and Michael are equally at fault, their bars should have the same amount of red. Let's see Maggie do it.",
   55, 55,
   false,
-  "Claire and Michael are equally at fault.",
-  `../children-shared%20files/If Claire and Michael are equally at fault,.m4a`,
-  `../children-shared%20files/Claire and Michael are equally at fault..m4a`
+  undefined,
+  `../children-shared%20files/If Claire and Michael are equally at fault,.m4a`
 );
 const scalePractice4 = buildScalePracticeTrial(
   'sp4', 'Equally at fault',
   "Now you try! Make Claire's and Michael's bars the same size.",
-  (v, p, tv, tp) => tv && tp && Math.abs(v - p) <= 10 && v >= 25 && p >= 25,
-  "⚠️ Make Claire's and Michael's bars about the same size.",
+  // "Equally at fault" allows a small +/-2 margin.
+  (v, p, tv, tp) => tv && tp && Math.abs(v - p) <= 2 && v >= 25,
+  "⚠️ Make Claire's and Michael's bars exactly the same size.",
   `../children-shared%20files/Now you try! Make Claire's and Michael's bars the same size.m4a`
 );
 
 const scaleDemo5 = buildScaleDemoTrial(
   'sd5', 'Neither at fault',
-  "If neither Claire nor Michael is at fault, both bars should stay gray. Maggie still needs to choose an answer for each person. Let's see her do it.",
+  "If neither Claire nor Michael is at fault, both bars should stay gray. Let's see Maggie do it.",
   0, 0,
   false,
-  "Neither Claire nor Michael is at fault.",
-  `../children-shared%20files/If neither Claire nor Michael is at fault.m4a`,
-  `../children-shared%20files/Neither Claire nor Michael is at fault..m4a`
+  undefined,
+  `../children-shared%20files/If neither Claire nor Michael is at fault, both bars should stay gray..m4a`
 );
 const scalePractice5 = buildScalePracticeTrial(
   'sp5', 'Neither at fault',
   "Now you try! Show that neither Claire nor Michael is at fault.",
-  (v, p, tv, tp) => tv && tp && v <= 5 && p <= 5,
+  // "Not at fault" allows a small 0-2 margin.
+  (v, p, tv, tp) => tv && tp && v <= 2 && p <= 2,
   "⚠️ Show that neither Claire nor Michael is at fault.",
   `../children-shared%20files/Now you try! Show that neither Claire nor Michael is at fault.m4a`
 );
@@ -1825,7 +1788,6 @@ const warmupBlock = [
   warmupPracticeSummary,
   warmupPracticeBoth,
   barExistsIntro,
-  barMeaningIntro,
   howToShowAtFault,
   howToShowNotAtFault,
   scaleDemo1, scalePractice1,
