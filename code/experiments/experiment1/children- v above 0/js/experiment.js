@@ -214,7 +214,7 @@ const finnCleoScenarios = [
     event_text: 'Finn spills water and doesn\'t clean it up. Cleo slips on the wet floor and 2 of Cleo\'s cookies are destroyed.',
     event_title: 'Finn Spills Water — Cleo Slips',
     story_slides: ['img/trailppt/finn_cleo/finn_cleo_1.png','img/trailppt/finn_cleo/finn_cleo_2.png','img/trailppt/finn_cleo/finn_cleo_3.png','img/trailppt/finn_cleo/finn_cleo_4.png','img/trailppt/finn_cleo/finn_cleo_5.png','img/trailppt/finn_cleo/finn_cleo_6.png','img/trailppt/finn_cleo/finn_cleo_7.png','img/trailppt/finn_cleo/finn_cleo_8.png','img/trailppt/finn_cleo/finn_cleo_9.png','img/trailppt/finn_cleo/finn_cleo_10.png','img/trailppt/finn_cleo/finn_cleo_11.png'],
-    story_video: 'videos%20v%20above%200/finn%20and%20cleo%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/finn%20and%20cleo%20above%200.mov'
   }
 ];
 
@@ -229,7 +229,7 @@ const secondBlockScenarios = [
     event_text: 'Milo is angry at Sasha. He walks over and deliberately knocks off 2 of Sasha\'s cookies.',
     event_title: 'Milo Knocks Sasha\'s Cookies',
     story_slides: ['img/trailppt/milo_sasha/milo_sasha_1.png','img/trailppt/milo_sasha/milo_sasha_2.png','img/trailppt/milo_sasha/milo_sasha_3.png','img/trailppt/milo_sasha/milo_sasha_4.png','img/trailppt/milo_sasha/milo_sasha_5.png','img/trailppt/milo_sasha/milo_sasha_6.png','img/trailppt/milo_sasha/milo_sasha_7.png','img/trailppt/milo_sasha/milo_sasha_8.png'],
-    story_video: 'videos%20v%20above%200/milo%20and%20sasha%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/milo%20and%20sasha%20above%200.mov'
   },
   {
     id: 6,
@@ -240,7 +240,7 @@ const secondBlockScenarios = [
     event_text: 'Zoe wants Rex to have fewer cookies. She deliberately throws away 2 of Rex\'s cookies.',
     event_title: 'Zoe Throws Rex\'s Cookies Away',
     story_slides: ['img/trailppt/rex_zoe/rex_zoe_1.png','img/trailppt/rex_zoe/rex_zoe_2.png','img/trailppt/rex_zoe/rex_zoe_3.png','img/trailppt/rex_zoe/rex_zoe_4.png','img/trailppt/rex_zoe/rex_zoe_5.png','img/trailppt/rex_zoe/rex_zoe_6.png','img/trailppt/rex_zoe/rex_zoe_7.png'],
-    story_video: 'videos%20v%20above%200/rex%20and%20zoe%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/rex%20and%20zoe%20above%200.mov'
   },
   {
     id: 7,
@@ -251,7 +251,7 @@ const secondBlockScenarios = [
     event_text: 'Kai walks without looking where he is going and bumps into Ruby. 2 of Ruby\'s cookies fall off.',
     event_title: 'Kai Bumps Into Ruby',
     story_slides: ['img/trailppt/kai_ruby/kai_ruby_1.png','img/trailppt/kai_ruby/kai_ruby_2.png','img/trailppt/kai_ruby/kai_ruby_3.png','img/trailppt/kai_ruby/kai_ruby_4.png','img/trailppt/kai_ruby/kai_ruby_5.png','img/trailppt/kai_ruby/kai_ruby_6.png','img/trailppt/kai_ruby/kai_ruby_7.png','img/trailppt/kai_ruby/kai_ruby_8.png','img/trailppt/kai_ruby/kai_ruby_9.png'],
-    story_video: 'videos%20v%20above%200/kai%20and%20ruby%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/kai%20and%20ruby%20above%200.mov'
   },
   {
     id: 8,
@@ -262,7 +262,7 @@ const secondBlockScenarios = [
     event_text: 'Sam is walking his dog on a leash when the dog breaks free and eats 2 of Ella\'s cookies.',
     event_title: 'Sam\'s Dog Eats Ella\'s Cookies',
     story_slides: ['img/trailppt/sam_ella/sam_ella_1.png','img/trailppt/sam_ella/sam_ella_2.png','img/trailppt/sam_ella/sam_ella_3.png','img/trailppt/sam_ella/sam_ella_4.png','img/trailppt/sam_ella/sam_ella_5.png','img/trailppt/sam_ella/sam_ella_6.png','img/trailppt/sam_ella/sam_ella_7.png','img/trailppt/sam_ella/sam_ella_8.png','img/trailppt/sam_ella/sam_ella_9.png'],
-    story_video: 'videos%20v%20above%200/sam%20and%20ella%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/sam%20and%20ella%20above%200.mov'
   },
   {
     id: 9,
@@ -273,7 +273,7 @@ const secondBlockScenarios = [
     event_text: 'Andy and Catherine bumped into each other accidentally. Catherine\'s wolf ate 2 of Andy\'s cookies.',
     event_title: 'Catherine\'s Wolf Eats Andy\'s Cookies',
     story_slides: ['img/trailppt/andy_catherine/andy_catherine_1.png','img/trailppt/andy_catherine/andy_catherine_2.png','img/trailppt/andy_catherine/andy_catherine_3.png','img/trailppt/andy_catherine/andy_catherine_4.png','img/trailppt/andy_catherine/andy_catherine_5.png','img/trailppt/andy_catherine/andy_catherine_6.png','img/trailppt/andy_catherine/andy_catherine_7.png','img/trailppt/andy_catherine/andy_catherine_8.png'],
-    story_video: 'videos%20v%20above%200/andy%20and%20catherine%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/andy%20and%20catherine%20above%200.mov'
   },
   {
     id: 10,
@@ -284,7 +284,7 @@ const secondBlockScenarios = [
     event_text: 'Katie and Tony are having a picnic when a gust of wind blows 2 of Katie\'s cookies away.',
     event_title: 'Wind Blows Away Katie\'s Cookies',
     story_slides: ['img/trailppt/harry_katie/harry_katie_1.png','img/trailppt/harry_katie/harry_katie_2.png','img/trailppt/harry_katie/harry_katie_3.png','img/trailppt/harry_katie/harry_katie_4.png','img/trailppt/harry_katie/harry_katie_5.png','img/trailppt/harry_katie/harry_katie_6.png','img/trailppt/harry_katie/harry_katie_7.png','img/trailppt/harry_katie/harry_katie_8.png'],
-    story_video: 'videos%20v%20above%200/harry%20and%20katie%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/harry%20and%20katie%20above%200.mov'
   },
   {
     id: 11,
@@ -295,7 +295,7 @@ const secondBlockScenarios = [
     event_text: 'While Eric is tying his shoelaces, a squirrel eats 2 of Eric\'s cookies.',
     event_title: 'Squirrel Eats Eric\'s Cookies',
     story_slides: ['img/trailppt/nora_eric/nora_eric_1.png','img/trailppt/nora_eric/nora_eric_2.png','img/trailppt/nora_eric/nora_eric_3.png','img/trailppt/nora_eric/nora_eric_4.png','img/trailppt/nora_eric/nora_eric_5.png','img/trailppt/nora_eric/nora_eric_6.png','img/trailppt/nora_eric/nora_eric_7.png'],
-    story_video: 'videos%20v%20above%200/nora%20and%20eric%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/nora%20and%20eric%20above%200.mov'
   }
 ];
 
@@ -336,7 +336,7 @@ const welcomeScreen = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="welcome-video" src="../children-shared%20files/overall_study_intro.mp4" autoplay playsinline
+      <video id="welcome-video" src="../children-shared%20files/overall_study_intro.mov" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
@@ -359,7 +359,7 @@ const introMaggieVideo = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="intro-maggie-video" src="../children-shared%20files/children%20-%20welcome%20page.mp4" autoplay playsinline
+      <video id="intro-maggie-video" src="../children-shared%20files/children%20-%20welcome%20page.mov" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
@@ -658,7 +658,7 @@ const warmupFinishVideo = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="warmup-finish-video" src="../children-shared%20files/warmup_finish.mp4" autoplay playsinline
+      <video id="warmup-finish-video" src="../children-shared%20files/warmup_finish.mov" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
@@ -675,7 +675,7 @@ const testCaseIntroVideo = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="test-case-intro-video" src="../children-shared%20files/test_case_intro.mp4" autoplay playsinline
+      <video id="test-case-intro-video" src="../children-shared%20files/test_case_intro.mov" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
@@ -1930,7 +1930,7 @@ const studyEndVideo = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="study-end-video" src="../children-shared%20files/overall_study_end.mp4" autoplay playsinline
+      <video id="study-end-video" src="../children-shared%20files/overall_study_end.mov" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
