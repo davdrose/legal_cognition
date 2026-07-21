@@ -1500,6 +1500,25 @@ const demographicsScreen = {
           </td>
         </tr>
 
+        <!-- State -->
+        <tr>
+          <td style="padding:10px 24px 10px 0; vertical-align:middle; white-space:nowrap;">5. State of residence:</td>
+          <td style="padding:10px 0;">
+            <select id="demo-state" style="width:220px; padding:4px 7px; font-size:15px; border:1px solid #999; border-radius:3px;">
+              <option value="" selected disabled>Select a state...</option>
+              ${['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut',
+                 'Delaware','District of Columbia','Florida','Georgia','Hawaii','Idaho','Illinois',
+                 'Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts',
+                 'Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada',
+                 'New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota',
+                 'Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina',
+                 'South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington',
+                 'West Virginia','Wisconsin','Wyoming','Other','Prefer not to answer']
+                .map(s => `<option value="${s}">${s}</option>`).join('')}
+            </select>
+          </td>
+        </tr>
+
       </table>
 
       <p style="margin-top:28px; font-size:15px;">Please press <strong>Submit</strong> to complete the experiment.</p>
@@ -1515,8 +1534,10 @@ const demographicsScreen = {
       const genderEl  = document.querySelector('input[name="gender"]:checked');
       const raceEl    = document.querySelector('input[name="race"]:checked');
       const ethnicEl  = document.querySelector('input[name="ethnicity"]:checked');
+      const stateEl   = document.getElementById('demo-state');
+      const state     = stateEl?.value;
       const errEl     = document.getElementById('demo-error');
-      if (!age || !genderEl || !raceEl || !ethnicEl) {
+      if (!age || !genderEl || !raceEl || !ethnicEl || !state) {
         if (errEl) errEl.style.display = 'block';
         return;
       }
@@ -1533,6 +1554,7 @@ const demographicsScreen = {
         gender:    gender,
         race:      race,
         ethnicity: ethnicEl.value,
+        state:     state,
       });
     });
   },
@@ -1656,7 +1678,7 @@ const timeline = [
    Hidden by default for public / participant deployment.
    To reveal it (researcher use only), set SHOW_DEBUG_PANEL = true.
    ============================================================ */
-const SHOW_DEBUG_PANEL = false;   // ← change to true to show the Jump-to-Screen panel
+const SHOW_DEBUG_PANEL = true;   // ← change to true to show the Jump-to-Screen panel
 
 (function () {
   // Public deployment: panel stays hidden — just run the experiment normally.
