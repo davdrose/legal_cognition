@@ -228,7 +228,7 @@ const finnCleoScenarios = [
     event_text: 'Finn spills water and doesn\'t clean it up. Cleo slips on the wet floor and 2 of Cleo\'s cookies are destroyed.',
     event_title: 'Finn Spills Water — Cleo Slips',
     story_slides: [1,2,3,4,5,6,7,8,9,10,11,12].map(n => `${CHAR_IMG_BASE}trailppt/finn_cleo/finn_cleo_${n}.png`),
-    story_video: '../children-%20v%20goes%20to%200/videos%20vgo0/finn%20and%20cleo%20vgo0.mp4'
+    story_video: '../../experiment1/children-%20v%20goes%20to%200/videos%20vgo0/finn%20and%20cleo%20vgo0.mp4'
   }
 ];
 
@@ -243,7 +243,7 @@ const secondBlockScenarios = [
     event_text: 'Milo is angry at Sasha. He walks over and deliberately knocks off 2 of Sasha\'s cookies.',
     event_title: 'Milo Knocks Sasha\'s Cookies',
     story_slides: [1,2,3,4,5,6,7,8,9,10].map(n => `${CHAR_IMG_BASE}trailppt/milo_sasha/milo_sasha_${n}.png`),
-    story_video: '../children-%20v%20goes%20to%200/videos%20vgo0/milo%20and%20sasha%20vgo0.mp4'
+    story_video: '../../experiment1/children-%20v%20goes%20to%200/videos%20vgo0/milo%20and%20sasha%20vgo0.mp4'
   },
   {
     id: 6,
@@ -254,7 +254,7 @@ const secondBlockScenarios = [
     event_text: 'Zoe wants Rex to have fewer cookies. She deliberately throws away 2 of Rex\'s cookies.',
     event_title: 'Zoe Throws Rex\'s Cookies Away',
     story_slides: [1,2,3,4,5,6,7,8,9].map(n => `${CHAR_IMG_BASE}trailppt/rex_zoe/rex_zoe_${n}.png`),
-    story_video: '../children-%20v%20goes%20to%200/videos%20vgo0/rex%20and%20zoe%20vgo0.mp4'
+    story_video: '../../experiment1/children-%20v%20goes%20to%200/videos%20vgo0/rex%20and%20zoe%20vgo0.mp4'
   },
   {
     id: 7,
@@ -265,7 +265,7 @@ const secondBlockScenarios = [
     event_text: 'Kai walks without looking where he is going and bumps into Ruby. 2 of Ruby\'s cookies fall off.',
     event_title: 'Kai Bumps Into Ruby',
     story_slides: [1,2,3,4,5,6,7,8,9].map(n => `${CHAR_IMG_BASE}trailppt/kai_ruby/kai_ruby_${n}.png`),
-    story_video: '../children-%20v%20goes%20to%200/videos%20vgo0/kai%20and%20ruby%20vgo0.mp4'
+    story_video: '../../experiment1/children-%20v%20goes%20to%200/videos%20vgo0/kai%20and%20ruby%20vgo0.mp4'
   },
   {
     id: 8,
@@ -276,7 +276,7 @@ const secondBlockScenarios = [
     event_text: 'Sam is walking his dog on a leash when the dog breaks free and eats 2 of Ella\'s cookies.',
     event_title: 'Sam\'s Dog Eats Ella\'s Cookies',
     story_slides: [1,2,3,4,5,6,7,8,9,10].map(n => `${CHAR_IMG_BASE}trailppt/sam_ella/sam_ella_${n}.png`),
-    story_video: '../children-%20v%20goes%20to%200/videos%20vgo0/sam%20and%20ella%20v%20go0.mp4'
+    story_video: '../../experiment1/children-%20v%20goes%20to%200/videos%20vgo0/sam%20and%20ella%20vgo0.mp4'
   },
   {
     id: 9,
@@ -287,7 +287,7 @@ const secondBlockScenarios = [
     event_text: 'Andy and Catherine bumped into each other accidentally. Catherine\'s wolf ate 2 of Andy\'s cookies.',
     event_title: 'Catherine\'s Wolf Eats Andy\'s Cookies',
     story_slides: [1,2,3,4,5,6,7,8,9].map(n => `${CHAR_IMG_BASE}trailppt/andy_catherine/andy_catherine_${n}.png`),
-    story_video: '../children-%20v%20goes%20to%200/videos%20vgo0/andy%20and%20catherine%20vgo0.mp4'
+    story_video: '../../experiment1/children-%20v%20goes%20to%200/videos%20vgo0/andy%20and%20catherine%20vgo0.mp4'
   },
   {
     id: 10,
@@ -298,7 +298,7 @@ const secondBlockScenarios = [
     event_text: 'Katie and Tony are having a picnic when a gust of wind blows 2 of Katie\'s cookies away.',
     event_title: 'Wind Blows Away Katie\'s Cookies',
     story_slides: [1,2,3,4,5,6,7,8,9,10].map(n => `${CHAR_IMG_BASE}trailppt/harry_katie/harry_katie_${n}.png`),
-    story_video: '../children-%20v%20goes%20to%200/videos%20vgo0/harry%20and%20katie%20vgo0.mp4'
+    story_video: '../../experiment1/children-%20v%20goes%20to%200/videos%20vgo0/harry%20and%20katie%20vgo0.mp4'
   },
   {
     id: 11,
@@ -309,7 +309,7 @@ const secondBlockScenarios = [
     event_text: 'While Nora is playing outside, a squirrel eats 2 of Nora\'s cookies.',
     event_title: 'Squirrel Eats Nora\'s Cookies',
     story_slides: [1,2,3,4,5,6,7,8,9].map(n => `${CHAR_IMG_BASE}trailppt/nora_eric/nora_eric_${n}.png`),
-    story_video: '../children-%20v%20goes%20to%200/videos%20vgo0/nora%20and%20eric%20vgo0.mp4'
+    story_video: '../../experiment1/children-%20v%20goes%20to%200/videos%20vgo0/nora%20and%20eric%20vgo0.mp4'
   }
 ];
 
@@ -350,7 +350,7 @@ const welcomeScreen = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="welcome-video" src="${SHARED_BASE}overall_study_intro.mov" autoplay playsinline
+      <video id="welcome-video" src="${SHARED_BASE}overall_study_intro.mp4" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
@@ -373,7 +373,7 @@ const introMaggieVideo = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="intro-maggie-video" src="${SHARED_BASE}children%20-%20welcome%20page.mov" autoplay playsinline
+      <video id="intro-maggie-video" src="${SHARED_BASE}children%20-%20welcome%20page.mp4" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
@@ -1478,7 +1478,7 @@ const warmupFinishVideo = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="warmup-finish-video" src="${SHARED_BASE}warmup_finish.mov" autoplay playsinline
+      <video id="warmup-finish-video" src="${SHARED_BASE}warmup_finish.mp4" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
@@ -1495,7 +1495,7 @@ const testCaseIntroVideo = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="test-case-intro-video" src="${SHARED_BASE}test_case_intro.mov" autoplay playsinline
+      <video id="test-case-intro-video" src="${SHARED_BASE}test_case_intro.mp4" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
@@ -1957,7 +1957,7 @@ const studyEndVideo = {
   type: jsPsychHtmlButtonResponse,
   stimulus: `
     <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="study-end-video" src="${SHARED_BASE}overall_study_end.mov" autoplay playsinline
+      <video id="study-end-video" src="${SHARED_BASE}overall_study_end.mp4" autoplay playsinline
              style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
       </video>
     </div>`,
