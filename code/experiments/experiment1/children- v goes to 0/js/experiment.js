@@ -12,6 +12,12 @@ var _demoData = {}; // captured before jsPsych clears the display
 const jsPsych = initJsPsych({
   display_element: 'jspsych-target',
   show_progress_bar: true,
+  // Stops any narration still playing from the screen just finished, so it
+  // never overlaps with the next screen's audio when a child clicks Next
+  // (or Continue/Got it!) before a clip has finished.
+  on_trial_finish: function () {
+    document.querySelectorAll('audio').forEach(a => { a.pause(); a.remove(); });
+  },
   on_finish: function () {
     if (!participantConsented) {
       document.getElementById('jspsych-target').innerHTML = `
