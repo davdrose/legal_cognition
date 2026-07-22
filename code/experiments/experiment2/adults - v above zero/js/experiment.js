@@ -1570,7 +1570,7 @@ const feedbackScreen = {
   choices: [],
   stimulus: `
     <div style="text-align:center; padding:40px; max-width:700px; margin:0 auto; font-family:sans-serif;">
-      <p style="font-size:20px; margin-bottom:20px;">Was anything confusing, or do you have any feedback about any part of this study?</p>
+      <p style="font-size:20px; margin-bottom:20px;">Do you have any feedback about any part of this study?</p>
       <textarea id="feedback-input" rows="6"
         style="width:100%; font-size:16px; padding:12px; border:2px solid #ccc;
                border-radius:8px; resize:vertical; font-family:inherit;"
