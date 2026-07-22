@@ -1600,33 +1600,6 @@ const feedbackScreen = {
   _debugLabel: 'Feedback',
 };
 
-const cookieJarScreen = {
-  type: jsPsychHtmlButtonResponse,
-  choices: [],
-  stimulus: `
-    <div style="text-align:center; padding:40px; max-width:700px; margin:0 auto; font-family:sans-serif;">
-      <p style="font-size:20px; margin-bottom:20px;">What do you think the Cookie Jar represents in this study?</p>
-      <textarea id="cookiejar-input" rows="6"
-        style="width:100%; font-size:16px; padding:12px; border:2px solid #ccc;
-               border-radius:8px; resize:vertical; font-family:inherit;"
-        placeholder="Your answer here (optional)..."></textarea>
-      <div style="margin-top:16px;">
-        <button id="cookiejar-submit-btn" class="jspsych-btn" style="padding:8px 28px; font-size:15px; cursor:pointer;">Submit</button>
-      </div>
-    </div>`,
-  on_load: function() {
-    const startTime = performance.now();
-    document.getElementById('cookiejar-submit-btn').addEventListener('click', function() {
-      jsPsych.finishTrial({
-        rt:                  Math.round(performance.now() - startTime),
-        cookie_jar_meaning:  document.getElementById('cookiejar-input')?.value || '',
-      });
-    });
-  },
-  data: { is_demographic: true, demographic_type: 'cookie_jar_meaning', is_practice: false },
-  _debugLabel: 'Cookie Jar Meaning',
-};
-
 // Final screen
 const endScreen = {
   type: jsPsychHtmlButtonResponse,
@@ -1660,7 +1633,6 @@ warmupPracticeBoth._debugLabel    = 'Warmup: Practice (Both)';
 warmupDone._debugLabel            = 'Warmup: Done';
 demographicsScreen._debugLabel = 'Demographics';
 feedbackScreen._debugLabel     = 'Feedback';
-cookieJarScreen._debugLabel    = 'Cookie Jar Meaning';
 endScreen._debugLabel          = 'End Screen';
 
 /* ----------------------------------------------------------
@@ -1672,7 +1644,6 @@ const timeline = [
   ...testBlock,
   demographicsScreen,
   feedbackScreen,
-  cookieJarScreen,
   endScreen,
 ];
 
