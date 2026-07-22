@@ -84,6 +84,10 @@ function sessionGet(key, generator) {
 }
 
 const TRASH_ON_LEFT = sessionGet('exp1_trash', () => Math.random() < 0.5);
+// V's position in the cookie-jar/allocation screen also fixes the display
+// order of the fault-rating and checker screens for this participant, so
+// P/V left-right placement and question order stay consistent throughout.
+const V_ON_LEFT = !TRASH_ON_LEFT;
 
 /* ----------------------------------------------------------
    HELPERS
@@ -584,6 +588,27 @@ function twoScaleHTML(id, vName, pName, draggable, vImg, pImg, pFirst, unanswere
       </div>`;
   return `
     <div class="two-scale-row">${pFirst ? pCol + vCol : vCol + pCol}
+    </div>`;
+}
+
+/** Two character portraits side by side (no sliders) — used on the checker
+ *  screens as a lightweight reminder of who's who, without replaying the
+ *  scenario's story image. Order matches twoScaleHTML's pFirst convention;
+ *  highlightRole ('p' | 'v' | null) rings the character the question is
+ *  currently about. */
+function twoPortraitsHTML(vName, pName, vImg, pImg, pFirst, highlightRole) {
+  const vCol = `
+      <div class="two-scale-col${highlightRole === 'v' ? ' two-scale-col-highlight' : ''}">
+        <img src="${vImg}" class="two-scale-portrait" alt="${vName}">
+        <div class="two-scale-name">${vName}</div>
+      </div>`;
+  const pCol = `
+      <div class="two-scale-col${highlightRole === 'p' ? ' two-scale-col-highlight' : ''}">
+        <img src="${pImg}" class="two-scale-portrait" alt="${pName}">
+        <div class="two-scale-name">${pName}</div>
+      </div>`;
+  return `
+    <div class="two-scale-row" style="margin:14px auto;">${pFirst ? pCol + vCol : vCol + pCol}
     </div>`;
 }
 
@@ -1116,11 +1141,12 @@ const warmupDone = {
    Shown after the punishment/allocation screen. Each of V and P has
    an independent unipolar bar (0-100) — see twoScaleHTML above.
    ---------------------------------------------------------- */
-function buildFaultQuestionTrial(scenario, headerImg) {
+function buildFaultQuestionTrial(scenario, pCookiesAfter) {
   const pName = scenario.p_name || 'Finn';
   const vName = scenario.v_name || 'Cleo';
   const pImg  = scenario.p_img  || 'finn_neutral.png';
   const vImg  = scenario.v_img  || 'cleo_neutral.png';
+  const vCookiesAfter = scenario.v_after_harm;
   const id = `fq${scenario.id}`;
 
   return {
@@ -1129,16 +1155,16 @@ function buildFaultQuestionTrial(scenario, headerImg) {
     choices: [],
     stimulus: `
       <div style="text-align:center; padding:8px 20px 0 20px; max-width:1200px; margin:0 auto;">
-        <img src="${headerImg}" style="max-width:963px; width:100%; max-height:min(27vh, 213px); object-fit:contain; border-radius:8px; margin-bottom:7px;">
+        <p style="font-size:16px; color:#555; margin:0 0 10px 0;">After the incident, ${pName} had ${pCookiesAfter} cookie${pCookiesAfter === 1 ? '' : 's'} and ${vName} had ${vCookiesAfter} cookie${vCookiesAfter === 1 ? '' : 's'}.</p>
         <p style="font-size:20px; font-weight:600; margin:0 0 12px 0;">Now that you saw what happened, how much do you think each person is at fault?</p>
-        ${twoScaleHTML(id, vName, pName, true, `img/${vImg}`, `img/${pImg}`, true, true)}
+        ${twoScaleHTML(id, vName, pName, true, `img/${vImg}`, `img/${pImg}`, TRASH_ON_LEFT, true)}
         <div style="margin-top:14px;">
           <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Continue</button>
         </div>
       </div>`,
     scenario_id: scenario.id,
     is_practice: false,
-    data: { scenario_id: scenario.id, is_practice: false, is_fault_rating: true, p_name: pName, v_name: vName },
+    data: { scenario_id: scenario.id, is_practice: false, is_fault_rating: true, p_name: pName, v_name: vName, v_on_left: V_ON_LEFT },
     on_load: function() {
       const startTime = performance.now();
       let vVal = 0, pVal = 0, touchedV = false, touchedP = false, dragging = null;
@@ -1211,14 +1237,13 @@ function buildFaultQuestionTrial(scenario, headerImg) {
 /** One carefulness question, about either the actor (targetRole 'p') or
  *  the victim (targetRole 'v'). Two of these — order randomized per
  *  scenario — are shown so both characters get asked about. */
-function buildCheckerTrial(scenario, targetRole) {
+function buildCheckerTrial(scenario, targetRole, pCookiesAfter) {
   const pName = scenario.p_name || 'Finn';
   const vName = scenario.v_name || 'Cleo';
   const pImg  = scenario.p_img  || 'finn_neutral.png';
   const vImg  = scenario.v_img  || 'cleo_neutral.png';
+  const vCookiesAfter = scenario.v_after_harm;
   const targetName = targetRole === 'p' ? pName : vName;
-  const targetImg  = targetRole === 'p' ? pImg  : vImg;
-  const endingImg = scenario.story_slides[scenario.story_slides.length - 1];
   const id = `ck${scenario.id}${targetRole}`;
 
   return {
@@ -1227,8 +1252,8 @@ function buildCheckerTrial(scenario, targetRole) {
     choices: [],
     stimulus: `
       <div style="text-align:center; padding:10px 40px 0 40px; max-width:900px; margin:0 auto;">
-        <img src="${endingImg}" style="max-width:860px; width:100%; max-height:min(30vh, 240px); object-fit:contain; border-radius:8px; margin-bottom:14px;">
-        <img src="img/${targetImg}" alt="${targetName}" style="width:88px; height:88px; object-fit:contain; border-radius:50%; margin-bottom:10px;">
+        <p style="font-size:16px; color:#555; margin:0 0 10px 0;">After the incident, ${pName} had ${pCookiesAfter} cookie${pCookiesAfter === 1 ? '' : 's'} and ${vName} had ${vCookiesAfter} cookie${vCookiesAfter === 1 ? '' : 's'}.</p>
+        ${twoPortraitsHTML(vName, pName, `img/${vImg}`, `img/${pImg}`, TRASH_ON_LEFT, targetRole)}
         <p style="font-size:20px; font-weight:600;">Was ${targetName} being careful?</p>
         <div style="display:flex; justify-content:center; gap:24px; margin-top:14px;">
           <button id="${id}-yes-btn" type="button" class="jspsych-btn checker-btn checker-btn-yes"><span class="checker-icon">✓</span><span class="checker-label">Yes</span></button>
@@ -1245,6 +1270,7 @@ function buildCheckerTrial(scenario, targetRole) {
       checker_target_role: targetRole,
       p_name: pName,
       v_name: vName,
+      v_on_left: V_ON_LEFT,
     },
     on_load: function() {
       const startTime = performance.now();
@@ -1359,13 +1385,14 @@ function buildTestTrial(scenario, scenarioIdx, total) {
     show_gate_question: true,
   };
 
-  const faultQuestionSlide = buildFaultQuestionTrial(scenario, headerImg);
-  // Ask about both characters' carefulness, order randomized per scenario
-  // rather than always asking about the actor first.
-  const actorFirst = sessionGet('exp1_adults_vabove0_checker_order_' + scenario.id, () => Math.random() < 0.5);
+  const faultQuestionSlide = buildFaultQuestionTrial(scenario, pAfter);
+  // P/V order on the fault and checker screens is fixed per participant,
+  // matching whichever side V is on in the cookie-jar/allocation screen
+  // (TRASH_ON_LEFT true => V is on the right => P is asked/shown first).
+  const actorFirst = TRASH_ON_LEFT;
   const checkerTrials = actorFirst
-    ? [buildCheckerTrial(scenario, 'p'), buildCheckerTrial(scenario, 'v')]
-    : [buildCheckerTrial(scenario, 'v'), buildCheckerTrial(scenario, 'p')];
+    ? [buildCheckerTrial(scenario, 'p', pAfter), buildCheckerTrial(scenario, 'v', pAfter)]
+    : [buildCheckerTrial(scenario, 'v', pAfter), buildCheckerTrial(scenario, 'p', pAfter)];
   return [storySlide, slideG, faultQuestionSlide, ...checkerTrials];
 }
 

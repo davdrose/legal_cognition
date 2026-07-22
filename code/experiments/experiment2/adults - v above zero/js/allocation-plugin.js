@@ -415,6 +415,7 @@ var jsPsychAllocation = (function (jspsych) {
           cookies_kept_by_v:      doNothing ? trial.v_cookies_current : countVInZone('v'),
           do_nothing:             !!doNothing,
           trash_on_left:          trial.trash_on_left,
+          v_on_left:              !trial.trash_on_left,
           is_practice:            trial.is_practice,
           gate_rt:                finalGateRt,
           allocation_rt:          finalAllocRt,
