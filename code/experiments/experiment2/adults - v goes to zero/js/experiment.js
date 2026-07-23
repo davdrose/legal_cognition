@@ -1154,9 +1154,9 @@ function buildFaultRatingTrial(scenario, scenarioIdx, total, pCookiesAfter) {
     choices: [],
     stimulus: `
       <div style="text-align:center; padding:8px 20px 0 20px; max-width:1200px; margin:0 auto;">
-        <p style="font-size:16px; color:#555; margin:0 0 10px 0;">After the incident, ${pName} had ${pCookiesAfter} cookie${pCookiesAfter === 1 ? '' : 's'} and ${vName} had ${vCookiesAfter} cookie${vCookiesAfter === 1 ? '' : 's'}.</p>
         <p style="font-size:20px; font-weight:600; margin:0 0 12px 0;">Now that you saw what happened, how much do you think each person is at fault?</p>
         ${twoScaleHTML(id, vName, pName, true, `img/${vImg}`, `img/${pImg}`, TRASH_ON_LEFT, true)}
+        <p style="font-size:16px; color:#555; margin:10px 0 0 0;">${pName} now has ${pCookiesAfter} cookie${pCookiesAfter === 1 ? '' : 's'}, and ${vName} now has ${vCookiesAfter} cookie${vCookiesAfter === 1 ? '' : 's'}.</p>
         <div style="margin-top:14px;">
           <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Continue</button>
         </div>
@@ -1251,8 +1251,8 @@ function buildCheckerTrial(scenario, targetRole, pCookiesAfter) {
     choices: [],
     stimulus: `
       <div style="text-align:center; padding:10px 40px 0 40px; max-width:900px; margin:0 auto;">
-        <p style="font-size:16px; color:#555; margin:0 0 10px 0;">After the incident, ${pName} had ${pCookiesAfter} cookie${pCookiesAfter === 1 ? '' : 's'} and ${vName} had ${vCookiesAfter} cookie${vCookiesAfter === 1 ? '' : 's'}.</p>
         ${twoPortraitsHTML(vName, pName, `img/${vImg}`, `img/${pImg}`, TRASH_ON_LEFT, targetRole)}
+        <p style="font-size:16px; color:#555; margin:0 0 14px 0;">${pName} now has ${pCookiesAfter} cookie${pCookiesAfter === 1 ? '' : 's'}, and ${vName} now has ${vCookiesAfter} cookie${vCookiesAfter === 1 ? '' : 's'}.</p>
         <p style="font-size:20px; font-weight:600;">Was ${targetName} being careful?</p>
         <div style="display:flex; justify-content:center; gap:24px; margin-top:14px;">
           <button id="${id}-yes-btn" type="button" class="jspsych-btn checker-btn checker-btn-yes"><span class="checker-icon">✓</span><span class="checker-label">Yes</span></button>
@@ -1360,12 +1360,12 @@ function buildTestTrial(scenario, scenarioIdx, total) {
     },
   };
 
-  // Allocation screen with gate question integrated
-  const headerImg = scenario.story_slides[scenario.story_slides.length - 1];
-
   // Fault rating slide — shown after the allocation/punishment screen
   const faultRatingSlide = buildFaultRatingTrial(scenario, scenarioIdx, total, pAfter);
 
+  // Allocation screen with gate question integrated. No header image — the
+  // character portraits and per-character cookie-count labels already
+  // remind participants what happened without replaying the last slide.
   const slideG = {
     _debugLabel: `${trialLabel} — Allocation`,
     type: jsPsychAllocation,
@@ -1374,7 +1374,6 @@ function buildTestTrial(scenario, scenarioIdx, total) {
     hud_p_cookies: scenario.p_cookies,
     hud_v_cookies: scenario.v_initial,
     trash_on_left: TRASH_ON_LEFT,
-    header_img: headerImg,
     harm_text: '',
     instruction_text: '',
     p_name: pName, v_name: vName, p_img: pImg, v_img: vImg,
