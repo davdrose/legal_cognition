@@ -1741,6 +1741,7 @@ const SHOW_DEBUG_PANEL = true;   // ← change to true to show the Jump-to-Scree
     <div id="rdp-position">Position: ${positionLine}</div>
     <select id="rdp-select">${options}</select>
     <button id="rdp-jump">▶ Jump</button>
+    <button id="rdp-reroll" title="Draw a new random P/V/Cookie Jar position">🎲 Re-roll position</button>
     <button id="rdp-clear" title="Clear saved trial data">🗑 Clear data</button>
   `;
   document.body.appendChild(panel);
@@ -1750,6 +1751,13 @@ const SHOW_DEBUG_PANEL = true;   // ← change to true to show the Jump-to-Scree
     sessionStorage.setItem(DATA_KEY, jsPsych.data.get().json());
     const idx = document.getElementById('rdp-select').value;
     window.location.search = '?jumpTo=' + idx;
+  });
+
+  document.getElementById('rdp-reroll').addEventListener('click', () => {
+    // Drop the stored P/V/Cookie Jar order so the next load draws a fresh
+    // one, but keep the current screen (jumpTo) and saved trial data.
+    sessionStorage.removeItem('exp1_char_order');
+    location.reload();
   });
 
   document.getElementById('rdp-clear').addEventListener('click', () => {
