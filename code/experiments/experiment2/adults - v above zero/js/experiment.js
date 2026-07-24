@@ -705,7 +705,7 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP) {
     stimulus: `
       <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
         <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">${ruleText}</p>
-        ${twoScaleHTML(id, 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+        ${twoScaleHTML(id, 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png', P_BEFORE_V)}
         ${cursorImgHTML(id)}
       </div>`,
     on_load: function() {
@@ -774,7 +774,7 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg) {
     stimulus: `
       <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
         <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">${practiceText}</p>
-        ${twoScaleHTML(id, 'Claire', 'Michael', true, 'img/claire.png', 'img/michael.png', false, true)}
+        ${twoScaleHTML(id, 'Claire', 'Michael', true, 'img/claire.png', 'img/michael.png', P_BEFORE_V, true)}
         <div id="${id}-hint" class="alloc-hint-hidden"></div>
         <div style="margin-top:14px;">
           <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Continue</button>
@@ -1015,13 +1015,16 @@ const scalePractice5 = buildScalePracticeTrial(
 /* ----------------------------------------------------------
    CHECKER-QUESTION WARMUP — shared helpers
    ---------------------------------------------------------- */
+/** Matches the real checker trials: both Michael and Claire shown side by
+ *  side (positioned per P_BEFORE_V, same as the cookie warmup), with the
+ *  character being asked about highlighted. */
 function checkerPersonHTML(id, name, imgUrl) {
+  const highlightRole = name === 'Michael' ? 'p' : 'v';
   return `
-    <div style="display:flex; flex-direction:column; align-items:center; gap:8px; margin:16px auto 0 auto;">
-      <img src="${imgUrl}" alt="${name}" class="two-scale-portrait">
-      <div class="two-scale-name">${name}</div>
+    <div style="margin:16px auto 0 auto;">
+      ${twoPortraitsHTML('Claire', 'Michael', 'img/claire.png', 'img/michael.png', P_BEFORE_V, highlightRole)}
       <p style="font-size:22px; font-weight:600; margin:8px 0 4px 0;">Was ${name} being careful?</p>
-      <div style="display:flex; gap:24px;">
+      <div style="display:flex; justify-content:center; gap:24px;">
         <button id="${id}-yes-btn" type="button" class="jspsych-btn checker-btn checker-btn-yes"><span class="checker-icon">✓</span><span class="checker-label">Yes</span></button>
         <button id="${id}-no-btn" type="button" class="jspsych-btn checker-btn checker-btn-no"><span class="checker-icon">✗</span><span class="checker-label">No</span></button>
       </div>
