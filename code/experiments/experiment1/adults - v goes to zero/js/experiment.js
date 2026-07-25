@@ -849,7 +849,7 @@ const barExistsIntro = {
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
       <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, each person has a bar. The bars show how much each person is at fault.</p>
-      ${twoScaleHTML('bei', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+      ${twoScaleHTML('bei', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png', P_BEFORE_V)}
     </div>`,
   _debugLabel: 'Warmup: Bar Exists Intro',
 };
@@ -863,7 +863,7 @@ const howToShowAtFault = {
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
       <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are.</p>
-      ${twoScaleHTML('hsaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+      ${twoScaleHTML('hsaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png', P_BEFORE_V)}
       ${cursorImgHTML('hsaf')}
     </div>`,
   on_load: function() {
@@ -919,7 +919,7 @@ const howToShowNotAtFault = {
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
       <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">If someone is not at fault at all, click the very beginning of their bar. Their bar will stay gray.</p>
-      ${twoScaleHTML('hsnaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+      ${twoScaleHTML('hsnaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png', P_BEFORE_V)}
       ${cursorImgHTML('hsnaf')}
     </div>`,
   on_load: function() {
@@ -1147,6 +1147,12 @@ const checkerPracticeNo = buildCheckerPracticeTrial(
   'Michael', 'img/michael.png', 'no',
   '⚠️ Click the red cross for No.'
 );
+
+// Whichever character is on the left (per CHARACTER_ORDER) is asked about
+// first here too, matching the real checker trials.
+const checkerWarmupBlock = P_BEFORE_V
+  ? [checkerDemoNo, checkerPracticeNo, checkerDemoYes, checkerPracticeYes]
+  : [checkerDemoYes, checkerPracticeYes, checkerDemoNo, checkerPracticeNo];
 
 // Slide 3 – Practice confirmation
 const warmupDone = {
@@ -1471,8 +1477,7 @@ const warmupBlock = [
   scaleDemo3, scalePractice3,
   scaleDemo4, scalePractice4,
   scaleDemo5, scalePractice5,
-  checkerDemoYes, checkerPracticeYes,
-  checkerDemoNo, checkerPracticeNo,
+  ...checkerWarmupBlock,
   warmupDone,
 ];
 
