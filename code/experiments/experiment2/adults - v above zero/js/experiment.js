@@ -1123,9 +1123,19 @@ function buildCheckerPracticeTrial(id, label, practiceText, name, imgUrl, correc
   };
 }
 
+// Whichever of Claire/Michael is shown first (per P_BEFORE_V) gets the
+// scene-setting "In our game..." framing; the other gets the "Now think
+// about..." continuation, so the narrative always matches what's on screen.
+const checkerYesRuleText = P_BEFORE_V
+  ? "Now think about Claire. If you think Claire was careful, you would click the green yes mark. Here's an example."
+  : "In our game, you can also decide if Claire and Michael were careful. If you think Claire was careful, you would click the green yes mark. Here's an example.";
+const checkerNoRuleText = P_BEFORE_V
+  ? "In our game, you can also decide if Michael and Claire were careful. If you think Michael was not careful, you would click the red no mark. Here's an example."
+  : "Now think about Michael. If you think Michael was not careful, you would click the red no mark. Here's an example.";
+
 const checkerDemoYes = buildCheckerDemoTrial(
   'cd1', 'Yes (careful)',
-  "In our game, you can also decide if Claire and Michael were careful. If you think Claire was careful, you would click the green yes mark. Here's an example.",
+  checkerYesRuleText,
   'Claire', 'img/claire.png', 'yes'
 );
 const checkerPracticeYes = buildCheckerPracticeTrial(
@@ -1137,7 +1147,7 @@ const checkerPracticeYes = buildCheckerPracticeTrial(
 
 const checkerDemoNo = buildCheckerDemoTrial(
   'cd2', 'No (not careful)',
-  "Now think about Michael. If you think Michael was not careful, you would click the red no mark. Here's an example.",
+  checkerNoRuleText,
   'Michael', 'img/michael.png', 'no'
 );
 const checkerPracticeNo = buildCheckerPracticeTrial(
