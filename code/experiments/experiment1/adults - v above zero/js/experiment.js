@@ -83,11 +83,24 @@ function sessionGet(key, generator) {
   return val;
 }
 
-const TRASH_ON_LEFT = sessionGet('exp1_trash', () => Math.random() < 0.5);
-// V's position in the cookie-jar/allocation screen also fixes the display
-// order of the fault-rating and checker screens for this participant, so
-// P/V left-right placement and question order stay consistent throughout.
-const V_ON_LEFT = !TRASH_ON_LEFT;
+/** Fisher-Yates shuffle — used once to pick this participant's fixed
+ *  left-to-right arrangement of P, V, and the Cookie Jar. */
+function shuffle3(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// One of 6 possible left-to-right arrangements of P, V, and the Cookie Jar,
+// drawn once per participant and held fixed for every warmup screen and
+// every scenario's allocation screen. Fault/checker screens (no jar there)
+// derive their P/V order from the relative position of 'P' and 'V' within
+// this same array, so everything stays consistent for this participant.
+const CHARACTER_ORDER = sessionGet('exp1_char_order', () => shuffle3(['P', 'V', 'TRASH']));
+const P_BEFORE_V = CHARACTER_ORDER.indexOf('P') < CHARACTER_ORDER.indexOf('V');
 
 /* ----------------------------------------------------------
    HELPERS
@@ -372,7 +385,7 @@ const warmupLayoutLocked = {
   v_cookies_current: 3,
   hud_p_cookies: 3,
   hud_v_cookies: 3,
-  trash_on_left: TRASH_ON_LEFT,
+  character_order: CHARACTER_ORDER.join(','),
   harm_text: '',
   instruction_text: "In our game, if you think anyone should be punished, you can decide how they lose their cookies.",
   locked: true,
@@ -389,7 +402,7 @@ const warmupLayoutTwoWays = {
   v_cookies_current: 3,
   hud_p_cookies: 3,
   hud_v_cookies: 3,
-  trash_on_left: TRASH_ON_LEFT,
+  character_order: CHARACTER_ORDER.join(','),
   harm_text: '',
   instruction_text: "They can lose cookies in two ways.",
   locked: true,
@@ -406,7 +419,7 @@ const warmupWay1Locked = {
   v_cookies_current: 3,
   hud_p_cookies: 3,
   hud_v_cookies: 3,
-  trash_on_left: TRASH_ON_LEFT,
+  character_order: CHARACTER_ORDER.join(','),
   harm_text: '',
   instruction_text: "<strong>First, you can punish them by giving their cookies to another person.</strong><br><br>You can take Michael's cookies and give them to Claire, or take Claire's cookies and give them to Michael.<br><br>Let's try it out!",
   locked: true,
@@ -423,7 +436,7 @@ const warmupPracticeV = {
   v_cookies_current: 3,
   hud_p_cookies: 3,
   hud_v_cookies: 3,
-  trash_on_left: TRASH_ON_LEFT,
+  character_order: CHARACTER_ORDER.join(','),
   harm_text: '',
   instruction_text: "Move one of Michael's cookies to Claire's plate.",
   require_v: true,
@@ -442,7 +455,7 @@ const warmupPracticeVtoP = {
   v_cookies_current: 3,
   hud_p_cookies: 3,
   hud_v_cookies: 3,
-  trash_on_left: TRASH_ON_LEFT,
+  character_order: CHARACTER_ORDER.join(','),
   harm_text: '',
   instruction_text: "Now move one of Claire's cookies to Michael's plate.",
   require_v_to_p: true,
@@ -460,7 +473,7 @@ const warmupWay2Locked = {
   v_cookies_current: 3,
   hud_p_cookies: 3,
   hud_v_cookies: 3,
-  trash_on_left: TRASH_ON_LEFT,
+  character_order: CHARACTER_ORDER.join(','),
   harm_text: '',
   instruction_text: "<strong>Second, you can punish them by putting cookies in the cookie jar.</strong><br><br>If they go in the cookie jar, nobody gets them.<br>Let's try it out!",
   locked: true,
@@ -477,7 +490,7 @@ const warmupPracticeTrash = {
   v_cookies_current: 3,
   hud_p_cookies: 3,
   hud_v_cookies: 3,
-  trash_on_left: TRASH_ON_LEFT,
+  character_order: CHARACTER_ORDER.join(','),
   harm_text: '',
   instruction_text: "Move one of Michael's cookies to the Cookie Jar.",
   require_v: false,
@@ -496,7 +509,7 @@ const warmupPracticeFromV = {
   v_cookies_current: 3,
   hud_p_cookies: 3,
   hud_v_cookies: 3,
-  trash_on_left: TRASH_ON_LEFT,
+  character_order: CHARACTER_ORDER.join(','),
   harm_text: '',
   instruction_text: "Now move one of Claire's cookies to the Cookie Jar.",
   require_v: false,
@@ -517,7 +530,7 @@ const warmupPracticeSummary = {
   v_cookies_current: 3,
   hud_p_cookies: 3,
   hud_v_cookies: 3,
-  trash_on_left: TRASH_ON_LEFT,
+  character_order: CHARACTER_ORDER.join(','),
   harm_text: '',
   instruction_text: "Ok, so in our game you can decide that someone should lose cookies — you can give them to another person or put them in the cookie jar. Let's do both!",
   locked: true,
@@ -534,7 +547,7 @@ const warmupPracticeBoth = {
   v_cookies_current: 3,
   hud_p_cookies: 3,
   hud_v_cookies: 3,
-  trash_on_left: TRASH_ON_LEFT,
+  character_order: CHARACTER_ORDER.join(','),
   harm_text: '',
   instruction_text: "Take a cookie and give it to Claire, and take one and put it in the cookie jar.",
   require_v: false,
@@ -612,6 +625,15 @@ function twoPortraitsHTML(vName, pName, vImg, pImg, pFirst, highlightRole) {
     </div>`;
 }
 
+/** "X now has N cookies, and Y now has M cookies." — names ordered to match
+ *  whichever character is shown/asked about first (pFirst), so the sentence
+ *  reads in the same left-to-right order as the portraits above it. */
+function cookieCountCaption(pName, pCount, vName, vCount, pFirst) {
+  const pClause = `${pName} now has ${pCount} cookie${pCount === 1 ? '' : 's'}`;
+  const vClause = `${vName} now has ${vCount} cookie${vCount === 1 ? '' : 's'}`;
+  return pFirst ? `${pClause}, and ${vClause}.` : `${vClause}, and ${pClause}.`;
+}
+
 /** Shows the numeric percentage next to a bar once the participant has
  *  actually clicked/dragged it — not called during the animated warmup
  *  demos, so it only appears in response to a real interaction. */
@@ -684,7 +706,7 @@ function buildScaleDemoTrial(id, label, ruleText, targetV, targetP) {
     stimulus: `
       <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
         <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">${ruleText}</p>
-        ${twoScaleHTML(id, 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+        ${twoScaleHTML(id, 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png', P_BEFORE_V)}
         ${cursorImgHTML(id)}
       </div>`,
     on_load: function() {
@@ -753,7 +775,7 @@ function buildScalePracticeTrial(id, label, practiceText, validate, hintMsg) {
     stimulus: `
       <div style="text-align:center; padding:10px 20px 0 20px; max-width:1200px; margin:0 auto;">
         <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">${practiceText}</p>
-        ${twoScaleHTML(id, 'Claire', 'Michael', true, 'img/claire.png', 'img/michael.png', false, true)}
+        ${twoScaleHTML(id, 'Claire', 'Michael', true, 'img/claire.png', 'img/michael.png', P_BEFORE_V, true)}
         <div id="${id}-hint" class="alloc-hint-hidden"></div>
         <div style="margin-top:14px;">
           <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Continue</button>
@@ -827,7 +849,7 @@ const barExistsIntro = {
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
       <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">In our game, each person has a bar. The bars show how much each person is at fault.</p>
-      ${twoScaleHTML('bei', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+      ${twoScaleHTML('bei', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png', P_BEFORE_V)}
     </div>`,
   _debugLabel: 'Warmup: Bar Exists Intro',
 };
@@ -841,7 +863,7 @@ const howToShowAtFault = {
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
       <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">If someone is at fault, click their bar to make it red. The more red in their bar, the more at fault they are.</p>
-      ${twoScaleHTML('hsaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+      ${twoScaleHTML('hsaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png', P_BEFORE_V)}
       ${cursorImgHTML('hsaf')}
     </div>`,
   on_load: function() {
@@ -897,7 +919,7 @@ const howToShowNotAtFault = {
   stimulus: `
     <div style="text-align:center; padding:20px 20px 0 20px; max-width:1200px; margin:0 auto;">
       <p style="font-size:20px; color:#555; text-align:center; max-width:850px; margin:0 auto 2px auto; line-height:1.3;">If someone is not at fault at all, click the very beginning of their bar. Their bar will stay gray.</p>
-      ${twoScaleHTML('hsnaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png')}
+      ${twoScaleHTML('hsnaf', 'Claire', 'Michael', false, 'img/claire.png', 'img/michael.png', P_BEFORE_V)}
       ${cursorImgHTML('hsnaf')}
     </div>`,
   on_load: function() {
@@ -994,13 +1016,16 @@ const scalePractice5 = buildScalePracticeTrial(
 /* ----------------------------------------------------------
    CHECKER-QUESTION WARMUP — shared helpers
    ---------------------------------------------------------- */
+/** Matches the real checker trials: both Michael and Claire shown side by
+ *  side (positioned per P_BEFORE_V, same as the cookie warmup), with the
+ *  character being asked about highlighted. */
 function checkerPersonHTML(id, name, imgUrl) {
+  const highlightRole = name === 'Michael' ? 'p' : 'v';
   return `
-    <div style="display:flex; flex-direction:column; align-items:center; gap:8px; margin:16px auto 0 auto;">
-      <img src="${imgUrl}" alt="${name}" class="two-scale-portrait">
-      <div class="two-scale-name">${name}</div>
+    <div style="margin:16px auto 0 auto;">
+      ${twoPortraitsHTML('Claire', 'Michael', 'img/claire.png', 'img/michael.png', P_BEFORE_V, highlightRole)}
       <p style="font-size:22px; font-weight:600; margin:8px 0 4px 0;">Was ${name} being careful?</p>
-      <div style="display:flex; gap:24px;">
+      <div style="display:flex; justify-content:center; gap:24px;">
         <button id="${id}-yes-btn" type="button" class="jspsych-btn checker-btn checker-btn-yes"><span class="checker-icon">✓</span><span class="checker-label">Yes</span></button>
         <button id="${id}-no-btn" type="button" class="jspsych-btn checker-btn checker-btn-no"><span class="checker-icon">✗</span><span class="checker-label">No</span></button>
       </div>
@@ -1099,9 +1124,19 @@ function buildCheckerPracticeTrial(id, label, practiceText, name, imgUrl, correc
   };
 }
 
+// Whichever of Claire/Michael is shown first (per P_BEFORE_V) gets the
+// scene-setting "In our game..." framing; the other gets the "Now think
+// about..." continuation, so the narrative always matches what's on screen.
+const checkerYesRuleText = P_BEFORE_V
+  ? "Now think about Claire. If you think Claire was careful, you would click the green yes mark. Here's an example."
+  : "In our game, you can also decide if Claire and Michael were careful. If you think Claire was careful, you would click the green yes mark. Here's an example.";
+const checkerNoRuleText = P_BEFORE_V
+  ? "In our game, you can also decide if Michael and Claire were careful. If you think Michael was not careful, you would click the red no mark. Here's an example."
+  : "Now think about Michael. If you think Michael was not careful, you would click the red no mark. Here's an example.";
+
 const checkerDemoYes = buildCheckerDemoTrial(
   'cd1', 'Yes (careful)',
-  "In our game, you can also decide if Claire and Michael were careful. If you think Claire was careful, you would click the green yes mark. Here's an example.",
+  checkerYesRuleText,
   'Claire', 'img/claire.png', 'yes'
 );
 const checkerPracticeYes = buildCheckerPracticeTrial(
@@ -1113,7 +1148,7 @@ const checkerPracticeYes = buildCheckerPracticeTrial(
 
 const checkerDemoNo = buildCheckerDemoTrial(
   'cd2', 'No (not careful)',
-  "Now think about Michael. If you think Michael was not careful, you would click the red no mark. Here's an example.",
+  checkerNoRuleText,
   'Michael', 'img/michael.png', 'no'
 );
 const checkerPracticeNo = buildCheckerPracticeTrial(
@@ -1122,6 +1157,12 @@ const checkerPracticeNo = buildCheckerPracticeTrial(
   'Michael', 'img/michael.png', 'no',
   '⚠️ Click the red cross for No.'
 );
+
+// Whichever character is on the left (per CHARACTER_ORDER) is asked about
+// first here too, matching the real checker trials.
+const checkerWarmupBlock = P_BEFORE_V
+  ? [checkerDemoNo, checkerPracticeNo, checkerDemoYes, checkerPracticeYes]
+  : [checkerDemoYes, checkerPracticeYes, checkerDemoNo, checkerPracticeNo];
 
 // Slide 3 – Practice confirmation
 const warmupDone = {
@@ -1155,17 +1196,17 @@ function buildFaultQuestionTrial(scenario, pCookiesAfter) {
     choices: [],
     stimulus: `
       <div style="text-align:center; padding:8px 20px 0 20px; max-width:1200px; margin:0 auto;">
-        ${twoPortraitsHTML(vName, pName, `img/${vImg}`, `img/${pImg}`, TRASH_ON_LEFT, null)}
-        <p style="font-size:16px; color:#555; margin:8px 0 16px 0;">${pName} now has ${pCookiesAfter} cookie${pCookiesAfter === 1 ? '' : 's'}, and ${vName} now has ${vCookiesAfter} cookie${vCookiesAfter === 1 ? '' : 's'}.</p>
+        ${twoPortraitsHTML(vName, pName, `img/${vImg}`, `img/${pImg}`, P_BEFORE_V, null)}
+        <p style="font-size:16px; color:#555; margin:8px 0 16px 0;">${cookieCountCaption(pName, pCookiesAfter, vName, vCookiesAfter, P_BEFORE_V)}</p>
         <p style="font-size:20px; font-weight:600; margin:0 0 12px 0;">Now that you saw what happened, how much do you think each person is at fault?</p>
-        ${twoScaleHTML(id, vName, pName, true, `img/${vImg}`, `img/${pImg}`, TRASH_ON_LEFT, true)}
+        ${twoScaleHTML(id, vName, pName, true, `img/${vImg}`, `img/${pImg}`, P_BEFORE_V, true)}
         <div style="margin-top:14px;">
           <button id="${id}-continue" class="jspsych-btn" disabled style="opacity:0.4; cursor:not-allowed;">Continue</button>
         </div>
       </div>`,
     scenario_id: scenario.id,
     is_practice: false,
-    data: { scenario_id: scenario.id, is_practice: false, is_fault_rating: true, p_name: pName, v_name: vName, v_on_left: V_ON_LEFT },
+    data: { scenario_id: scenario.id, is_practice: false, is_fault_rating: true, p_name: pName, v_name: vName, character_order: CHARACTER_ORDER.join(',') },
     on_load: function() {
       const startTime = performance.now();
       let vVal = 0, pVal = 0, touchedV = false, touchedP = false, dragging = null;
@@ -1253,8 +1294,8 @@ function buildCheckerTrial(scenario, targetRole, pCookiesAfter) {
     choices: [],
     stimulus: `
       <div style="text-align:center; padding:10px 40px 0 40px; max-width:900px; margin:0 auto;">
-        ${twoPortraitsHTML(vName, pName, `img/${vImg}`, `img/${pImg}`, TRASH_ON_LEFT, targetRole)}
-        <p style="font-size:16px; color:#555; margin:0 0 14px 0;">${pName} now has ${pCookiesAfter} cookie${pCookiesAfter === 1 ? '' : 's'}, and ${vName} now has ${vCookiesAfter} cookie${vCookiesAfter === 1 ? '' : 's'}.</p>
+        ${twoPortraitsHTML(vName, pName, `img/${vImg}`, `img/${pImg}`, P_BEFORE_V, targetRole)}
+        <p style="font-size:16px; color:#555; margin:0 0 14px 0;">${cookieCountCaption(pName, pCookiesAfter, vName, vCookiesAfter, P_BEFORE_V)}</p>
         <p style="font-size:20px; font-weight:600;">Was ${targetName} being careful?</p>
         <div style="display:flex; justify-content:center; gap:24px; margin-top:14px;">
           <button id="${id}-yes-btn" type="button" class="jspsych-btn checker-btn checker-btn-yes"><span class="checker-icon">✓</span><span class="checker-label">Yes</span></button>
@@ -1271,7 +1312,7 @@ function buildCheckerTrial(scenario, targetRole, pCookiesAfter) {
       checker_target_role: targetRole,
       p_name: pName,
       v_name: vName,
-      v_on_left: V_ON_LEFT,
+      character_order: CHARACTER_ORDER.join(','),
     },
     on_load: function() {
       const startTime = performance.now();
@@ -1372,9 +1413,9 @@ function buildTestTrial(scenario, scenarioIdx, total) {
     v_cookies_current: scenario.v_after_harm,
     hud_p_cookies: scenario.p_cookies,
     hud_v_cookies: scenario.v_initial,
-    trash_on_left: TRASH_ON_LEFT,
-    harm_text: twoPortraitsHTML(vName, pName, `img/${vImg}`, `img/${pImg}`, TRASH_ON_LEFT, null)
-      + `<p style="font-size:16px; color:#555; margin:8px 0 0 0;">${pName} now has ${pAfter} cookie${pAfter === 1 ? '' : 's'}, and ${vName} now has ${scenario.v_after_harm} cookie${scenario.v_after_harm === 1 ? '' : 's'}.</p>`,
+    character_order: CHARACTER_ORDER.join(','),
+    harm_text: twoPortraitsHTML(vName, pName, `img/${vImg}`, `img/${pImg}`, P_BEFORE_V, null)
+      + `<p style="font-size:16px; color:#555; margin:8px 0 0 0;">${cookieCountCaption(pName, pAfter, vName, scenario.v_after_harm, P_BEFORE_V)}</p>`,
     instruction_text: '',
     p_name: pName, v_name: vName, p_img: pImg, v_img: vImg,
     require_v: false,
@@ -1389,9 +1430,9 @@ function buildTestTrial(scenario, scenarioIdx, total) {
 
   const faultQuestionSlide = buildFaultQuestionTrial(scenario, pAfter);
   // P/V order on the fault and checker screens is fixed per participant,
-  // matching whichever side V is on in the cookie-jar/allocation screen
-  // (TRASH_ON_LEFT true => V is on the right => P is asked/shown first).
-  const actorFirst = TRASH_ON_LEFT;
+  // matching their relative left-right order in CHARACTER_ORDER (the same
+  // arrangement used for the cookie-jar/allocation screen).
+  const actorFirst = P_BEFORE_V;
   const checkerTrials = actorFirst
     ? [buildCheckerTrial(scenario, 'p', pAfter), buildCheckerTrial(scenario, 'v', pAfter)]
     : [buildCheckerTrial(scenario, 'v', pAfter), buildCheckerTrial(scenario, 'p', pAfter)];
@@ -1446,8 +1487,7 @@ const warmupBlock = [
   scaleDemo3, scalePractice3,
   scaleDemo4, scalePractice4,
   scaleDemo5, scalePractice5,
-  checkerDemoYes, checkerPracticeYes,
-  checkerDemoNo, checkerPracticeNo,
+  ...checkerWarmupBlock,
   warmupDone,
 ];
 
@@ -1709,12 +1749,17 @@ const SHOW_DEBUG_PANEL = false;   // ← change to true to show the Jump-to-Scre
     return `<option value="${i}"${sel}>${i}: ${label}</option>`;
   }).join('');
 
+  const POSITION_LABELS = { P: 'P', V: 'V', TRASH: 'Cookie Jar' };
+  const positionLine = CHARACTER_ORDER.map(k => POSITION_LABELS[k]).join(' — ');
+
   const panel = document.createElement('div');
   panel.id = 'researcher-debug-panel';
   panel.innerHTML = `
     <div id="rdp-title">🔬 Researcher: Jump to Screen</div>
+    <div id="rdp-position">Position: ${positionLine}</div>
     <select id="rdp-select">${options}</select>
     <button id="rdp-jump">▶ Jump</button>
+    <button id="rdp-reroll" title="Draw a new random P/V/Cookie Jar position">🎲 Re-roll position</button>
     <button id="rdp-clear" title="Clear saved trial data">🗑 Clear data</button>
   `;
   document.body.appendChild(panel);
@@ -1724,6 +1769,13 @@ const SHOW_DEBUG_PANEL = false;   // ← change to true to show the Jump-to-Scre
     sessionStorage.setItem(DATA_KEY, jsPsych.data.get().json());
     const idx = document.getElementById('rdp-select').value;
     window.location.search = '?jumpTo=' + idx;
+  });
+
+  document.getElementById('rdp-reroll').addEventListener('click', () => {
+    // Drop the stored P/V/Cookie Jar order so the next load draws a fresh
+    // one, but keep the current screen (jumpTo) and saved trial data.
+    sessionStorage.removeItem('exp1_char_order');
+    location.reload();
   });
 
   document.getElementById('rdp-clear').addEventListener('click', () => {

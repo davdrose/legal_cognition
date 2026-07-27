@@ -17,7 +17,9 @@ var jsPsychAllocation = (function (jspsych) {
       v_cookies_current:  { type: jspsych.ParameterType.INT,         default: 2 },
       hud_p_cookies:      { type: jspsych.ParameterType.INT,         default: 5 },
       hud_v_cookies:      { type: jspsych.ParameterType.INT,         default: 5 },
-      trash_on_left:      { type: jspsych.ParameterType.BOOL,        default: true },
+      /** Left-to-right arrangement of P, V, and the Cookie Jar for this
+       *  participant, as a comma-joined string, e.g. "TRASH,P,V". */
+      character_order:    { type: jspsych.ParameterType.STRING,      default: 'TRASH,P,V' },
       harm_text:          { type: jspsych.ParameterType.HTML_STRING, default: '' },
       instruction_text:   { type: jspsych.ParameterType.HTML_STRING, default: '' },
       require_v:          { type: jspsych.ParameterType.BOOL,        default: false },
@@ -106,6 +108,16 @@ var jsPsychAllocation = (function (jspsych) {
         return html;
       }
 
+      function pPanelHTML() {
+        return `
+          <div class="p-pool-col">
+            <img src="img/${trial.p_img}" class="alloc-char-img" alt="${trial.p_name}">
+            <p class="alloc-char-name">${trial.p_name}</p>
+            <div class="panel-name">${trial.p_name} has ${trial.p_cookies} cookie${trial.p_cookies !== 1 ? 's' : ''}</div>
+            ${pPlateHTML()}
+          </div>`;
+      }
+
       function vPanelHTML() {
         const draggable = (trial.show_gate_question || trial.locked) ? '' : ' draggable';
         let plateHTML = `<div class="cookie-plate" id="v-plate">`;
@@ -138,8 +150,9 @@ var jsPsychAllocation = (function (jspsych) {
       /* -------------------------------------------------------
          BUILD FULL SCREEN HTML
       ------------------------------------------------------- */
-      const leftPanel    = trial.trash_on_left ? trashPanelHTML() : vPanelHTML();
-      const rightPanel   = trial.trash_on_left ? vPanelHTML()     : trashPanelHTML();
+      const PANEL_BUILDERS = { P: pPanelHTML, V: vPanelHTML, TRASH: trashPanelHTML };
+      const columnOrder  = trial.character_order.split(',').map(s => s.trim().toUpperCase());
+      const columnsHTML  = columnOrder.map(key => PANEL_BUILDERS[key]()).join('');
       const confirmLabel = trial.locked ? 'Next' : (trial.is_practice ? 'Done' : 'Confirm');
 
       function needsDisabled() {
@@ -162,14 +175,7 @@ var jsPsychAllocation = (function (jspsych) {
             <p id="move-instruction" style="display:none; text-align:center; font-size:18px; font-weight:600; margin:0 0 6px 0;">Please move cookies wherever you'd like.</p>
           ` : ''}
           <div class="allocation-columns">
-            ${leftPanel}
-            <div class="p-pool-col">
-              <img src="img/${trial.p_img}" class="alloc-char-img" alt="${trial.p_name}">
-              <p class="alloc-char-name">${trial.p_name}</p>
-              <div class="panel-name">${trial.p_name} has ${trial.p_cookies} cookie${trial.p_cookies !== 1 ? 's' : ''}</div>
-              ${pPlateHTML()}
-            </div>
-            ${rightPanel}
+            ${columnsHTML}
           </div>
           ${needsDisabled() ? `<div id="alloc-hint" class="alloc-hint-hidden"></div>` : ''}
           <div class="allocation-btn-row"${trial.show_gate_question ? ' style="display:none"' : ''}>
@@ -433,8 +439,7 @@ var jsPsychAllocation = (function (jspsych) {
           cookies_from_v_to_p: fromVToP,
           cookies_from_v_to_c: fromVToC,
           do_nothing:          !!doNothing,
-          trash_on_left:       trial.trash_on_left,
-          v_on_left:           !trial.trash_on_left,
+          character_order:     trial.character_order,
           is_practice:         trial.is_practice,
           gate_rt:             finalGateRt,
           allocation_rt:       finalAllocRt,
