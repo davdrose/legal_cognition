@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cause & Fault Experiment 2 (Children)</title>
+</head>
+<body>
+  <p style="font-family:sans-serif; text-align:center; margin-top:80px; color:#555;">Loading study…</p>
+  <script>
+    // Between-subjects random assignment: each participant is randomly
+    // sent to either the "v above 0" or "v goes to 0" (slider) version of
+    // the children's Experiment 2, instead of those being two separately-
+    // linked studies.
+    //
+    // The choice is persisted in sessionStorage so that if this page is
+    // ever reloaded (e.g. the participant hits back), they land on the
+    // same condition rather than being re-randomized. In normal use this
+    // page redirects immediately and is never revisited.
+    var KEY = 'exp2_children_outcome_condition';
+    var stored = sessionStorage.getItem(KEY);
+    var condition = stored || (Math.random() < 0.5 ? 'above' : 'zero');
+    if (!stored) sessionStorage.setItem(KEY, condition);
+
+    var folder = condition === 'above'
+      ? 'children- v above 0 (slider)'
+      : 'children- v goes to 0 (slider)';
+
+    window.location.replace('../' + encodeURIComponent(folder) + '/index.html' + window.location.search);
+  </script>
+</body>
+</html>
