@@ -1762,6 +1762,7 @@ const SHOW_DEBUG_PANEL = true;   // ← change to true to show the Jump-to-Scree
     <select id="rdp-select">${options}</select>
     <button id="rdp-jump">▶ Jump</button>
     <button id="rdp-reroll" title="Draw a new random P/V/Cookie Jar position">🎲 Re-roll position</button>
+    <button id="rdp-reroll-study" title="Randomly reassign this participant to v-above-zero or v-goes-to-zero">🔀 Re-roll study</button>
     <button id="rdp-clear" title="Clear saved trial data">🗑 Clear data</button>
   `;
   document.body.appendChild(panel);
@@ -1778,6 +1779,19 @@ const SHOW_DEBUG_PANEL = true;   // ← change to true to show the Jump-to-Scree
     // one, but keep the current screen (jumpTo) and saved trial data.
     sessionStorage.removeItem('exp2_char_order');
     location.reload();
+  });
+
+  document.getElementById('rdp-reroll-study').addEventListener('click', () => {
+    // Re-runs the same between-subjects random assignment a fresh visitor
+    // would get, then jumps straight to the chosen study's own index.html
+    // (dropping jumpTo — that only makes sense for the study we're on).
+    const newCondition = Math.random() < 0.5 ? 'above' : 'zero';
+    sessionStorage.setItem('exp2_adult_outcome_condition', newCondition);
+    const folder = newCondition === 'above' ? 'adults - v above zero' : 'adults - v goes to zero';
+    const params = new URLSearchParams(window.location.search);
+    params.delete('jumpTo');
+    const qs = params.toString();
+    window.location.href = '../' + encodeURIComponent(folder) + '/index.html' + (qs ? '?' + qs : '');
   });
 
   document.getElementById('rdp-clear').addEventListener('click', () => {
