@@ -1891,110 +1891,6 @@ shuffledAll.forEach((scenario, idx) => {
 /* ----------------------------------------------------------
    DEMOGRAPHIC & FEEDBACK SCREENS
    ---------------------------------------------------------- */
-const demographicsScreen = {
-  type: jsPsychHtmlButtonResponse,
-  // choices: [] means jsPsych renders NO button and registers NO click handler.
-  // Our own Submit button is embedded in the stimulus and calls jsPsych.finishTrial()
-  // directly, bypassing jsPsych's event system entirely.
-  choices: [],
-  stimulus: `
-    <div style="max-width:680px; margin:0 auto; padding:40px 30px; font-family:sans-serif; color:#333; font-size:15px; text-align:left;">
-      <p style="text-align:center; font-weight:bold; font-size:17px; margin-bottom:28px;">Demographic information:</p>
-
-      <table style="width:100%; border-collapse:collapse; line-height:2;">
-
-        <!-- Age -->
-        <tr>
-          <td style="padding:10px 24px 10px 0; vertical-align:middle; white-space:nowrap;">1. Age:</td>
-          <td style="padding:10px 0; vertical-align:middle;">
-            <input type="number" id="demo-age" min="18" max="120"
-              style="width:70px; padding:3px 7px; font-size:15px; border:1px solid #999; border-radius:3px;">
-          </td>
-        </tr>
-
-        <!-- Gender -->
-        <tr>
-          <td style="padding:10px 24px 10px 0; vertical-align:top; white-space:nowrap;">2. Gender:</td>
-          <td style="padding:10px 0;">
-            <div style="margin-bottom:6px;">
-              <label style="margin-right:18px; cursor:pointer;"><input type="radio" name="gender" value="Female" style="margin-right:5px;">Female</label>
-              <label style="margin-right:18px; cursor:pointer;"><input type="radio" name="gender" value="Male" style="margin-right:5px;">Male</label>
-              <label style="cursor:pointer;"><input type="radio" name="gender" value="Non-binary" style="margin-right:5px;">Non-binary</label>
-            </div>
-            <div>
-              <label style="cursor:pointer;">
-                <input type="radio" name="gender" value="__other__" style="margin-right:5px;">Other:
-                <input type="text" id="gender-other" style="margin-left:6px; padding:2px 7px; font-size:14px; border:1px solid #999; border-radius:3px; width:180px;">
-              </label>
-            </div>
-          </td>
-        </tr>
-
-        <!-- Race -->
-        <tr>
-          <td style="padding:10px 24px 10px 0; vertical-align:top; white-space:nowrap;">3. Race:</td>
-          <td style="padding:10px 0;">
-            ${['White','Black/African American','American Indian/Alaska Native','Asian',
-               'Native Hawaiian/Pacific Islander','Multiracial/Mixed']
-              .map(r => `<div><label style="cursor:pointer;"><input type="radio" name="race" value="${r}" style="margin-right:5px;">${r}</label></div>`).join('')}
-            <div>
-              <label style="cursor:pointer;">
-                <input type="radio" name="race" value="__other__" style="margin-right:5px;">Other:
-                <input type="text" id="race-other" style="margin-left:6px; padding:2px 7px; font-size:14px; border:1px solid #999; border-radius:3px; width:180px;">
-              </label>
-            </div>
-          </td>
-        </tr>
-
-        <!-- Ethnicity -->
-        <tr>
-          <td style="padding:10px 24px 10px 0; vertical-align:middle; white-space:nowrap;">4. Ethnicity:</td>
-          <td style="padding:10px 0;">
-            <label style="margin-right:18px; cursor:pointer;"><input type="radio" name="ethnicity" value="Hispanic" style="margin-right:5px;">Hispanic</label>
-            <label style="cursor:pointer;"><input type="radio" name="ethnicity" value="Non-Hispanic" style="margin-right:5px;">Non-Hispanic</label>
-          </td>
-        </tr>
-
-      </table>
-
-      <p style="margin-top:28px; font-size:15px;">Please press <strong>Submit</strong> to complete the experiment.</p>
-      <p id="demo-error" style="color:#cc0000; font-size:14px; margin-top:8px; display:none; font-weight:500;">Please answer all questions before submitting.</p>
-      <div style="text-align:center; margin-top:16px;">
-        <button id="demo-submit-btn" class="jspsych-btn" style="padding:8px 28px; font-size:15px; cursor:pointer;">Submit</button>
-      </div>
-    </div>`,
-  on_load: function() {
-    const startTime = performance.now();
-    document.getElementById('demo-submit-btn').addEventListener('click', function() {
-      const age       = document.getElementById('demo-age')?.value?.trim();
-      const genderEl  = document.querySelector('input[name="gender"]:checked');
-      const raceEl    = document.querySelector('input[name="race"]:checked');
-      const ethnicEl  = document.querySelector('input[name="ethnicity"]:checked');
-      const errEl     = document.getElementById('demo-error');
-      if (!age || !genderEl || !raceEl || !ethnicEl) {
-        if (errEl) errEl.style.display = 'block';
-        return;
-      }
-      if (errEl) errEl.style.display = 'none';
-      const gender    = genderEl.value === '__other__'
-        ? 'Other: ' + (document.getElementById('gender-other')?.value || '')
-        : genderEl.value;
-      const race      = raceEl.value === '__other__'
-        ? 'Other: ' + (document.getElementById('race-other')?.value || '')
-        : raceEl.value;
-      jsPsych.finishTrial({
-        rt:        Math.round(performance.now() - startTime),
-        age:       age,
-        gender:    gender,
-        race:      race,
-        ethnicity: ethnicEl.value,
-      });
-    });
-  },
-  data: { is_demographic: true, is_practice: false },
-  _debugLabel: 'Demographics',
-};
-
 // Final screen
 const studyEndVideo = {
   type: jsPsychHtmlButtonResponse,
@@ -2018,18 +1914,6 @@ const studyEndVideo = {
   },
 };
 
-const endScreen = {
-  type: jsPsychHtmlButtonResponse,
-  stimulus: `
-    <div style="text-align:center; padding:80px 40px; font-family:sans-serif;">
-      <h2 style="font-size:36px; font-weight:400; color:#333;">Thank you!</h2>
-      <p style="font-size:20px; color:#666; margin-top:20px;">
-        You have completed all scenarios.
-      </p>
-    </div>`,
-  choices: ['Finish'],
-};
-
 /* ----------------------------------------------------------
    DEBUG LABELS (read by researcher panel — harmless in production)
    ---------------------------------------------------------- */
@@ -2048,10 +1932,7 @@ warmupPracticeSummary._debugLabel = 'Warmup: Summary (locked)';
 warmupPracticeBoth._debugLabel    = 'Warmup: Practice (Both)';
 warmupFinishVideo._debugLabel     = 'Warmup: Finish (video)';
 testCaseIntroVideo._debugLabel    = 'Test Case Intro (video)';
-demographicsScreen._debugLabel = 'Demographics';
 studyEndVideo._debugLabel      = 'Study End (video)';
-
-endScreen._debugLabel          = 'End Screen';
 
 /* ----------------------------------------------------------
    RUN
@@ -2060,9 +1941,7 @@ const timeline = [
   consentScreen,
   ...warmupBlock,
   ...testBlock,
-  demographicsScreen,
   studyEndVideo,
-  endScreen,
 ];
 
 /* ============================================================
@@ -2070,7 +1949,7 @@ const timeline = [
    Hidden by default for public / participant deployment.
    To reveal it (researcher use only), set SHOW_DEBUG_PANEL = true.
    ============================================================ */
-const SHOW_DEBUG_PANEL = false;  // ← change to true to show the Jump-to-Screen panel
+const SHOW_DEBUG_PANEL = true;  // ← change to true to show the Jump-to-Screen panel
 
 (function () {
   // Public deployment: panel stays hidden — just run the experiment normally.
