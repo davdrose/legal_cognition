@@ -407,11 +407,7 @@ const warmupLayoutLocked = {
   corner_char_img: '../children-shared%20files/maggie.png',
   on_load: function() {
     const audio = document.createElement('audio');
-    // NOTE: this filename doesn't exist in children-shared files yet — the
-    // old recording says "If you think anyone..." without "In our game,".
-    // Needs a fresh recording of the updated line; the 'error' fallback
-    // below keeps this locked screen from stalling until it's added.
-    audio.src = '../children-shared%20files/In our game, if you think anyone should be punished, you can decided how they lose their cookies.m4a';
+    audio.src = '../children-shared%20files/In our game, if you think anyone should be punished, you can decide how they lose their cookies.m4a';
     audio.style.display = 'none';
     document.body.appendChild(audio);
     audio.play().catch(() => {});
