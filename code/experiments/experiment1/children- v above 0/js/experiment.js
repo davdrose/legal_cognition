@@ -1854,32 +1854,6 @@ shuffledAll.forEach((scenario, idx) => {
 });
 
 /* ----------------------------------------------------------
-   DEMOGRAPHIC & FEEDBACK SCREENS
-   ---------------------------------------------------------- */
-// Final screen
-const studyEndVideo = {
-  type: jsPsychHtmlButtonResponse,
-  stimulus: `
-    <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding-top:20px;">
-      <video id="study-end-video" src="../children-shared%20files/overall_study_end.mov" autoplay playsinline
-             style="max-width:1150px; width:100%; max-height:82vh; border-radius:8px;">
-      </video>
-    </div>`,
-  choices: ['Finish'],
-  on_load: function() {
-    const finishBtn = document.querySelector('.jspsych-btn');
-    finishBtn.disabled = true;
-    finishBtn.style.opacity = '0.4';
-    finishBtn.style.cursor = 'not-allowed';
-    document.getElementById('study-end-video').addEventListener('ended', () => {
-      finishBtn.disabled = false;
-      finishBtn.style.opacity = '1';
-      finishBtn.style.cursor = 'pointer';
-    });
-  },
-};
-
-/* ----------------------------------------------------------
    DEBUG LABELS (read by researcher panel — harmless in production)
    ---------------------------------------------------------- */
 consentScreen._debugLabel   = 'Consent Form';
@@ -1897,7 +1871,6 @@ warmupPracticeSummary._debugLabel = 'Warmup: Summary (locked)';
 warmupPracticeBoth._debugLabel    = 'Warmup: Practice (Both)';
 warmupFinishVideo._debugLabel     = 'Warmup: Finish (video)';
 testCaseIntroVideo._debugLabel    = 'Test Case Intro (video)';
-studyEndVideo._debugLabel      = 'Study End (video)';
 
 /* ----------------------------------------------------------
    RUN
@@ -1906,7 +1879,6 @@ const timeline = [
   consentScreen,
   ...warmupBlock,
   ...testBlock,
-  studyEndVideo,
 ];
 
 /* ============================================================
