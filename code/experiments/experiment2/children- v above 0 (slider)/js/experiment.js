@@ -245,7 +245,7 @@ const finnCleoScenarios = [
     event_text: 'Finn spills water and doesn\'t clean it up. Cleo slips on the wet floor and 2 of Cleo\'s cookies are destroyed.',
     event_title: 'Finn Spills Water — Cleo Slips',
     story_slides: [1,2,3,4,5,6,7,8,9,10,11,12].map(n => `${CHAR_IMG_BASE}trailppt/finn_cleo/finn_cleo_${n}.png`),
-    story_video: '../../experiment1/children-%20v%20above%200/videos%20v%20above%200/finn%20and%20cleo%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/finn%20and%20cleo%20above%200.mp4'
   }
 ];
 
@@ -260,7 +260,7 @@ const secondBlockScenarios = [
     event_text: 'Milo is angry at Sasha. He walks over and deliberately knocks off 2 of Sasha\'s cookies.',
     event_title: 'Milo Knocks Sasha\'s Cookies',
     story_slides: [1,2,3,4,5,6,7,8,9,10].map(n => `${CHAR_IMG_BASE}trailppt/milo_sasha/milo_sasha_${n}.png`),
-    story_video: '../../experiment1/children-%20v%20above%200/videos%20v%20above%200/milo%20and%20sasha%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/milo%20and%20sasha%20above.mp4'
   },
   {
     id: 6,
@@ -271,7 +271,7 @@ const secondBlockScenarios = [
     event_text: 'Zoe wants Rex to have fewer cookies. She deliberately throws away 2 of Rex\'s cookies.',
     event_title: 'Zoe Throws Rex\'s Cookies Away',
     story_slides: [1,2,3,4,5,6,7,8,9].map(n => `${CHAR_IMG_BASE}trailppt/rex_zoe/rex_zoe_${n}.png`),
-    story_video: '../../experiment1/children-%20v%20above%200/videos%20v%20above%200/rex%20and%20zoe%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/rex%20and%20zoe%20above%200.mp4'
   },
   {
     id: 7,
@@ -282,7 +282,7 @@ const secondBlockScenarios = [
     event_text: 'Kai walks without looking where he is going and bumps into Ruby. 2 of Ruby\'s cookies fall off.',
     event_title: 'Kai Bumps Into Ruby',
     story_slides: [1,2,3,4,5,6,7,8,9].map(n => `${CHAR_IMG_BASE}trailppt/kai_ruby/kai_ruby_${n}.png`),
-    story_video: '../../experiment1/children-%20v%20above%200/videos%20v%20above%200/kai%20and%20ruby%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/kai%20and%20ruby%20above%200.mp4'
   },
   {
     id: 8,
@@ -293,7 +293,7 @@ const secondBlockScenarios = [
     event_text: 'Sam is walking his dog on a leash when the dog breaks free and eats 2 of Ella\'s cookies.',
     event_title: 'Sam\'s Dog Eats Ella\'s Cookies',
     story_slides: [1,2,3,4,5,6,7,8,9,10].map(n => `${CHAR_IMG_BASE}trailppt/sam_ella/sam_ella_${n}.png`),
-    story_video: '../../experiment1/children-%20v%20above%200/videos%20v%20above%200/sam%20and%20ella%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/sam%20and%20ella%20v%20above%200.mp4'
   },
   {
     id: 9,
@@ -304,7 +304,7 @@ const secondBlockScenarios = [
     event_text: 'Andy and Catherine bumped into each other accidentally. Catherine\'s wolf ate 2 of Andy\'s cookies.',
     event_title: 'Catherine\'s Wolf Eats Andy\'s Cookies',
     story_slides: [1,2,3,4,5,6,7,8,9].map(n => `${CHAR_IMG_BASE}trailppt/andy_catherine/andy_catherine_${n}.png`),
-    story_video: '../../experiment1/children-%20v%20above%200/videos%20v%20above%200/andy%20and%20catherine%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/andy%20and%20catherine%20v%20above%200.mp4'
   },
   {
     id: 10,
@@ -315,7 +315,7 @@ const secondBlockScenarios = [
     event_text: 'Katie and Tony are having a picnic when a gust of wind blows 2 of Katie\'s cookies away.',
     event_title: 'Wind Blows Away Katie\'s Cookies',
     story_slides: [1,2,3,4,5,6,7,8,9,10].map(n => `${CHAR_IMG_BASE}trailppt/harry_katie/harry_katie_${n}.png`),
-    story_video: '../../experiment1/children-%20v%20above%200/videos%20v%20above%200/harry%20and%20katie%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/harry%20and%20katie%20above%200.mp4'
   },
   {
     id: 11,
@@ -326,7 +326,7 @@ const secondBlockScenarios = [
     event_text: 'While Nora is playing outside, a squirrel eats 2 of Nora\'s cookies.',
     event_title: 'Squirrel Eats Nora\'s Cookies',
     story_slides: [1,2,3,4,5,6,7,8,9].map(n => `${CHAR_IMG_BASE}trailppt/nora_eric/nora_eric_${n}.png`),
-    story_video: '../../experiment1/children-%20v%20above%200/videos%20v%20above%200/nora%20and%20eric%20above%200.mp4'
+    story_video: 'videos%20v%20above%200/nora%20and%20eric%20above%200.mp4'
   }
 ];
 
